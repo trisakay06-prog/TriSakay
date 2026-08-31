@@ -408,7 +408,15 @@ class StoreService {
       isWaitingAlert: payload.isWaitingAlert || false
     };
 
-    const updatedBookings = [newBooking, ...this.data.bookings];
+    // Supersede any older WAITING_FOR_DRIVER bookings for this passenger
+    const cleanOld = this.data.bookings.map(b => {
+      if ((b.passengerId === user.id || b.passengerMobile === user.mobile) && b.status === 'WAITING_FOR_DRIVER') {
+        return { ...b, status: 'CANCELLED' as BookingStatus };
+      }
+      return b;
+    });
+
+    const updatedBookings = [newBooking, ...cleanOld];
     this.saveStateToStorage({ ...this.data, bookings: updatedBookings }, true);
     playNotificationSound();
 
@@ -479,7 +487,7 @@ class StoreService {
       return b;
     });
 
-    this.saveStateToStorage({ ...this.data, bookings: updatedBookings });
+    this.saveStateToStorage({ ...this.data, bookings: updatedBookings }, status === 'DRIVER_ACCEPTED');
 
     if (isSupabaseConfigured && supabase) {
       const b = updatedBookings.find(x => x.id === bookingId);

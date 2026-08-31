@@ -80,13 +80,23 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
     state.settings.fuelSurgeMultiplier
   );
 
-  const passengerBookings = state.bookings.filter(b => b.passengerId === currentUser.id);
-  const currentActiveBooking = passengerBookings.find(b => 
+  const passengerBookings = state.bookings.filter(b => 
+    b.passengerId === currentUser.id || 
+    b.passengerMobile === currentUser.mobile
+  );
+
+  const activePassengerBookings = passengerBookings.filter(b => 
     b.status === 'WAITING_FOR_DRIVER' || 
     b.status === 'DRIVER_ACCEPTED' || 
     b.status === 'DRIVER_ARRIVING' || 
     b.status === 'PASSENGER_PICKED_UP'
   );
+
+  // ALWAYS prioritize an accepted/in-transit booking over a pending waiting booking
+  const currentActiveBooking = 
+    activePassengerBookings.find(b => b.status === 'DRIVER_ACCEPTED' || b.status === 'DRIVER_ARRIVING' || b.status === 'PASSENGER_PICKED_UP') ||
+    activePassengerBookings[0] ||
+    null;
 
   useEffect(() => {
     let interval: any;
