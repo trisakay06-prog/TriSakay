@@ -796,9 +796,25 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                           </h4>
                           <span style={{ color: '#eab308', fontWeight: 800, fontSize: '0.85rem' }}>★ 4.8</span>
                         </div>
-                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
-                          Plate: <strong style={{ color: '#0369a1' }}>{currentActiveBooking.plateNumber || 'TZ-9842'}</strong> ({currentActiveBooking.todaName || 'GOTODA'})
-                        </p>
+                        
+                        {/* TRICYCLE PLATE NUMBER BADGE */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                          <span style={{
+                            background: '#fef08a',
+                            color: '#713f12',
+                            border: '1.5px solid #eab308',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            letterSpacing: '0.5px'
+                          }}>
+                            🛺 {currentActiveBooking.plateNumber || 'TZ-9842'}
+                          </span>
+                          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+                            {currentActiveBooking.todaName || 'GOTODA'}
+                          </span>
+                        </div>
                       </div>
 
                       <a href={`tel:${currentActiveBooking.driverMobile}`} className="btn-primary" style={{ textDecoration: 'none', padding: '8px 14px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>

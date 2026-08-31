@@ -92,10 +92,23 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
                 </div>
               </div>
 
-              {assignedDriver && (
+              {(assignedDriver || activeBooking.plateNumber) && (
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>TRICYCLE PLATE</div>
-                  <div style={{ color: '#b45309', fontSize: '0.95rem', fontWeight: 800 }}>{assignedDriver.plateNumber || 'TZ-9842'}</div>
+                  <div style={{ color: '#64748b', fontSize: '0.7rem', fontWeight: 700 }}>TRICYCLE PLATE</div>
+                  <div style={{
+                    background: '#fef08a',
+                    color: '#713f12',
+                    border: '1px solid #eab308',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    letterSpacing: '0.5px',
+                    marginTop: '2px',
+                    display: 'inline-block'
+                  }}>
+                    🛺 {assignedDriver?.plateNumber || activeBooking.plateNumber || 'TZ-9842'}
+                  </div>
                 </div>
               )}
             </div>
