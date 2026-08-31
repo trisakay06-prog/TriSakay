@@ -447,7 +447,8 @@ class StoreService {
       estimatedFare: payload.estimatedFare,
       status: 'WAITING_FOR_DRIVER',
       createdAt: new Date().toISOString(),
-      isWaitingAlert: payload.isWaitingAlert || false
+      isWaitingAlert: payload.isWaitingAlert || false,
+      passengerProfileImage: user.profileImage
     };
 
     // Supersede any older WAITING_FOR_DRIVER bookings for this passenger
@@ -497,6 +498,7 @@ class StoreService {
           next.driverId = driver.id;
           next.driverName = driver.name;
           next.driverMobile = driver.mobile;
+          next.driverProfileImage = driver.profileImage;
           next.todaName = driver.todaName || 'GOTODA (Gonzaga Toda)';
           next.plateNumber = driver.plateNumber || 'TZ-9842';
         }

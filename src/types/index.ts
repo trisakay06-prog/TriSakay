@@ -6,6 +6,7 @@ export interface User {
   mobile: string;
   role: UserRole;
   barangay: string;
+  profileImage?: string; // Cloudinary URL or local Base64
   todaName?: string;
   plateNumber?: string;
   isApproved?: boolean; // For drivers
@@ -26,6 +27,7 @@ export interface Booking {
   passengerId: string;
   passengerName: string;
   passengerMobile: string;
+  passengerProfileImage?: string;
   pickupBarangay: string;
   pickupLandmark: string;
   destinationBarangay: string;
@@ -38,6 +40,7 @@ export interface Booking {
   driverId?: string;
   driverName?: string;
   driverMobile?: string;
+  driverProfileImage?: string;
   todaName?: string;
   plateNumber?: string;
   rating?: number;

@@ -6,6 +6,8 @@ import { Bike, Phone, CheckCircle2, ShieldAlert, Navigation, Bell, User, Lock } 
 import { DriverNotificationModal } from '../components/DriverNotificationModal';
 import { INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
 import { IOSBackButton } from '../components/IOSBackButton';
+import { UserAvatar } from '../components/UserAvatar';
+import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 
 interface DriverDashboardProps {
   initialTab?: 'requests' | 'active' | 'history' | 'notifications' | 'profile';
@@ -26,6 +28,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
   const [driverBarangay, setDriverBarangay] = useState(currentDriver.barangay || INITIAL_GONZAGA_BARANGAYS[0]);
   const [driverToda, setDriverToda] = useState(currentDriver.todaName || 'GOTODA (Gonzaga Toda)');
   const [driverPlate, setDriverPlate] = useState(currentDriver.plateNumber || 'TZ-9842');
+  const [driverProfileImage, setDriverProfileImage] = useState(currentDriver.profileImage || '');
   const [newPassword, setNewPassword] = useState('');
   const [driverSavedMsg, setDriverSavedMsg] = useState('');
 
@@ -43,6 +46,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
         setDriverBarangay(s.currentUser.barangay);
         setDriverToda(s.currentUser.todaName || 'GOTODA (Gonzaga Toda)');
         setDriverPlate(s.currentUser.plateNumber || 'TZ-9842');
+        setDriverProfileImage(s.currentUser.profileImage || '');
       }
     });
   }, []);
@@ -386,10 +390,19 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
           {/* CLEAN PASSENGER & ROUTE DETAILS */}
           <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Passenger</span>
-                <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
-                  {activeBooking.passengerName}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <UserAvatar
+                  src={activeBooking.passengerProfileImage}
+                  name={activeBooking.passengerName}
+                  size={42}
+                  role="passenger"
+                  showRoleBadge
+                />
+                <div>
+                  <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Passenger</span>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                    {activeBooking.passengerName}
+                  </div>
                 </div>
               </div>
               <span style={{ background: '#e2e8f0', color: '#334155', padding: '3px 8px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700 }}>
@@ -541,11 +554,19 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
               {pendingRequests.map(req => (
                 <div key={req.id} className="glass-card" style={{ padding: '18px', borderRadius: '16px', border: '2px solid #eab308' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>
-                      {req.passengerName}
-                    </span>
-                    <span style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <UserAvatar
+                        src={req.passengerProfileImage}
+                        name={req.passengerName}
+                        size={40}
+                        role="passenger"
+                      />
+                      <span style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0f172a' }}>
+                        {req.passengerName}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#16a34a' }}>
                       ₱{req.estimatedFare}
                     </span>
                   </div>
@@ -700,12 +721,36 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
               name: driverName,
               barangay: driverBarangay,
               todaName: driverToda,
-              plateNumber: driverPlate
+              plateNumber: driverPlate,
+              profileImage: driverProfileImage || undefined
             });
             setDriverSavedMsg('Driver details updated successfully!');
             setTimeout(() => setDriverSavedMsg(''), 4000);
-          }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          }} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             
+            {/* AVATAR UPLOAD */}
+            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <ProfileAvatarUpload
+                currentImageUrl={driverProfileImage}
+                name={driverName}
+                role="driver"
+                onImageUploaded={(url) => {
+                  setDriverProfileImage(url);
+                  store.updateUser(currentDriver.id, { profileImage: url });
+                  setDriverSavedMsg('Driver photo updated and saved!');
+                  setTimeout(() => setDriverSavedMsg(''), 3000);
+                }}
+                onImageRemoved={() => {
+                  setDriverProfileImage('');
+                  store.updateUser(currentDriver.id, { profileImage: '' });
+                  setDriverSavedMsg('Driver photo removed.');
+                  setTimeout(() => setDriverSavedMsg(''), 3000);
+                }}
+                size={100}
+                label="Driver Profile Picture"
+              />
+            </div>
+
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
                 Driver Full Name

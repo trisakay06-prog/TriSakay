@@ -3,6 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { GonzagaRouteFare, User } from '../types';
 import { Edit3, Plus, ChevronRight, MapPin, Trash2, Building, Settings, Activity, ShieldCheck, CheckCircle2, Bike, X } from 'lucide-react';
+import { UserAvatar } from '../components/UserAvatar';
 
 interface AdminDashboardProps {
   initialTab?: 'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports';
@@ -230,8 +231,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
                 {pendingDrivers.map(d => (
                   <div key={d.id} className="glass-card" style={{ padding: '18px', borderRadius: '16px', background: '#fefce8' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>{d.name}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <UserAvatar src={d.profileImage} name={d.name} size={38} role="driver" />
+                        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: '#0f172a' }}>{d.name}</span>
+                      </div>
                       <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700 }}>
                         {d.todaName}
                       </span>
@@ -293,7 +297,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                 <tbody>
                   {approvedDrivers.map(d => (
                     <tr key={d.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px', fontWeight: 700 }}>{d.name}</td>
+                      <td style={{ padding: '12px', fontWeight: 700 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <UserAvatar src={d.profileImage} name={d.name} size={32} role="driver" />
+                          <span>{d.name}</span>
+                        </div>
+                      </td>
                       <td style={{ padding: '12px' }}>{d.mobile}</td>
                       <td style={{ padding: '12px' }}>{d.barangay}</td>
                       <td style={{ padding: '12px' }}>{d.todaName}</td>
@@ -365,7 +374,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               <tbody>
                 {filteredUsersList.map(u => (
                   <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px', fontWeight: 700 }}>{u.name}</td>
+                    <td style={{ padding: '12px', fontWeight: 700 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <UserAvatar src={u.profileImage} name={u.name} size={32} role={u.role} />
+                        <span>{u.name}</span>
+                      </div>
+                    </td>
                     <td style={{ padding: '12px' }}>
                       <span style={{ textTransform: 'uppercase', fontWeight: 800, fontSize: '0.75rem', color: u.role === 'driver' ? '#eab308' : u.role === 'admin' ? '#3b82f6' : '#16a34a' }}>
                         {u.role}

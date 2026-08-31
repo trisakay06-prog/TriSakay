@@ -8,6 +8,8 @@ import confetti from 'canvas-confetti';
 import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
 import { playNotificationSound } from '../services/sound';
 import { IOSBackButton } from '../components/IOSBackButton';
+import { UserAvatar } from '../components/UserAvatar';
+import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile';
@@ -37,6 +39,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   // Profile Edit State
   const [profileName, setProfileName] = useState(state.currentUser?.name || '');
   const [profileBarangay, setProfileBarangay] = useState(state.currentUser?.barangay || INITIAL_GONZAGA_BARANGAYS[0]);
+  const [profileImage, setProfileImage] = useState(state.currentUser?.profileImage || '');
   const [newPassword, setNewPassword] = useState('');
   const [profileSavedMsg, setProfileSavedMsg] = useState('');
 
@@ -59,6 +62,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       if (s.currentUser) {
         setProfileName(s.currentUser.name);
         setProfileBarangay(s.currentUser.barangay);
+        setProfileImage(s.currentUser.profileImage || '');
       }
     });
   }, []);
@@ -937,31 +941,40 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
                     {/* DRIVER INFO CARD (Matching Wireframe Step 5 & 6) */}
                     <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '14px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
-                            {currentActiveBooking.driverName}
-                          </h4>
-                          <span style={{ color: '#eab308', fontWeight: 800, fontSize: '0.85rem' }}>★ 4.8</span>
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <UserAvatar
+                          src={currentActiveBooking.driverProfileImage}
+                          name={currentActiveBooking.driverName || 'Driver'}
+                          size={46}
+                          role="driver"
+                          showRoleBadge
+                        />
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
+                              {currentActiveBooking.driverName}
+                            </h4>
+                            <span style={{ color: '#eab308', fontWeight: 800, fontSize: '0.85rem' }}>★ 4.8</span>
+                          </div>
                         
-                        {/* TRICYCLE PLATE NUMBER BADGE */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                          <span style={{
-                            background: '#fef08a',
-                            color: '#713f12',
-                            border: '1.5px solid #eab308',
-                            padding: '2px 8px',
-                            borderRadius: '6px',
-                            fontSize: '0.78rem',
-                            fontWeight: 800,
-                            letterSpacing: '0.5px'
-                          }}>
-                            🛺 {currentActiveBooking.plateNumber || 'TZ-9842'}
-                          </span>
-                          <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
-                            {currentActiveBooking.todaName || 'GOTODA'}
-                          </span>
+                          {/* TRICYCLE PLATE NUMBER BADGE */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                            <span style={{
+                              background: '#fef08a',
+                              color: '#713f12',
+                              border: '1.5px solid #eab308',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '0.78rem',
+                              fontWeight: 800,
+                              letterSpacing: '0.5px'
+                            }}>
+                              🛺 {currentActiveBooking.plateNumber || 'TZ-9842'}
+                            </span>
+                            <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
+                              {currentActiveBooking.todaName || 'GOTODA'}
+                            </span>
+                          </div>
                         </div>
                       </div>
 
@@ -1237,12 +1250,36 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
             e.preventDefault();
             store.updateUser(currentUser.id, {
               name: profileName,
-              barangay: profileBarangay
+              barangay: profileBarangay,
+              profileImage: profileImage || undefined
             });
             setProfileSavedMsg('Profile details updated successfully!');
             setTimeout(() => setProfileSavedMsg(''), 4000);
-          }} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          }} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             
+            {/* AVATAR UPLOAD */}
+            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+              <ProfileAvatarUpload
+                currentImageUrl={profileImage}
+                name={profileName}
+                role="passenger"
+                onImageUploaded={(url) => {
+                  setProfileImage(url);
+                  store.updateUser(currentUser.id, { profileImage: url });
+                  setProfileSavedMsg('Profile photo updated and saved!');
+                  setTimeout(() => setProfileSavedMsg(''), 3000);
+                }}
+                onImageRemoved={() => {
+                  setProfileImage('');
+                  store.updateUser(currentUser.id, { profileImage: '' });
+                  setProfileSavedMsg('Profile photo removed.');
+                  setTimeout(() => setProfileSavedMsg(''), 3000);
+                }}
+                size={100}
+                label="Passenger Profile Picture"
+              />
+            </div>
+
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
                 Full Name

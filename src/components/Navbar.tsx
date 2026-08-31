@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, UserCheck, Settings, Bell } from 'lucide-react';
+import { UserAvatar } from './UserAvatar';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -267,15 +268,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               <button
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                 style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-                  color: '#ffffff',
+                  padding: 0,
                   border: profileDropdownOpen ? '2.5px solid #86efac' : '2px solid #ffffff',
-                  fontSize: '0.95rem',
-                  fontWeight: 800,
+                  borderRadius: '50%',
                   cursor: 'pointer',
+                  background: 'transparent',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -288,7 +285,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 aria-label="User Profile"
                 title={`${user.name} (${user.role})`}
               >
-                {user.name.charAt(0).toUpperCase()}
+                <UserAvatar
+                  src={user.profileImage}
+                  name={user.name}
+                  size={36}
+                  role={user.role}
+                />
               </button>
 
               {/* PROFILE DROPDOWN MENU */}
@@ -309,20 +311,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 >
                   {/* Header Info */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                    <div style={{
-                      width: '42px',
-                      height: '42px',
-                      borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-                      color: '#ffffff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.2rem',
-                      fontWeight: 800
-                    }}>
-                      {user.name.charAt(0).toUpperCase()}
-                    </div>
+                    <UserAvatar
+                      src={user.profileImage}
+                      name={user.name}
+                      size={44}
+                      role={user.role}
+                      showRoleBadge
+                    />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {user.name}

@@ -4,6 +4,7 @@ import type { UserRole } from '../types';
 import { X, UserCheck, Bike, ShieldCheck, CheckCircle, AlertCircle, Phone, Lock } from 'lucide-react';
 import { INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
+import { ProfileAvatarUpload } from './ProfileAvatarUpload';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [todaName, setTodaName] = useState('GOTODA (Gonzaga Toda)');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [profileImage, setProfileImage] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -129,6 +131,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         mobile: cleanedMobile,
         role,
         barangay,
+        profileImage: profileImage || undefined,
         todaName: role === 'driver' ? todaName : undefined,
         plateNumber: role === 'driver' ? plateNumber : undefined
       });
@@ -319,6 +322,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {mode === 'register' && (
+            <div style={{ marginBottom: '6px' }}>
+              <ProfileAvatarUpload
+                currentImageUrl={profileImage}
+                name={name || 'User'}
+                role={role}
+                size={84}
+                label="Profile Picture (Optional)"
+                onImageUploaded={(url) => setProfileImage(url)}
+                onImageRemoved={() => setProfileImage('')}
+              />
+            </div>
+          )}
+
           {mode === 'register' && (
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
