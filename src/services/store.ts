@@ -5,6 +5,7 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { sendBookingAcceptedSMS, sendDriverArrivingSMS } from './smsService';
 
 const STORAGE_KEY = 'trisakay_app_state_v1';
+const SESSION_USER_KEY = 'trisakay_session_user_v1';
 const BROADCAST_CHANNEL_NAME = 'trisakay_realtime_events';
 
 export const INITIAL_USERS: User[] = [
@@ -155,8 +156,18 @@ class StoreService {
       this.channel = new BroadcastChannel(BROADCAST_CHANNEL_NAME);
       this.channel.onmessage = (event) => {
         if (event.data?.type === 'STATE_UPDATED') {
-          this.data = this.loadState();
-          this.notifyListeners();
+          // Sync shared store data while preserving current tab user
+          const currentUser = this.data?.currentUser || this.loadCurrentUser();
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              const parsed = JSON.parse(stored);
+              this.data = { ...parsed, currentUser };
+              this.notifyListeners();
+            }
+          } catch (e) {
+            console.error('Error parsing sync state', e);
+          }
           if (event.data?.playChime) {
             playNotificationSound();
           }
@@ -167,8 +178,16 @@ class StoreService {
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', (e) => {
         if (e.key === STORAGE_KEY) {
-          this.data = this.loadState();
-          this.notifyListeners();
+          const currentUser = this.data?.currentUser || this.loadCurrentUser();
+          try {
+            if (e.newValue) {
+              const parsed = JSON.parse(e.newValue);
+              this.data = { ...parsed, currentUser };
+              this.notifyListeners();
+            }
+          } catch (err) {
+            console.error('Storage event sync error', err);
+          }
         }
       });
     }
@@ -178,33 +197,104 @@ class StoreService {
     }
   }
 
+  private mapSupabaseRowToBooking(row: any): Booking {
+    return {
+      id: row.id?.toString() || `book_${Date.now()}`,
+      passengerId: row.passenger_id || 'passenger',
+      passengerName: row.passenger_name || 'Passenger',
+      passengerMobile: row.passenger_mobile || '09171234567',
+      pickupBarangay: row.pickup_barangay,
+      pickupLandmark: row.pickup_landmark,
+      destinationBarangay: row.destination_barangay,
+      destinationLandmark: row.destination_landmark,
+      passengersCount: row.passengers_count || 1,
+      discountType: row.discount_type || 'regular',
+      specialNotes: row.special_notes,
+      estimatedFare: Number(row.estimated_fare) || 25,
+      status: row.status || 'WAITING_FOR_DRIVER',
+      createdAt: row.created_at || new Date().toISOString(),
+      driverId: row.driver_id,
+      driverName: row.driver_name,
+      driverMobile: row.driver_mobile,
+      plateNumber: row.plate_number,
+      todaName: row.toda_name,
+      isWaitingAlert: row.is_waiting_alert || false
+    };
+  }
+
   private setupSupabaseRealtime() {
     if (!supabase) return;
+
+    // Initial sync of existing Supabase bookings
+    supabase
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (data && !error && data.length > 0) {
+          const supabaseBookings = data.map((row: any) => this.mapSupabaseRowToBooking(row));
+          const existingIds = new Set(this.data.bookings.map(b => b.id));
+          const newRows = supabaseBookings.filter(b => !existingIds.has(b.id));
+          if (newRows.length > 0) {
+            const merged = [...newRows, ...this.data.bookings];
+            this.data = { ...this.data, bookings: merged };
+            this.saveStateToStorage(this.data);
+          }
+        }
+      });
+
+    // Real-time Postgres changes channel
     supabase
       .channel('public:bookings')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
-        console.log('Supabase Realtime Booking update received:', payload);
-        if (payload.eventType === 'INSERT') {
-          playNotificationSound();
+        console.log('[TriSakay Supabase] Realtime event:', payload.eventType, payload);
+        if (payload.eventType === 'INSERT' && payload.new) {
+          const incoming = this.mapSupabaseRowToBooking(payload.new);
+          const exists = this.data.bookings.some(b => b.id === incoming.id);
+          if (!exists) {
+            const updated = [incoming, ...this.data.bookings];
+            this.data = { ...this.data, bookings: updated };
+            this.saveStateToStorage(this.data, true);
+            playNotificationSound();
+          }
+        } else if (payload.eventType === 'UPDATE' && payload.new) {
+          const updatedRow = this.mapSupabaseRowToBooking(payload.new);
+          const updatedBookings = this.data.bookings.map(b => (b.id === updatedRow.id ? { ...b, ...updatedRow } : b));
+          this.data = { ...this.data, bookings: updatedBookings };
+          this.saveStateToStorage(this.data);
         }
-        this.notifyListeners();
       })
       .subscribe();
   }
 
+  private loadCurrentUser(): User | null {
+    if (typeof window === 'undefined') return INITIAL_USERS[0];
+    try {
+      const session = sessionStorage.getItem(SESSION_USER_KEY);
+      if (session) return JSON.parse(session);
+      const local = localStorage.getItem(SESSION_USER_KEY);
+      if (local) return JSON.parse(local);
+    } catch (e) {
+      console.error('Failed to parse current user', e);
+    }
+    return INITIAL_USERS[0];
+  }
+
   private loadState(): AppStoreData {
-    if (typeof window === 'undefined') return this.getInitialData();
+    const currentUser = this.data?.currentUser || this.loadCurrentUser();
+    if (typeof window === 'undefined') return { ...this.getInitialData(), currentUser };
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        return { ...parsed, currentUser };
       }
     } catch (e) {
       console.error('Failed to parse state from localStorage', e);
     }
     const initial = this.getInitialData();
     this.saveStateToStorage(initial);
-    return initial;
+    return { ...initial, currentUser };
   }
 
   private getInitialData(): AppStoreData {
@@ -237,8 +327,8 @@ class StoreService {
   private saveStateToStorage(data: AppStoreData, playChime = false) {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       this.data = data;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       this.notifyListeners();
       if (this.channel) {
         this.channel.postMessage({ type: 'STATE_UPDATED', playChime, timestamp: Date.now() });
@@ -264,8 +354,17 @@ class StoreService {
   }
 
   public setCurrentUser(user: User | null) {
-    const updated = { ...this.data, currentUser: user };
-    this.saveStateToStorage(updated);
+    if (typeof window !== 'undefined') {
+      if (user) {
+        sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+        localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+      } else {
+        sessionStorage.removeItem(SESSION_USER_KEY);
+        localStorage.removeItem(SESSION_USER_KEY);
+      }
+    }
+    this.data = { ...this.data, currentUser: user };
+    this.notifyListeners();
   }
 
   public toggleSeniorMode() {
@@ -381,6 +480,26 @@ class StoreService {
     });
 
     this.saveStateToStorage({ ...this.data, bookings: updatedBookings });
+
+    if (isSupabaseConfigured && supabase) {
+      const b = updatedBookings.find(x => x.id === bookingId);
+      if (b) {
+        supabase
+          .from('bookings')
+          .update({
+            status: b.status,
+            driver_id: b.driverId,
+            driver_name: b.driverName,
+            driver_mobile: b.driverMobile,
+            plate_number: b.plateNumber,
+            toda_name: b.todaName
+          })
+          .eq('id', bookingId)
+          .then(({ error }) => {
+            if (error) console.error('Supabase update status error:', error);
+          });
+      }
+    }
   }
 
   public rateBooking(bookingId: string, rating: number, comment?: string) {
