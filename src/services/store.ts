@@ -226,22 +226,12 @@ class StoreService {
     if (!supabase) return;
 
     // Initial sync of existing Supabase bookings
-    supabase
-      .from('bookings')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (data && !error && data.length > 0) {
-          const supabaseBookings = data.map((row: any) => this.mapSupabaseRowToBooking(row));
-          const existingIds = new Set(this.data.bookings.map(b => b.id));
-          const newRows = supabaseBookings.filter(b => !existingIds.has(b.id));
-          if (newRows.length > 0) {
-            const merged = [...newRows, ...this.data.bookings];
-            this.data = { ...this.data, bookings: merged };
-            this.saveStateToStorage(this.data);
-          }
-        }
-      });
+    this.syncFromSupabase();
+
+    // 2-second cloud polling fallback (guarantees cross-device sync on mobile 4G)
+    setInterval(() => {
+      this.syncFromSupabase();
+    }, 2000);
 
     // Real-time Postgres changes channel
     supabase
@@ -262,9 +252,50 @@ class StoreService {
           const updatedBookings = this.data.bookings.map(b => (b.id === updatedRow.id ? { ...b, ...updatedRow } : b));
           this.data = { ...this.data, bookings: updatedBookings };
           this.saveStateToStorage(this.data);
+          this.notifyListeners();
         }
       })
       .subscribe();
+  }
+
+  public syncFromSupabase() {
+    if (!supabase) return;
+    supabase
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(25)
+      .then(({ data, error }) => {
+        if (data && !error && data.length > 0) {
+          const incoming = data.map((row: any) => this.mapSupabaseRowToBooking(row));
+          let changed = false;
+          const currentMap = new Map(this.data.bookings.map(b => [b.id, b]));
+
+          incoming.forEach(row => {
+            const local = currentMap.get(row.id);
+            if (!local) {
+              currentMap.set(row.id, row);
+              changed = true;
+            } else if (
+              local.status !== row.status || 
+              local.driverName !== row.driverName || 
+              local.plateNumber !== row.plateNumber
+            ) {
+              currentMap.set(row.id, { ...local, ...row });
+              changed = true;
+            }
+          });
+
+          if (changed) {
+            const updated = Array.from(currentMap.values()).sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            this.data = { ...this.data, bookings: updated };
+            this.saveStateToStorage(this.data);
+            this.notifyListeners();
+          }
+        }
+      });
   }
 
   private loadCurrentUser(): User | null {
@@ -434,7 +465,12 @@ class StoreService {
         estimated_fare: newBooking.estimatedFare,
         status: newBooking.status,
         is_waiting_alert: newBooking.isWaitingAlert
-      }]).then(({ error }) => {
+      }]).select().single().then(({ data, error }) => {
+        if (data?.id) {
+          const synced = this.data.bookings.map(b => b.id === newBooking.id ? { ...b, id: data.id } : b);
+          this.data = { ...this.data, bookings: synced };
+          this.saveStateToStorage(this.data);
+        }
         if (error) console.error('Supabase booking insert error:', error);
       });
     }
@@ -504,7 +540,23 @@ class StoreService {
           })
           .eq('id', bookingId)
           .then(({ error }) => {
-            if (error) console.error('Supabase update status error:', error);
+            if (error) {
+              console.warn('Supabase ID match failed, fallback to mobile update:', error);
+            }
+            if (supabase) {
+              supabase
+                .from('bookings')
+                .update({
+                  status: b.status,
+                  driver_id: b.driverId,
+                  driver_name: b.driverName,
+                  driver_mobile: b.driverMobile,
+                  plate_number: b.plateNumber,
+                  toda_name: b.todaName
+                })
+                .eq('passenger_mobile', b.passengerMobile)
+                .then(() => {});
+            }
           });
       }
     }
