@@ -34,13 +34,13 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
       case 'WAITING_FOR_DRIVER':
         return { text: 'Searching Gonzaga Drivers...', sub: 'Connecting with nearby TODA', color: '#FF9500', icon: '⏳' };
       case 'DRIVER_ACCEPTED':
-        return { text: `Driver ${activeBooking.driverName || 'Assigned'} Accepted`, sub: 'En route to pickup point', color: '#34C759', icon: '🛺' };
+        return { text: `Driver ${activeBooking.driverName || 'Assigned'} Accepted`, sub: 'En route to pickup point', color: '#16a34a', icon: '🛺' };
       case 'DRIVER_ARRIVING':
         return { text: 'Driver Arrived at Landmark', sub: 'Tricycle waiting for you', color: '#007AFF', icon: '📍' };
       case 'PASSENGER_PICKED_UP':
-        return { text: `On the way to ${activeBooking.destinationBarangay}`, sub: 'Trip in progress', color: '#34C759', icon: '🚀' };
+        return { text: `On the way to ${activeBooking.destinationBarangay}`, sub: 'Trip in progress', color: '#16a34a', icon: '🚀' };
       default:
-        return { text: 'TriSakay Live Ride', sub: 'Active', color: '#34C759', icon: '🛺' };
+        return { text: 'TriSakay Live Ride', sub: 'Active', color: '#16a34a', icon: '🛺' };
     }
   };
 
@@ -85,25 +85,25 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
           <div className="ios-island-details" onClick={(e) => e.stopPropagation()}>
             <div className="ios-island-detail-row">
               <div>
-                <div style={{ color: '#8E8E93', fontSize: '0.75rem', fontWeight: 600 }}>PASSENGER / DRIVER</div>
-                <div style={{ color: '#FFFFFF', fontSize: '0.95rem', fontWeight: 700 }}>
+                <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>PASSENGER / DRIVER</div>
+                <div style={{ color: '#0f172a', fontSize: '0.95rem', fontWeight: 800 }}>
                   {user.role === 'driver' ? activeBooking.passengerName : (activeBooking.driverName || 'Assigning driver...')}
                 </div>
               </div>
 
               {assignedDriver && (
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ color: '#8E8E93', fontSize: '0.75rem', fontWeight: 600 }}>TRICYCLE PLATE</div>
-                  <div style={{ color: '#FFCC00', fontSize: '0.95rem', fontWeight: 800 }}>{assignedDriver.plateNumber || 'TZ-9842'}</div>
+                  <div style={{ color: '#64748b', fontSize: '0.75rem', fontWeight: 600 }}>TRICYCLE PLATE</div>
+                  <div style={{ color: '#b45309', fontSize: '0.95rem', fontWeight: 800 }}>{assignedDriver.plateNumber || 'TZ-9842'}</div>
                 </div>
               )}
             </div>
 
             <div className="ios-island-route-box">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34C759', fontSize: '0.85rem', fontWeight: 700 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#15803d', fontSize: '0.85rem', fontWeight: 700 }}>
                 <span>📍 Pickup:</span> {activeBooking.pickupBarangay} ({activeBooking.pickupLandmark})
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#007AFF', fontSize: '0.85rem', fontWeight: 700, marginTop: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0284c7', fontSize: '0.85rem', fontWeight: 700, marginTop: '4px' }}>
                 <span>🏁 Dropoff:</span> {activeBooking.destinationBarangay} ({activeBooking.destinationLandmark})
               </div>
             </div>
@@ -123,7 +123,7 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
                   className="ios-btn-apple-glass"
                   style={{ padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <Phone size={14} /> Call
+                  <Phone size={14} color="#16a34a" /> Call
                 </a>
               )}
             </div>
@@ -145,14 +145,16 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
         }
 
         .ios-dynamic-island {
-          background: rgba(0, 0, 0, 0.92);
-          backdrop-filter: blur(25px) saturate(180%);
-          color: #ffffff;
+          background: rgba(255, 255, 255, 0.72);
+          backdrop-filter: blur(28px) saturate(190%);
+          -webkit-backdrop-filter: blur(28px) saturate(190%);
+          color: #0f172a;
           border-radius: 28px;
           padding: 8px 14px;
           width: 100%;
           max-width: 440px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.85);
+          box-shadow: 0 12px 36px rgba(0, 0, 0, 0.09), 0 2px 8px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
           pointer-events: auto;
           cursor: pointer;
           transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
@@ -161,7 +163,8 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
         .ios-dynamic-island.expanded {
           border-radius: 28px;
           padding: 16px 18px;
-          background: rgba(18, 18, 18, 0.96);
+          background: rgba(255, 255, 255, 0.88);
+          box-shadow: 0 20px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
         }
 
         .ios-island-compact {
@@ -187,6 +190,8 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          color: #ffffff;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .ios-island-text {
@@ -197,8 +202,8 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
 
         .ios-island-title {
           font-size: 0.85rem;
-          font-weight: 700;
-          color: #ffffff;
+          font-weight: 800;
+          color: #0f172a;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -206,7 +211,8 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
 
         .ios-island-sub {
           font-size: 0.72rem;
-          color: #8E8E93;
+          color: #64748b;
+          font-weight: 600;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -220,8 +226,9 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
         }
 
         .ios-fare-badge {
-          background: rgba(255, 255, 255, 0.15);
-          color: #34C759;
+          background: #dcfce7;
+          color: #15803d;
+          border: 1px solid #bbf7d0;
           padding: 4px 8px;
           border-radius: 12px;
           font-size: 0.8rem;
@@ -229,10 +236,10 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
         }
 
         .ios-island-cta {
-          background: #34C759;
+          background: #16a34a;
           color: #ffffff;
           border: none;
-          padding: 6px 10px;
+          padding: 6px 12px;
           border-radius: 16px;
           font-size: 0.75rem;
           font-weight: 700;
@@ -240,12 +247,18 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
           display: flex;
           align-items: center;
           gap: 2px;
+          box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+          transition: transform 0.15s ease;
+        }
+
+        .ios-island-cta:active {
+          transform: scale(0.95);
         }
 
         .ios-island-details {
           margin-top: 14px;
           padding-top: 12px;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
           display: flex;
           flex-direction: column;
           gap: 10px;
@@ -259,27 +272,30 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
         }
 
         .ios-island-route-box {
-          background: rgba(255, 255, 255, 0.07);
+          background: rgba(241, 245, 249, 0.75);
+          border: 1px solid #e2e8f0;
           padding: 10px 12px;
           border-radius: 14px;
         }
 
         .ios-btn-apple-green {
-          background: #34C759;
+          background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
           color: #ffffff;
           border: none;
           border-radius: 14px;
           font-weight: 700;
           cursor: pointer;
+          box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
         }
 
         .ios-btn-apple-glass {
-          background: rgba(255, 255, 255, 0.15);
-          color: #ffffff;
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.9);
+          color: #0f172a;
+          border: 1px solid #cbd5e1;
           border-radius: 14px;
           font-weight: 700;
           cursor: pointer;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
         @keyframes fade-in {
