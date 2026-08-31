@@ -11,7 +11,7 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'user_pass_1',
     name: 'Sheena Soriano',
-    mobile: '09171234567',
+    mobile: '09396591974',
     role: 'passenger',
     barangay: 'Calayan',
     createdAt: '2026-08-10T08:00:00Z',
