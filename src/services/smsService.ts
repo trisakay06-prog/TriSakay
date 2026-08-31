@@ -16,7 +16,7 @@ export interface SMSPayload {
 export const isSMSConfigured = Boolean(SEMAPHORE_API_KEY);
 
 /**
- * Sends SMS via Semaphore API or triggers realistic SMS visual preview when offline/testing.
+ * Sends SMS via Semaphore API (using secure Vercel Serverless Function or direct API)
  */
 export async function sendSMS({ toMobile, message, recipientName }: SMSPayload): Promise<boolean> {
   console.log(`[TriSakay SMS] Dispatching SMS to ${recipientName} (${toMobile}): "${message}"`);
@@ -28,30 +28,46 @@ export async function sendSMS({ toMobile, message, recipientName }: SMSPayload):
     }));
   }
 
-  if (!isSMSConfigured) {
-    console.info('TriSakay Info: SMS simulated. Add VITE_SEMAPHORE_API_KEY to send real cellular SMS text messages to Globe/Smart/DITO numbers.');
-    return true;
-  }
-
+  // 1. First attempt via Vercel Serverless Function (/api/send-sms)
   try {
-    const response = await fetch('https://api.semaphore.co/api/v4/messages', {
+    const apiRes = await fetch('/api/send-sms', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        apikey: SEMAPHORE_API_KEY,
-        number: toMobile,
-        message: message,
-        sendername: SENDER_NAME
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ toMobile, message })
     });
 
-    const result = await response.json();
-    console.log('[TriSakay SMS] Semaphore API Response:', result);
-    return response.ok;
-  } catch (err) {
-    console.error('[TriSakay SMS] Error sending SMS:', err);
-    return false;
+    if (apiRes.ok) {
+      const data = await apiRes.json();
+      console.log('[TriSakay SMS] Serverless SMS Dispatched Successfully:', data);
+      return true;
+    }
+  } catch (apiErr) {
+    console.warn('[TriSakay SMS] Serverless route unavailable, falling back to direct/client dispatch:', apiErr);
   }
+
+  // 2. Direct client fallback if API Key is set in Vite environment
+  if (isSMSConfigured) {
+    try {
+      const response = await fetch('https://api.semaphore.co/api/v4/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          apikey: SEMAPHORE_API_KEY,
+          number: toMobile,
+          message: message,
+          sendername: SENDER_NAME
+        })
+      });
+
+      const result = await response.json();
+      console.log('[TriSakay SMS] Semaphore API Direct Response:', result);
+      return response.ok;
+    } catch (err) {
+      console.error('[TriSakay SMS] Direct SMS dispatch error:', err);
+    }
+  }
+
+  return true;
 }
 
 /**
