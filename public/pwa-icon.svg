@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#052e16"/>
+      <stop offset="60%" stop-color="#15803d"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background App Rounded Tile -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+
+  <!-- Glowing Aura -->
+  <circle cx="256" cy="220" r="160" fill="#eab308" opacity="0.12" filter="blur(30px)"/>
+
+  <!-- Tricycle Icon Graphic -->
+  <g transform="translate(64, 80) scale(0.75)" filter="url(#dropShadow)">
+    <!-- Back Wheel -->
+    <circle cx="100" cy="300" r="60" fill="none" stroke="#fef08a" stroke-width="18"/>
+    <circle cx="100" cy="300" r="20" fill="#fef08a"/>
+    <!-- Front Wheel -->
+    <circle cx="410" cy="300" r="60" fill="none" stroke="#fef08a" stroke-width="18"/>
+    <circle cx="410" cy="300" r="20" fill="#fef08a"/>
+    <!-- Sidecar Wheel -->
+    <circle cx="256" cy="340" r="50" fill="none" stroke="#ffffff" stroke-width="16"/>
+    <!-- Frame Tubes -->
+    <path d="M 100 300 L 220 300 L 310 200 L 410 300" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 220 300 L 220 180 L 160 180" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+    <path d="M 310 200 L 330 140 L 380 140" fill="none" stroke="#fef08a" stroke-width="18" stroke-linecap="round"/>
+    <path d="M 100 300 L 180 180" fill="none" stroke="#ffffff" stroke-width="18" stroke-linecap="round"/>
+    <!-- Sidecar Passenger Canopy -->
+    <path d="M 160 220 L 280 220 L 260 320 L 140 320 Z" fill="#eab308" opacity="0.85" rx="10"/>
+    <path d="M 130 160 Q 220 140 310 160" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+  </g>
+
+  <!-- App Title Bottom -->
+  <text x="256" y="440" font-family="-apple-system, BlinkMacSystemFont, 'Outfit', 'Inter', sans-serif" font-weight="900" font-size="44" fill="#ffffff" text-anchor="middle" letter-spacing="2">
+    TriSakay
+  </text>
+</svg>

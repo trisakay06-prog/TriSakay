@@ -1,0 +1,25 @@
+{
+  "short_name": "TriSakay",
+  "name": "TriSakay: Gonzaga Tricycle Booking",
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/pwa-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#052e16",
+  "theme_color": "#16a34a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Municipality of Gonzaga Tricycle Booking System. Sakay Mo, Isang Click Lang!"
+}
