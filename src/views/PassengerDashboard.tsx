@@ -1057,45 +1057,103 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
       {/* WIREFRAME STEP 7: RIDE COMPLETED (Celebration Screen) */}
       {completedBookingForRating && activeTab === 'home' && ratingModalOpen && (
-        <div className="modal-overlay" onClick={() => setRatingModalOpen(false)}>
-          <div className="glass-panel" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', padding: '32px', borderRadius: '24px', background: '#ffffff', textAlign: 'center' }}>
-            <div style={{ background: '#dcfce7', color: '#15803d', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto' }}>
-              <CheckCircle2 size={48} />
+        <div className="modal-overlay" style={{ zIndex: 100000 }} onClick={() => setRatingModalOpen(false)}>
+          <div
+            className="glass-panel"
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '420px',
+              padding: '24px 20px',
+              borderRadius: '28px',
+              background: '#ffffff',
+              textAlign: 'center',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
+            }}
+          >
+            <div style={{
+              background: '#dcfce7',
+              color: '#15803d',
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 12px auto',
+              border: '2px solid #86efac'
+            }}>
+              <CheckCircle2 size={38} />
             </div>
 
-            <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a' }}>Thank you!</h3>
-            <p style={{ fontSize: '1rem', color: '#64748b', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a' }}>Thank you!</h3>
+            <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '14px' }}>
               Your ride is completed.
             </p>
 
-            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', marginBottom: '20px' }}>
-              <span style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Fare Paid</span>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: '#16a34a' }}>₱{completedBookingForRating.estimatedFare}</div>
+            <div style={{
+              background: '#f8fafc',
+              padding: '12px 16px',
+              borderRadius: '16px',
+              marginBottom: '16px',
+              border: '1px solid #e2e8f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 700 }}>Fare Total</span>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#16a34a' }}>₱{completedBookingForRating.estimatedFare}</div>
             </div>
 
-            <p style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '8px' }}>Please rate your driver:</p>
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '20px' }}>
+            <p style={{ fontSize: '0.88rem', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
+              Rate Driver {completedBookingForRating.driverName || 'Juan'}:
+            </p>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '18px' }}>
               {[1, 2, 3, 4, 5].map(star => (
                 <button
                   key={star}
                   onClick={() => setStarCount(star)}
-                  style={{ background: 'transparent', border: 'none', fontSize: '2.2rem', cursor: 'pointer', color: star <= starCount ? '#eab308' : '#cbd5e1' }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    fontSize: '2rem',
+                    cursor: 'pointer',
+                    color: star <= starCount ? '#eab308' : '#cbd5e1',
+                    padding: '2px 4px',
+                    touchAction: 'manipulation'
+                  }}
                 >
                   ★
                 </button>
               ))}
             </div>
 
-            <button
-              onClick={() => {
-                store.rateBooking(completedBookingForRating.id, starCount, 'Great ride!');
-                setRatingModalOpen(false);
-              }}
-              className="btn-primary"
-              style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '1rem' }}
-            >
-              <Home size={18} /> SUBMIT & GO HOME
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button
+                onClick={() => {
+                  store.rateBooking(completedBookingForRating.id, starCount, 'Great ride!');
+                  setRatingModalOpen(false);
+                }}
+                className="btn-primary"
+                style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '0.98rem', fontWeight: 800 }}
+              >
+                <Home size={18} /> SUBMIT RATING & CONTINUE
+              </button>
+              <button
+                onClick={() => setRatingModalOpen(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#94a3b8',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  padding: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Skip for now
+              </button>
+            </div>
           </div>
         </div>
       )}

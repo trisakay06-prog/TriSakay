@@ -275,14 +275,16 @@ h1, h2, h3, h4, h5, h6 {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(6px);
-  z-index: 9999;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay > div {
@@ -382,15 +384,18 @@ h1, h2, h3, h4, h5, h6 {
   .modal-overlay {
     align-items: flex-end !important;
     padding: 0 !important;
+    z-index: 100000 !important;
   }
 
   .modal-overlay > div {
-    max-height: 90vh !important;
-    border-radius: 24px 24px 0 0 !important;
-    padding: 20px 16px 36px 16px !important;
+    max-height: 88vh !important;
+    border-radius: 28px 28px 0 0 !important;
+    padding: 24px 20px calc(32px + env(safe-area-inset-bottom, 20px)) 20px !important;
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
     animation: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
