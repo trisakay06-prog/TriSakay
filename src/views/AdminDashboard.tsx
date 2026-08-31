@@ -4,9 +4,17 @@ import type { AppStoreData } from '../services/store';
 import type { GonzagaRouteFare, User } from '../types';
 import { Edit3, Plus, ChevronRight, MapPin, Trash2, Building, Settings, Activity, ShieldCheck, CheckCircle2, Bike, X } from 'lucide-react';
 
-export const AdminDashboard: React.FC = () => {
+interface AdminDashboardProps {
+  initialTab?: 'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports';
+}
+
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview' }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
   const [userFilter, setUserFilter] = useState<'all' | 'passengers' | 'drivers' | 'blocked'>('all');
 
   // Verify Tricycle Details Modal State

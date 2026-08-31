@@ -66,6 +66,29 @@ export const App: React.FC = () => {
       );
     }
 
+    if (activeTab === 'profile' || activeTab === 'settings') {
+      if (!currentUser) {
+        return (
+          <div style={{ textAlign: 'center', padding: '60px 16px' }}>
+            <h2 style={{ color: '#16a34a', fontSize: '1.6rem', fontWeight: 800, marginBottom: '10px' }}>
+              Sign In to View Settings
+            </h2>
+            <button onClick={() => setAuthModalOpen(true)} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '16px auto 0 auto' }}>
+              Sign In / Register Account
+            </button>
+          </div>
+        );
+      }
+
+      if (currentUser.role === 'driver') {
+        return <DriverDashboard initialTab="profile" />;
+      }
+      if (currentUser.role === 'admin') {
+        return <AdminDashboard initialTab="overview" />;
+      }
+      return <PassengerDashboard initialTab="profile" />;
+    }
+
     if (activeTab === 'dashboard') {
       if (!currentUser) {
         return (

@@ -7,9 +7,17 @@ import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCir
 import confetti from 'canvas-confetti';
 import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
 
-export const PassengerDashboard: React.FC = () => {
+interface PassengerDashboardProps {
+  initialTab?: 'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile';
+}
+
+export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialTab = 'home' }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
 
   // Booking Form State
   const [pickupBarangay, setPickupBarangay] = useState(INITIAL_GONZAGA_BARANGAYS[1]); // Pateng

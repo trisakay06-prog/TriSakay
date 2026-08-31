@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, ChevronDown, UserCheck } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, ChevronDown, UserCheck, Settings } from 'lucide-react';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -302,7 +302,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <button
                       onClick={() => {
-                        setActiveTab('dashboard');
+                        setActiveTab('profile');
                         setProfileDropdownOpen(false);
                       }}
                       style={{
@@ -321,7 +321,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                         gap: '8px'
                       }}
                     >
-                      <UserCheck size={16} color="#16a34a" /> My Dashboard
+                      <Settings size={16} color="#16a34a" /> Account Settings
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveTab('dashboard');
+                        setProfileDropdownOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #f1f5f9',
+                        background: '#f8fafc',
+                        color: '#475569',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <UserCheck size={16} color="#0284c7" /> My Dashboard / Ride
                     </button>
 
                     <button

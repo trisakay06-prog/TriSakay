@@ -6,11 +6,19 @@ import { Bike, Phone, CheckCircle2, ShieldAlert, Navigation, Bell, User, Lock, S
 import { DriverNotificationModal } from '../components/DriverNotificationModal';
 import { INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
 
-export const DriverDashboard: React.FC = () => {
+interface DriverDashboardProps {
+  initialTab?: 'requests' | 'active' | 'history' | 'notifications' | 'profile';
+}
+
+export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = 'requests' }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [activeTab, setActiveTab] = useState<'requests' | 'active' | 'history' | 'notifications' | 'profile'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'active' | 'history' | 'notifications' | 'profile'>(initialTab);
   const [dismissedBookingIds, setDismissedBookingIds] = useState<string[]>([]);
   
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
+
   // Profile state
   const currentDriver = state.currentUser || state.users[2];
   const [driverName, setDriverName] = useState(currentDriver.name || '');
