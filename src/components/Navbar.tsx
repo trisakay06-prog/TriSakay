@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, Menu, X, HelpCircle, FileText, Home, Sparkles, ChevronDown, UserCheck } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, ChevronDown, UserCheck } from 'lucide-react';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -11,7 +11,6 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActiveTab }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -361,98 +360,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               <LogIn size={16} /> Login / Register
             </button>
           )}
-
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#334155',
-              cursor: 'pointer',
-              padding: '6px'
-            }}
-            className="mobile-menu-btn"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
         </div>
       </div>
-
-      {/* MOBILE MENU DRAWER */}
-      {mobileMenuOpen && (
-        <div style={{
-          background: '#ffffff',
-          borderTop: '1px solid #e2e8f0',
-          padding: '16px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
-        }}>
-          <button
-            onClick={() => { setActiveTab('home'); setMobileMenuOpen(false); }}
-            style={{
-              textAlign: 'left',
-              padding: '10px',
-              border: 'none',
-              background: activeTab === 'home' ? '#f0fdf4' : 'transparent',
-              color: '#16a34a',
-              fontWeight: 700,
-              borderRadius: '8px',
-              fontSize: '1rem'
-            }}
-          >
-            🏠 Home
-          </button>
-
-          <button
-            onClick={() => { setActiveTab('dashboard'); setMobileMenuOpen(false); }}
-            style={{
-              textAlign: 'left',
-              padding: '10px',
-              border: 'none',
-              background: activeTab === 'dashboard' ? '#f0fdf4' : 'transparent',
-              color: '#16a34a',
-              fontWeight: 700,
-              borderRadius: '8px',
-              fontSize: '1rem'
-            }}
-          >
-            🛺 {getDashboardLabel()}
-          </button>
-
-          <button
-            onClick={() => { setActiveTab('how-it-works'); setMobileMenuOpen(false); }}
-            style={{
-              textAlign: 'left',
-              padding: '10px',
-              border: 'none',
-              background: activeTab === 'how-it-works' ? '#f0fdf4' : 'transparent',
-              color: '#334155',
-              fontWeight: 600,
-              borderRadius: '8px',
-              fontSize: '1rem'
-            }}
-          >
-            ❓ How It Works
-          </button>
-
-          <button
-            onClick={() => { setActiveTab('fare-matrix'); setMobileMenuOpen(false); }}
-            style={{
-              textAlign: 'left',
-              padding: '10px',
-              border: 'none',
-              background: activeTab === 'fare-matrix' ? '#f0fdf4' : 'transparent',
-              color: '#334155',
-              fontWeight: 600,
-              borderRadius: '8px',
-              fontSize: '1rem'
-            }}
-          >
-            📋 Official Gonzaga Fare Matrix
-          </button>
-        </div>
-      )}
 
       <style>{`
         .desktop-senior-btn {
@@ -467,7 +376,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
 
         @media (min-width: 768px) {
           .desktop-links { display: flex !important; }
-          .mobile-menu-btn { display: none !important; }
         }
       `}</style>
     </nav>
