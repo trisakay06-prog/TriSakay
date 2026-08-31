@@ -88,7 +88,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         onSuccess();
         onClose();
       } else {
-        setError('No account found with this mobile number. Please register an account first!');
+        if (role === 'passenger') {
+          const registered = store.registerUser({
+            name: cleanedMobile === '09396591974' ? 'Sheena Soriano (Student)' : `Passenger ${cleanedMobile.slice(-4)}`,
+            mobile: cleanedMobile,
+            role: 'passenger',
+            barangay: 'Calayan'
+          });
+          sendRegistrationWelcomeSMS(registered.name, registered.mobile, registered.role, registered.barangay);
+          onSuccess();
+          onClose();
+          return;
+        }
+        setError('No driver account found with this mobile number. Please register your driver account first!');
       }
     } else {
       // REGISTRATION MODE: Admin role cannot be registered
