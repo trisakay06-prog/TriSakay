@@ -528,32 +528,25 @@ class StoreService {
     if (isSupabaseConfigured && supabase) {
       const b = updatedBookings.find(x => x.id === bookingId);
       if (b) {
+        const payload: Record<string, any> = {
+          status: b.status,
+          driver_name: b.driverName || null,
+          driver_mobile: b.driverMobile || null,
+          plate_number: b.plateNumber || null,
+          toda_name: b.todaName || null
+        };
+        if (b.acceptedAt) payload.accepted_at = b.acceptedAt;
+        if (b.completedAt) payload.completed_at = b.completedAt;
+
         supabase
           .from('bookings')
-          .update({
-            status: b.status,
-            driver_id: b.driverId,
-            driver_name: b.driverName,
-            driver_mobile: b.driverMobile,
-            plate_number: b.plateNumber,
-            toda_name: b.todaName
-          })
+          .update(payload)
           .eq('id', bookingId)
           .then(({ error }) => {
-            if (error) {
-              console.warn('Supabase ID match failed, fallback to mobile update:', error);
-            }
-            if (supabase) {
+            if (error && supabase) {
               supabase
                 .from('bookings')
-                .update({
-                  status: b.status,
-                  driver_id: b.driverId,
-                  driver_name: b.driverName,
-                  driver_mobile: b.driverMobile,
-                  plate_number: b.plateNumber,
-                  toda_name: b.todaName
-                })
+                .update(payload)
                 .eq('passenger_mobile', b.passengerMobile)
                 .then(() => {});
             }

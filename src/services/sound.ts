@@ -1,3 +1,28 @@
+let sharedAudioCtx: AudioContext | null = null;
+
+// Initialize and resume AudioContext upon first user interaction
+if (typeof window !== 'undefined') {
+  const unlockAudio = () => {
+    try {
+      if (!sharedAudioCtx) {
+        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (AudioContextClass) {
+          sharedAudioCtx = new AudioContextClass();
+        }
+      }
+      if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+        sharedAudioCtx.resume().catch(() => {});
+      }
+    } catch {
+      // Audio context unlock error ignored
+    }
+  };
+
+  window.addEventListener('click', unlockAudio, { passive: true });
+  window.addEventListener('touchstart', unlockAudio, { passive: true });
+  window.addEventListener('pointerdown', unlockAudio, { passive: true });
+}
+
 /**
  * Web Audio API chime synthesizer for real-time driver booking notifications.
  * Works across modern browsers without external audio file loading errors.
@@ -7,7 +32,16 @@ export function playNotificationSound() {
     const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
 
-    const ctx = new AudioContextClass();
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new AudioContextClass();
+    }
+
+    if (sharedAudioCtx.state === 'suspended') {
+      sharedAudioCtx.resume().catch(() => {});
+      return;
+    }
+
+    const ctx = sharedAudioCtx;
 
     // First tone (G5 - 783.99 Hz)
     const osc1 = ctx.createOscillator();
@@ -34,7 +68,7 @@ export function playNotificationSound() {
     gain2.connect(ctx.destination);
     osc2.start(ctx.currentTime + 0.15);
     osc2.stop(ctx.currentTime + 0.55);
-  } catch (err) {
-    console.warn('Audio playback not supported or user gesture needed:', err);
+  } catch {
+    // Suppress unhandled audio exceptions when tab is not focused
   }
 }
