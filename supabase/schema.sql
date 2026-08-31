@@ -105,8 +105,33 @@ CREATE TABLE IF NOT EXISTS public.system_settings (
   contact_number TEXT DEFAULT '09628039440'
 );
 
--- Enable Realtime for live driver notification alerts
-ALTER PUBLICATION supabase_realtime ADD TABLE public.bookings;
+-- ================================================================
+-- ROW LEVEL SECURITY (RLS) POLICIES FOR REALTIME ACCESS
+-- ================================================================
+ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Bookings Access" ON public.bookings;
+CREATE POLICY "Public Bookings Access" ON public.bookings FOR ALL TO public USING (true) WITH CHECK (true);
+
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Users Access" ON public.users;
+CREATE POLICY "Public Users Access" ON public.users FOR ALL TO public USING (true) WITH CHECK (true);
+
+ALTER TABLE public.todas ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Todas Access" ON public.todas;
+CREATE POLICY "Public Todas Access" ON public.todas FOR ALL TO public USING (true) WITH CHECK (true);
+
+ALTER TABLE public.fare_routes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Fares Access" ON public.fare_routes;
+CREATE POLICY "Public Fares Access" ON public.fare_routes FOR ALL TO public USING (true) WITH CHECK (true);
+
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Reports Access" ON public.reports;
+CREATE POLICY "Public Reports Access" ON public.reports FOR ALL TO public USING (true) WITH CHECK (true);
+
+ALTER TABLE public.system_settings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public Settings Access" ON public.system_settings;
+CREATE POLICY "Public Settings Access" ON public.system_settings FOR ALL TO public USING (true) WITH CHECK (true);
+
 
 -- Seed Initial Gonzaga Fare Matrix
 INSERT INTO public.fare_routes (route, from_barangay, to_barangay, regular_rate, discount_rate, csu_rate) VALUES
