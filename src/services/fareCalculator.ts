@@ -106,3 +106,15 @@ export function calculateFare(
   const defaultRate = discountType === 'senior_student_pwd' ? 15 : 20;
   return { baseFare: defaultRate, finalFare: Math.round(defaultRate * fuelSurgeMultiplier), routeName: 'Gonzaga Standard Zone Rate' };
 }
+
+export function cleanBarangay(name?: string): string {
+  if (!name) return '';
+  if (name.toLowerCase().includes('poblacion')) return 'Poblacion';
+  if (name.toLowerCase().includes('csu')) return 'CSU Gonzaga';
+  if (name.toLowerCase().includes('sta. clara')) return 'Sta. Clara';
+  if (name.includes('(')) {
+    return name.split('(')[0].trim();
+  }
+  return name.trim();
+}
+

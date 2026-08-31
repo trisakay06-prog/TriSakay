@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import { Phone, ChevronRight } from 'lucide-react';
+import { cleanBarangay } from '../services/fareCalculator';
 
 interface DynamicIslandProps {
   onOpenTracking: () => void;
@@ -34,11 +35,11 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
       case 'WAITING_FOR_DRIVER':
         return { text: 'Searching Gonzaga Drivers...', sub: 'Connecting with nearby TODA', color: '#FF9500', icon: '⏳' };
       case 'DRIVER_ACCEPTED':
-        return { text: `Driver ${activeBooking.driverName || 'Assigned'} En Route`, sub: `Heading to ${activeBooking.pickupBarangay}`, color: '#16a34a', icon: '🛺' };
+        return { text: `Driver ${activeBooking.driverName || 'Assigned'} En Route`, sub: `Heading to ${cleanBarangay(activeBooking.pickupBarangay)}`, color: '#16a34a', icon: '🛺' };
       case 'DRIVER_ARRIVING':
-        return { text: 'Arrived at Pickup', sub: `Tricycle waiting at ${activeBooking.pickupLandmark}`, color: '#007AFF', icon: '📍' };
+        return { text: 'Arrived at Pickup', sub: `Tricycle waiting at ${activeBooking.pickupLandmark || cleanBarangay(activeBooking.pickupBarangay)}`, color: '#007AFF', icon: '📍' };
       case 'PASSENGER_PICKED_UP':
-        return { text: 'Passenger Onboard', sub: `Heading to ${activeBooking.destinationBarangay}`, color: '#16a34a', icon: '🚀' };
+        return { text: 'Passenger Onboard', sub: `Heading to ${cleanBarangay(activeBooking.destinationBarangay)}`, color: '#16a34a', icon: '🚀' };
       default:
         return { text: 'TriSakay Live Ride', sub: 'Active', color: '#16a34a', icon: '🛺' };
     }
@@ -62,7 +63,7 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
             </div>
             <div className="ios-island-text">
               <span className="ios-island-title">{statusInfo.text}</span>
-              <span className="ios-island-sub">{activeBooking.pickupBarangay} ➔ {activeBooking.destinationBarangay}</span>
+              <span className="ios-island-sub">{cleanBarangay(activeBooking.pickupBarangay)} ➔ {cleanBarangay(activeBooking.destinationBarangay)}</span>
             </div>
           </div>
 
@@ -101,10 +102,10 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
 
             <div className="ios-island-route-box">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#15803d', fontSize: '0.85rem', fontWeight: 700 }}>
-                <span>📍 Pickup:</span> {activeBooking.pickupBarangay} ({activeBooking.pickupLandmark})
+                <span>📍 Pickup:</span> {cleanBarangay(activeBooking.pickupBarangay)} ({activeBooking.pickupLandmark})
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0284c7', fontSize: '0.85rem', fontWeight: 700, marginTop: '4px' }}>
-                <span>🏁 Dropoff:</span> {activeBooking.destinationBarangay} ({activeBooking.destinationLandmark})
+                <span>🏁 Dropoff:</span> {cleanBarangay(activeBooking.destinationBarangay)} ({activeBooking.destinationLandmark})
               </div>
             </div>
 

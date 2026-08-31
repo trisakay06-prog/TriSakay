@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
-import { calculateFare, INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
+import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
 import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, ArrowLeft, Bell, User, Lock, Settings } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
@@ -652,106 +652,176 @@ export const PassengerDashboard: React.FC = () => {
 
               {/* WIREFRAME STEP 5 & 6: TRACKING DRIVER & 3-STEP RIDE STATUS FLOW */}
               {(currentActiveBooking.status === 'DRIVER_ACCEPTED' || currentActiveBooking.status === 'DRIVER_ARRIVING' || currentActiveBooking.status === 'PASSENGER_PICKED_UP') && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   
-                  {/* 3-STEP VISUAL PROGRESS STEPPER */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '12px 16px', borderRadius: '16px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '8px' }}>
+                  {/* 3-STEP CLEAN HORIZONTAL STEPPER */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr auto 1fr',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#f8fafc',
+                    padding: '10px 14px',
+                    borderRadius: '16px',
+                    border: '1px solid #e2e8f0'
+                  }}>
+                    {/* Step 1: Pickup */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 800, color: (currentActiveBooking.status === 'DRIVER_ACCEPTED' || currentActiveBooking.status === 'DRIVER_ARRIVING' || currentActiveBooking.status === 'PASSENGER_PICKED_UP') ? '#16a34a' : '#94a3b8' }}>
-                      <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: currentActiveBooking.status === 'DRIVER_ACCEPTED' ? '#eab308' : '#16a34a', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
-                      <span>Arrived at Pickup</span>
+                      <span style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: currentActiveBooking.status === 'DRIVER_ACCEPTED' ? '#eab308' : '#16a34a',
+                        color: '#ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem'
+                      }}>1</span>
+                      <span>Pickup</span>
                     </div>
-                    <span style={{ color: '#cbd5e1' }}>➔</span>
+
+                    <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>➔</span>
+
+                    {/* Step 2: Onboard */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 800, color: (currentActiveBooking.status === 'DRIVER_ARRIVING' || currentActiveBooking.status === 'PASSENGER_PICKED_UP') ? '#16a34a' : '#94a3b8' }}>
-                      <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: currentActiveBooking.status === 'DRIVER_ARRIVING' ? '#0284c7' : currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#e2e8f0', color: (currentActiveBooking.status === 'DRIVER_ARRIVING' || currentActiveBooking.status === 'PASSENGER_PICKED_UP') ? '#ffffff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
-                      <span>Passenger Onboard</span>
+                      <span style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: currentActiveBooking.status === 'DRIVER_ARRIVING' ? '#0284c7' : currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#e2e8f0',
+                        color: (currentActiveBooking.status === 'DRIVER_ARRIVING' || currentActiveBooking.status === 'PASSENGER_PICKED_UP') ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem'
+                      }}>2</span>
+                      <span>Onboard</span>
                     </div>
-                    <span style={{ color: '#cbd5e1' }}>➔</span>
+
+                    <span style={{ color: '#cbd5e1', fontSize: '0.85rem' }}>➔</span>
+
+                    {/* Step 3: Dropoff */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 800, color: currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#94a3b8' }}>
-                      <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#e2e8f0', color: currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#ffffff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>3</span>
-                      <span>Complete Ride</span>
+                      <span style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '50%',
+                        background: currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#e2e8f0',
+                        color: currentActiveBooking.status === 'PASSENGER_PICKED_UP' ? '#ffffff' : '#64748b',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.75rem'
+                      }}>3</span>
+                      <span>Dropoff</span>
                     </div>
                   </div>
 
                   {/* DRIVER IS ON THE WAY HEADER */}
-                  <div style={{ background: '#f0fdf4', border: '2px solid #16a34a', borderRadius: '20px', padding: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                      <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#15803d' }}>
-                        {currentActiveBooking.status === 'DRIVER_ACCEPTED' && 'Driver is on the way to pickup'}
-                        {currentActiveBooking.status === 'DRIVER_ARRIVING' && '📍 Driver Arrived! Tricycle is waiting for you.'}
-                        {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && '🚀 Passenger Onboard (Trip in Progress)'}
-                      </h3>
-                      <span style={{
-                        background: currentActiveBooking.status === 'DRIVER_ARRIVING' ? '#e0f2fe' : '#dcfce7',
-                        color: currentActiveBooking.status === 'DRIVER_ARRIVING' ? '#0369a1' : '#15803d',
-                        padding: '4px 12px',
-                        borderRadius: '12px',
-                        fontWeight: 800,
-                        fontSize: '0.85rem'
-                      }}>
-                        {currentActiveBooking.status === 'DRIVER_ACCEPTED' && 'ETA: 5-8 mins'}
-                        {currentActiveBooking.status === 'DRIVER_ARRIVING' && '📍 AT PICKUP POINT'}
-                        {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && '🚀 EN ROUTE'}
+                  <div style={{ background: '#ffffff', border: '2px solid #16a34a', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 16px rgba(22, 163, 74, 0.08)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+                      <div>
+                        <span style={{
+                          background: currentActiveBooking.status === 'DRIVER_ARRIVING' ? '#e0f2fe' : '#dcfce7',
+                          color: currentActiveBooking.status === 'DRIVER_ARRIVING' ? '#0369a1' : '#15803d',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          fontWeight: 800,
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.2px'
+                        }}>
+                          {currentActiveBooking.status === 'DRIVER_ACCEPTED' && 'Step 1: Driver En Route'}
+                          {currentActiveBooking.status === 'DRIVER_ARRIVING' && 'Step 2: Driver at Pickup'}
+                          {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && 'Step 3: Trip in Progress'}
+                        </span>
+                        <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', marginTop: '6px' }}>
+                          {currentActiveBooking.status === 'DRIVER_ACCEPTED' && 'Driver is Heading to Pickup'}
+                          {currentActiveBooking.status === 'DRIVER_ARRIVING' && '📍 Driver Arrived! Meet at landmark'}
+                          {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && '🚀 Passenger Onboard (Heading to dropoff)'}
+                        </h3>
+                      </div>
+                      <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#16a34a' }}>
+                        ₱{currentActiveBooking.estimatedFare}
                       </span>
                     </div>
 
-                    {/* MAP ROUTE ILLUSTRATION */}
+                    {/* CLEAN ROUTE NAVIGATION BANNER */}
                     <div style={{
-                      height: '160px',
+                      padding: '14px 16px',
+                      borderRadius: '16px',
                       background: currentActiveBooking.status === 'DRIVER_ACCEPTED'
                         ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
                         : currentActiveBooking.status === 'DRIVER_ARRIVING'
                         ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)'
                         : 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
                       color: '#ffffff',
-                      borderRadius: '16px',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      flexDirection: 'column',
-                      gap: '8px',
-                      marginBottom: '16px',
-                      border: '1px solid rgba(0,0,0,0.08)'
+                      gap: '12px',
+                      marginBottom: '14px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
                     }}>
-                      <div className="bounce-icon" style={{ fontSize: '2.5rem' }}>
-                        {currentActiveBooking.status === 'DRIVER_ACCEPTED' && '🛺 🗺️ 📍'}
-                        {currentActiveBooking.status === 'DRIVER_ARRIVING' && '📍 🛺 ⏳'}
-                        {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && '🚀 🛺 🏁'}
+                      <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', display: 'flex', flexShrink: 0 }}>
+                        <Navigation size={22} color="#ffffff" />
                       </div>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>
-                        {currentActiveBooking.status === 'DRIVER_ACCEPTED' && `Driver heading to Pickup: ${currentActiveBooking.pickupBarangay} (${currentActiveBooking.pickupLandmark})`}
-                        {currentActiveBooking.status === 'DRIVER_ARRIVING' && `Driver arrived at ${currentActiveBooking.pickupLandmark} • Please board tricycle`}
-                        {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && `On the way to Destination: ${currentActiveBooking.destinationBarangay} (${currentActiveBooking.destinationLandmark})`}
-                      </span>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 800 }}>
+                          {currentActiveBooking.status === 'DRIVER_ACCEPTED' && `Heading to ${cleanBarangay(currentActiveBooking.pickupBarangay)}`}
+                          {currentActiveBooking.status === 'DRIVER_ARRIVING' && `Arrived at ${currentActiveBooking.pickupLandmark || cleanBarangay(currentActiveBooking.pickupBarangay)}`}
+                          {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && `Dropoff at ${cleanBarangay(currentActiveBooking.destinationBarangay)}`}
+                        </div>
+                        <div style={{ fontSize: '0.78rem', opacity: 0.9, marginTop: '2px' }}>
+                          {currentActiveBooking.status === 'DRIVER_ACCEPTED' && 'ETA: 5-8 mins • Please wait at landmark'}
+                          {currentActiveBooking.status === 'DRIVER_ARRIVING' && 'Tricycle waiting for you to board'}
+                          {currentActiveBooking.status === 'PASSENGER_PICKED_UP' && 'Transit in progress to destination'}
+                        </div>
+                      </div>
                     </div>
 
                     {/* DRIVER INFO CARD (Matching Wireframe Step 5 & 6) */}
-                    <div style={{ background: '#ffffff', borderRadius: '16px', padding: '16px', border: '1px solid #bbf7d0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '14px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <h4 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a' }}>
+                          <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>
                             {currentActiveBooking.driverName}
                           </h4>
-                          <span style={{ color: '#eab308', fontWeight: 800, fontSize: '0.9rem' }}>★ 4.8</span>
+                          <span style={{ color: '#eab308', fontWeight: 800, fontSize: '0.85rem' }}>★ 4.8</span>
                         </div>
-                        <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                          Tricycle No. <strong>{currentActiveBooking.plateNumber}</strong> ({currentActiveBooking.todaName})
-                        </p>
-                        <p style={{ fontSize: '0.95rem', fontWeight: 800, color: '#16a34a', marginTop: '2px' }}>
-                          📞 {currentActiveBooking.driverMobile}
+                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '2px' }}>
+                          Plate: <strong style={{ color: '#0369a1' }}>{currentActiveBooking.plateNumber || 'TZ-9842'}</strong> ({currentActiveBooking.todaName || 'GOTODA'})
                         </p>
                       </div>
 
-                      <a href={`tel:${currentActiveBooking.driverMobile}`} className="btn-primary" style={{ textDecoration: 'none', padding: '10px 16px' }}>
-                        <Phone size={18} /> Call
+                      <a href={`tel:${currentActiveBooking.driverMobile}`} className="btn-primary" style={{ textDecoration: 'none', padding: '8px 14px', fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <Phone size={16} /> Call Driver
                       </a>
+                    </div>
+
+                    {/* CLEAN ROUTE POINTS */}
+                    <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '14px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 6px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 }}>PICKUP</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>
+                          {cleanBarangay(currentActiveBooking.pickupBarangay)}
+                          {currentActiveBooking.pickupLandmark && <span style={{ color: '#64748b', fontWeight: 500 }}> ({currentActiveBooking.pickupLandmark})</span>}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 6px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800 }}>DROPOFF</span>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#0f172a' }}>
+                          {cleanBarangay(currentActiveBooking.destinationBarangay)}
+                          {currentActiveBooking.destinationLandmark && <span style={{ color: '#64748b', fontWeight: 500 }}> ({currentActiveBooking.destinationLandmark})</span>}
+                        </span>
+                      </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <button
                         onClick={() => setReportDriverModal(currentActiveBooking)}
-                        style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '10px', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', flex: 1 }}
+                        style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '8px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                       >
-                        <ShieldAlert size={16} /> Report Driver
+                        <ShieldAlert size={15} /> Report Driver
                       </button>
                     </div>
                   </div>
