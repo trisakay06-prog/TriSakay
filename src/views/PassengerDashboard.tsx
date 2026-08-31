@@ -3,9 +3,10 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, ArrowLeft, Bell, User, Lock, Settings } from 'lucide-react';
+import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, ArrowLeft, Bell, User, Lock, Settings, Radio, Smartphone, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
+import { playNotificationSound } from '../services/sound';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile';
@@ -45,6 +46,11 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const [reportReason, setReportReason] = useState('Overcharging');
   const [reportDetails, setReportDetails] = useState('');
 
+  // Real-time Accepted Notification & Search Timer
+  const [acceptedDriverToast, setAcceptedDriverToast] = useState<{ driverName: string; todaName: string; plateNumber: string; mobile: string } | null>(null);
+  const [searchTimer, setSearchTimer] = useState(0);
+  const prevBookingStatusRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     return store.subscribe(() => {
       const s = store.getState();
@@ -81,6 +87,38 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
     b.status === 'DRIVER_ARRIVING' || 
     b.status === 'PASSENGER_PICKED_UP'
   );
+
+  useEffect(() => {
+    let interval: any;
+    if (currentActiveBooking?.status === 'WAITING_FOR_DRIVER') {
+      interval = setInterval(() => {
+        setSearchTimer(prev => prev + 1);
+      }, 1000);
+    } else {
+      setSearchTimer(0);
+    }
+    return () => clearInterval(interval);
+  }, [currentActiveBooking?.status]);
+
+  useEffect(() => {
+    if (currentActiveBooking) {
+      if (prevBookingStatusRef.current === 'WAITING_FOR_DRIVER' && currentActiveBooking.status === 'DRIVER_ACCEPTED') {
+        // Driver accepted the ride in real-time!
+        playNotificationSound();
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+        setAcceptedDriverToast({
+          driverName: currentActiveBooking.driverName || 'Gonzaga Driver',
+          todaName: currentActiveBooking.todaName || 'GOTODA',
+          plateNumber: currentActiveBooking.plateNumber || 'TZ-9842',
+          mobile: currentActiveBooking.driverMobile || '09185551234'
+        });
+        setActiveTab('status');
+      }
+      prevBookingStatusRef.current = currentActiveBooking.status;
+    } else {
+      prevBookingStatusRef.current = null;
+    }
+  }, [currentActiveBooking?.status]);
 
   const completedBookingForRating = passengerBookings.find(b => b.status === 'COMPLETED' && !b.rating);
 
@@ -168,6 +206,69 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+      {/* REAL-TIME DRIVER ACCEPTANCE CELEBRATION TOAST */}
+      {acceptedDriverToast && (
+        <div style={{
+          position: 'fixed',
+          top: '76px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 99999,
+          width: '92%',
+          maxWidth: '480px',
+          background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+          color: '#ffffff',
+          padding: '16px 20px',
+          borderRadius: '22px',
+          boxShadow: '0 20px 40px rgba(22, 163, 74, 0.4), 0 0 0 2px #86efac',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          animation: 'slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}>
+          <div style={{
+            background: '#fef08a',
+            color: '#854d0e',
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '1.4rem',
+            flexShrink: 0,
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }}>
+            🎉
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800 }}>Ride Accepted!</div>
+            <div style={{ fontSize: '0.82rem', opacity: 0.95, marginTop: '2px', lineHeight: 1.3 }}>
+              Driver <strong>{acceptedDriverToast.driverName}</strong> ({acceptedDriverToast.todaName}) with Plate <strong style={{ color: '#fef08a' }}>{acceptedDriverToast.plateNumber}</strong> is on the way!
+            </div>
+          </div>
+          <button
+            onClick={() => setAcceptedDriverToast(null)}
+            style={{
+              background: 'rgba(255,255,255,0.2)',
+              border: 'none',
+              color: '#ffffff',
+              borderRadius: '50%',
+              width: '28px',
+              height: '28px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontWeight: 800,
+              fontSize: '0.85rem'
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* STEP 2: PASSENGER DASHBOARD HOME (Matching Wireframe Grid Cards) */}
       {activeTab === 'home' && (
@@ -614,46 +715,132 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
           ) : (
             <div>
 
-              {/* WIREFRAME STEP 4: WAITING FOR DRIVER */}
+              {/* WIREFRAME STEP 4: ENHANCED WAITING FOR DRIVER CONSOLE */}
               {currentActiveBooking.status === 'WAITING_FOR_DRIVER' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'center' }}>
-                  <div style={{ background: '#fefce8', border: '2px solid #eab308', borderRadius: '20px', padding: '28px' }}>
-                    <div className="bounce-icon" style={{ fontSize: '3rem', marginBottom: '12px' }}>
-                      🛺 ⏳
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                  
+                  {/* RADAR SEARCHING CARD */}
+                  <div style={{
+                    background: 'linear-gradient(180deg, #ffffff 0%, #fefce8 100%)',
+                    border: '2px solid #eab308',
+                    borderRadius: '24px',
+                    padding: '28px 20px',
+                    textAlign: 'center',
+                    boxShadow: '0 12px 30px rgba(234, 179, 8, 0.15)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    
+                    {/* RADAR PULSE ANIMATION */}
+                    <div style={{
+                      width: '90px',
+                      height: '90px',
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, #fef08a 0%, rgba(234,179,8,0.2) 70%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto 16px auto',
+                      position: 'relative',
+                      border: '2px solid #eab308'
+                    }} className="pulse-ring">
+                      <span style={{ fontSize: '2.2rem' }}>🛺</span>
                     </div>
-                    <h3 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#854d0e' }}>
-                      Waiting for Driver
+
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: '#fef08a',
+                      color: '#854d0e',
+                      padding: '4px 14px',
+                      borderRadius: '20px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      marginBottom: '10px'
+                    }}>
+                      <Radio size={14} className="spin-icon" />
+                      <span>SEARCHING DRIVERS • {Math.floor(searchTimer / 60)}:{(searchTimer % 60) < 10 ? '0' : ''}{searchTimer % 60}</span>
+                    </div>
+
+                    <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
+                      Broadcasting to Nearby TODAs
                     </h3>
-                    <p style={{ fontSize: '0.95rem', color: '#713f12', marginTop: '4px' }}>
-                      We are looking for an available tricycle driver in Gonzaga...
+                    <p style={{ fontSize: '0.88rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
+                      Paging drivers in <strong>GOTODA, BAUATODA, CALAYANTODA, and PATENGTODA</strong>.
                     </p>
 
+                    {/* CELLULAR SMS GUARANTEE BANNER */}
+                    <div style={{
+                      background: '#f0fdf4',
+                      border: '1.5px solid #86efac',
+                      borderRadius: '16px',
+                      padding: '12px 14px',
+                      margin: '18px 0 14px 0',
+                      textAlign: 'left',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <div style={{ background: '#dcfce7', color: '#15803d', padding: '8px', borderRadius: '12px', flexShrink: 0 }}>
+                        <Smartphone size={20} />
+                      </div>
+                      <div style={{ fontSize: '0.8rem', color: '#166534', lineHeight: 1.4 }}>
+                        <strong>SMS Guarantee Active:</strong> Even if you close your browser or lock your phone, an SMS will be sent to <strong>{currentUser.mobile}</strong> as soon as a driver accepts!
+                      </div>
+                    </div>
+
                     {/* BOOKING DETAILS CARD */}
-                    <div style={{ background: '#ffffff', borderRadius: '16px', padding: '16px', margin: '20px 0', border: '1px solid #fef08a', textAlign: 'left', fontSize: '0.9rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span><strong>Pickup:</strong></span> <span>{currentActiveBooking.pickupBarangay} ({currentActiveBooking.pickupLandmark})</span>
+                    <div style={{ background: '#ffffff', borderRadius: '16px', padding: '16px', border: '1px solid #e2e8f0', textAlign: 'left', fontSize: '0.88rem', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#64748b', fontWeight: 600 }}>Pickup Location</span>
+                        <span style={{ fontWeight: 800, color: '#0f172a' }}>
+                          {cleanBarangay(currentActiveBooking.pickupBarangay)}
+                          {currentActiveBooking.pickupLandmark && <span style={{ color: '#64748b', fontWeight: 500 }}> ({currentActiveBooking.pickupLandmark})</span>}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span><strong>Destination:</strong></span> <span>{currentActiveBooking.destinationBarangay}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: '#64748b', fontWeight: 600 }}>Dropoff Destination</span>
+                        <span style={{ fontWeight: 800, color: '#0f172a' }}>
+                          {cleanBarangay(currentActiveBooking.destinationBarangay)}
+                          {currentActiveBooking.destinationLandmark && <span style={{ color: '#64748b', fontWeight: 500 }}> ({currentActiveBooking.destinationLandmark})</span>}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span><strong>Passengers:</strong></span> <span>{currentActiveBooking.passengersCount}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '8px', borderTop: '1px dashed #e2e8f0' }}>
+                        <span style={{ color: '#64748b', fontWeight: 600 }}>Fare Total ({currentActiveBooking.passengersCount} Pax)</span>
+                        <span style={{ fontWeight: 800, color: '#16a34a', fontSize: '1.25rem' }}>
+                          ₱{currentActiveBooking.estimatedFare}
+                        </span>
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: '#16a34a', fontSize: '1.1rem' }}>
-                        <span>Estimated Fare:</span> <span>₱{currentActiveBooking.estimatedFare}</span>
-                      </div>
+                    </div>
+
+                    {/* MICRO TRAVEL TIPS */}
+                    <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '0.78rem', color: '#64748b', marginBottom: '16px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Sparkles size={16} color="#eab308" style={{ flexShrink: 0 }} />
+                      <span><strong>Tip while waiting:</strong> Please wait near your specified landmark so your driver can spot you easily upon arrival.</span>
                     </div>
 
                     <button
                       onClick={() => handleCancelBooking(currentActiveBooking.id)}
-                      className="btn-danger"
-                      style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '1rem', fontWeight: 800 }}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: '1.5px solid #fca5a5',
+                        background: '#fef2f2',
+                        color: '#dc2626',
+                        fontSize: '0.9rem',
+                        fontWeight: 800,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease'
+                      }}
                     >
-                      <XCircle size={18} /> CANCEL BOOKING
+                      <XCircle size={17} /> Cancel Booking Request
                     </button>
-                    <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '8px' }}>
-                      You can cancel your booking before a driver accepts.
-                    </p>
                   </div>
                 </div>
               )}
