@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bike, Shield, Clock, Fuel, Heart, Users, MapPin, Phone, Mail, Sparkles } from 'lucide-react';
+import { Bike, Shield, Users, MapPin, Phone, Mail, Sparkles } from 'lucide-react';
 import { FareCalculatorWidget } from '../components/FareCalculatorWidget';
 import { store } from '../services/store';
 
@@ -257,42 +257,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* QUICK VALUE PROPOSITIONS */}
-      <section style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '20px'
-      }}>
-        <div className="glass-card card-senior-enhanced" style={{ padding: '24px', borderRadius: '20px' }}>
-          <div style={{ background: '#dcfce7', color: '#15803d', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-            <Clock size={26} />
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>Reduced Waiting Time</h3>
-          <p style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: 1.5 }}>
-            No more standing by the road under heat or rain. Notify available drivers instantly.
-          </p>
-        </div>
 
-        <div className="glass-card card-senior-enhanced" style={{ padding: '24px', borderRadius: '20px' }}>
-          <div style={{ background: '#fef3c7', color: '#b45309', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-            <Heart size={26} />
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>Senior & PWD Friendly</h3>
-          <p style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: 1.5 }}>
-            Extra large touch targets, simple 1-click booking, and automatic discount rates.
-          </p>
-        </div>
-
-        <div className="glass-card card-senior-enhanced" style={{ padding: '24px', borderRadius: '20px' }}>
-          <div style={{ background: '#dbeafe', color: '#1d4ed8', width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
-            <Fuel size={26} />
-          </div>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '8px' }}>Fuel & Route Efficiency</h3>
-          <p style={{ color: '#64748b', fontSize: '0.95rem', lineHeight: 1.5 }}>
-            Drivers save fuel by accepting nearby passengers directly on their daily TODA routes.
-          </p>
-        </div>
-      </section>
 
       {/* FARE CALCULATOR & ABOUT US GRID */}
       <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }} className="grid-responsive">
