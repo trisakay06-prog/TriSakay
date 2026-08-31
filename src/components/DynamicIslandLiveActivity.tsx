@@ -22,7 +22,10 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
   // Find active booking for this passenger or driver
   const relevantBookings = state.bookings.filter(b => {
     if (b.status === 'COMPLETED' || b.status === 'CANCELLED') return false;
-    if (user.role === 'driver') return b.driverId === user.id || b.status === 'WAITING_FOR_DRIVER';
+    if (user.role === 'driver') {
+      const isDriverMatch = b.driverId === user.id || (b.driverMobile && b.driverMobile === user.mobile) || (b.driverName && b.driverName === user.name);
+      return isDriverMatch || b.status === 'WAITING_FOR_DRIVER';
+    }
     return b.passengerId === user.id || b.passengerMobile === user.mobile;
   });
 

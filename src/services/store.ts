@@ -198,6 +198,15 @@ class StoreService {
   }
 
   private mapSupabaseRowToBooking(row: any): Booking {
+    let resolvedDriverId = row.driver_id;
+    if (!resolvedDriverId && (row.driver_mobile || row.driver_name)) {
+      const found = (this.data?.users || INITIAL_USERS).find(u => 
+        (row.driver_mobile && u.mobile === row.driver_mobile) ||
+        (row.driver_name && u.name === row.driver_name)
+      );
+      if (found) resolvedDriverId = found.id;
+    }
+
     return {
       id: row.id?.toString() || `book_${Date.now()}`,
       passengerId: row.passenger_id || 'passenger',
@@ -213,7 +222,9 @@ class StoreService {
       estimatedFare: Number(row.estimated_fare) || 25,
       status: row.status || 'WAITING_FOR_DRIVER',
       createdAt: row.created_at || new Date().toISOString(),
-      driverId: row.driver_id,
+      acceptedAt: row.accepted_at,
+      completedAt: row.completed_at,
+      driverId: resolvedDriverId || row.driver_id,
       driverName: row.driver_name,
       driverMobile: row.driver_mobile,
       plateNumber: row.plate_number,

@@ -52,13 +52,21 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
     b.status === 'WAITING_FOR_DRIVER' && !dismissedBookingIds.includes(b.id)
   );
 
+  const isDriverMatch = (b: Booking) => {
+    return (
+      b.driverId === currentDriver.id ||
+      (b.driverMobile && b.driverMobile === currentDriver.mobile) ||
+      (b.driverName && b.driverName === currentDriver.name)
+    );
+  };
+
   const activeBooking = state.bookings.find(b => 
-    b.driverId === currentDriver.id && 
+    isDriverMatch(b) && 
     (b.status === 'DRIVER_ACCEPTED' || b.status === 'DRIVER_ARRIVING' || b.status === 'PASSENGER_PICKED_UP')
   );
 
   const completedDriverBookings = state.bookings.filter(b => 
-    b.driverId === currentDriver.id && b.status === 'COMPLETED'
+    isDriverMatch(b) && b.status === 'COMPLETED'
   );
 
   const totalEarnings = completedDriverBookings.reduce((sum, b) => sum + b.estimatedFare, 0);
