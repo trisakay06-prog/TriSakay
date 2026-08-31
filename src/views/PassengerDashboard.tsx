@@ -3,10 +3,11 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, ArrowLeft, Bell, User, Lock, Radio, Smartphone, Sparkles } from 'lucide-react';
+import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
 import { playNotificationSound } from '../services/sound';
+import { IOSBackButton } from '../components/IOSBackButton';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile';
@@ -395,9 +396,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* STEP 3: BOOK A RIDE FORM (Matching Wireframe Step 3) */}
       {activeTab === 'book' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <button onClick={() => setActiveTab('home')} style={{ background: 'transparent', border: 'none', color: '#16a34a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
+          <IOSBackButton onClick={() => setActiveTab('home')} />
 
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#16a34a' }}>
@@ -567,9 +566,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* "I'M WAITING" QUICK FORM */}
       {activeTab === 'waiting' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
-          <button onClick={() => setActiveTab('home')} style={{ background: 'transparent', border: 'none', color: '#16a34a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
+          <IOSBackButton onClick={() => setActiveTab('home')} />
 
           <div style={{
             background: '#fefce8',
@@ -663,9 +660,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* STEP 4, 5, 6, 7: TRACK DRIVER & STATUS WORKFLOW (Matching Wireframe Steps 4, 5, 6, 7) */}
       {activeTab === 'status' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <button onClick={() => setActiveTab('home')} style={{ background: 'transparent', border: 'none', color: '#16a34a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
+          <IOSBackButton onClick={() => setActiveTab('home')} />
 
           {!currentActiveBooking ? (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -1117,9 +1112,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* RIDE HISTORY TAB */}
       {activeTab === 'history' && (
         <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#ffffff' }}>
-          <button onClick={() => setActiveTab('home')} style={{ background: 'transparent', border: 'none', color: '#16a34a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
+          <IOSBackButton onClick={() => setActiveTab('home')} />
 
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a', marginBottom: '16px' }}>
             Your Ride History
@@ -1165,9 +1158,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* NOTIFICATIONS TAB */}
       {activeTab === 'notifications' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <button onClick={() => setActiveTab('home')} style={{ background: 'transparent', border: 'none', color: '#16a34a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
+          <IOSBackButton onClick={() => setActiveTab('home')} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#ffedd5', color: '#ea580c', padding: '10px', borderRadius: '12px' }}>
@@ -1220,9 +1211,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* PROFILE SETTINGS TAB */}
       {activeTab === 'profile' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '620px', margin: '0 auto', width: '100%' }}>
-          <button onClick={() => setActiveTab('home')} style={{ background: 'transparent', border: 'none', color: '#16a34a', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}>
-            <ArrowLeft size={18} /> Back to Dashboard
-          </button>
+          <IOSBackButton onClick={() => setActiveTab('home')} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#f1f5f9', color: '#334155', padding: '10px', borderRadius: '12px' }}>

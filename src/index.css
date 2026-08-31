@@ -271,6 +271,23 @@ h1, h2, h3, h4, h5, h6 {
   background: #dc2626;
 }
 
+/* iOS Circular Back Button */
+.ios-back-btn {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.ios-back-btn:hover {
+  background: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+.ios-back-btn:active {
+  transform: scale(0.92) !important;
+  background: #f1f5f9 !important;
+}
+
 /* Modal overlay */
 .modal-overlay {
   position: fixed;
