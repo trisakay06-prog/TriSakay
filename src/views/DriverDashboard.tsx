@@ -253,16 +253,46 @@ export const DriverDashboard: React.FC = () => {
 
       </div>
 
-      {/* WIREFRAME STEP 4 & 5: TRACKING / NAVIGATION & COMPLETE RIDE */}
+      {/* WIREFRAME STEP 4 & 5: TRACKING / NAVIGATION & STRICT 3-STEP RIDE STATUS FLOW */}
       {activeBooking && (
         <div className="glass-panel pulse-badge" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', border: '3px solid #16a34a' }}>
+          
+          {/* 3-STEP VISUAL PROGRESS STEPPER */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', background: '#f8fafc', padding: '12px 16px', borderRadius: '16px', border: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 800, color: (activeBooking.status === 'DRIVER_ACCEPTED' || activeBooking.status === 'DRIVER_ARRIVING' || activeBooking.status === 'PASSENGER_PICKED_UP') ? '#16a34a' : '#94a3b8' }}>
+              <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: activeBooking.status === 'DRIVER_ACCEPTED' ? '#eab308' : '#16a34a', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>1</span>
+              <span>Arrived at Pickup</span>
+            </div>
+            <span style={{ color: '#cbd5e1' }}>➔</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 800, color: (activeBooking.status === 'DRIVER_ARRIVING' || activeBooking.status === 'PASSENGER_PICKED_UP') ? '#16a34a' : '#94a3b8' }}>
+              <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: activeBooking.status === 'DRIVER_ARRIVING' ? '#0284c7' : activeBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#e2e8f0', color: (activeBooking.status === 'DRIVER_ARRIVING' || activeBooking.status === 'PASSENGER_PICKED_UP') ? '#ffffff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>2</span>
+              <span>Passenger Onboard</span>
+            </div>
+            <span style={{ color: '#cbd5e1' }}>➔</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 800, color: activeBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#94a3b8' }}>
+              <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: activeBooking.status === 'PASSENGER_PICKED_UP' ? '#16a34a' : '#e2e8f0', color: activeBooking.status === 'PASSENGER_PICKED_UP' ? '#ffffff' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem' }}>3</span>
+              <span>Complete Ride</span>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div>
-              <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '10px', fontWeight: 800, fontSize: '0.8rem' }}>
-                ACTIVE RIDE ASSIGNED
+              <span style={{
+                background: activeBooking.status === 'DRIVER_ACCEPTED' ? '#fef3c7' : activeBooking.status === 'DRIVER_ARRIVING' ? '#e0f2fe' : '#dcfce7',
+                color: activeBooking.status === 'DRIVER_ACCEPTED' ? '#b45309' : activeBooking.status === 'DRIVER_ARRIVING' ? '#0369a1' : '#15803d',
+                padding: '4px 12px',
+                borderRadius: '10px',
+                fontWeight: 800,
+                fontSize: '0.8rem'
+              }}>
+                {activeBooking.status === 'DRIVER_ACCEPTED' && 'STEP 1: EN ROUTE TO PICKUP'}
+                {activeBooking.status === 'DRIVER_ARRIVING' && 'STEP 2: ARRIVED AT PICKUP LOCATION'}
+                {activeBooking.status === 'PASSENGER_PICKED_UP' && 'STEP 3: PASSENGER ONBOARD (TRIP IN PROGRESS)'}
               </span>
               <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
-                Navigate to Passenger
+                {activeBooking.status === 'DRIVER_ACCEPTED' && 'Driving to Pickup Point'}
+                {activeBooking.status === 'DRIVER_ARRIVING' && 'Waiting for Passenger to Board'}
+                {activeBooking.status === 'PASSENGER_PICKED_UP' && 'Heading to Destination Dropoff'}
               </h3>
             </div>
             <span style={{ fontSize: '1.8rem', fontWeight: 800, color: '#16a34a' }}>
@@ -270,10 +300,14 @@ export const DriverDashboard: React.FC = () => {
             </span>
           </div>
 
-          {/* MAP ROUTE NAVIGATION PLACEHOLDER (Matching Wireframe Step 4) */}
+          {/* MAP ROUTE NAVIGATION PLACEHOLDER */}
           <div style={{
             height: '140px',
-            background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+            background: activeBooking.status === 'DRIVER_ACCEPTED' 
+              ? 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)' 
+              : activeBooking.status === 'DRIVER_ARRIVING'
+              ? 'linear-gradient(135deg, #eab308 0%, #ca8a04 100%)'
+              : 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
             color: '#ffffff',
             borderRadius: '16px',
             display: 'flex',
@@ -284,8 +318,16 @@ export const DriverDashboard: React.FC = () => {
             marginBottom: '16px'
           }}>
             <Navigation size={32} className="bounce-icon" />
-            <strong style={{ fontSize: '1.05rem' }}>ETA: 4-8 mins to Pickup Location</strong>
-            <span style={{ fontSize: '0.85rem', opacity: 0.9 }}>Pickup: {activeBooking.pickupBarangay} ({activeBooking.pickupLandmark})</span>
+            <strong style={{ fontSize: '1.05rem' }}>
+              {activeBooking.status === 'DRIVER_ACCEPTED' && `En Route: ${activeBooking.pickupBarangay} (${activeBooking.pickupLandmark})`}
+              {activeBooking.status === 'DRIVER_ARRIVING' && `📍 At Pickup: ${activeBooking.pickupLandmark}`}
+              {activeBooking.status === 'PASSENGER_PICKED_UP' && `🚀 Dropoff: ${activeBooking.destinationBarangay} (${activeBooking.destinationLandmark})`}
+            </strong>
+            <span style={{ fontSize: '0.85rem', opacity: 0.9 }}>
+              {activeBooking.status === 'DRIVER_ACCEPTED' && 'ETA: 4-8 mins to passenger'}
+              {activeBooking.status === 'DRIVER_ARRIVING' && 'Tricycle waiting for passenger to board'}
+              {activeBooking.status === 'PASSENGER_PICKED_UP' && 'Transit in progress to destination'}
+            </span>
           </div>
 
           {/* PASSENGER DETAILS CARD */}
@@ -322,48 +364,60 @@ export const DriverDashboard: React.FC = () => {
             </a>
 
             <div style={{ fontSize: '0.9rem', color: '#334155' }}>
-              <div><strong>Destination Dropoff:</strong> {activeBooking.destinationBarangay} ({activeBooking.destinationLandmark})</div>
+              <div><strong>Pickup Point:</strong> {activeBooking.pickupBarangay} ({activeBooking.pickupLandmark})</div>
+              <div style={{ marginTop: '2px' }}><strong>Destination Dropoff:</strong> {activeBooking.destinationBarangay} ({activeBooking.destinationLandmark})</div>
               {activeBooking.specialNotes && <div style={{ marginTop: '4px', color: '#854d0e' }}><strong>Notes:</strong> {activeBooking.specialNotes}</div>}
             </div>
           </div>
 
-          {/* RIDE WORKFLOW ACTION BUTTONS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
+          {/* STRICT SEQUENTIAL 3-STEP RIDE ACTION BUTTONS */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {/* STEP 1 BUTTON: Arrived at Pickup */}
             {activeBooking.status === 'DRIVER_ACCEPTED' && (
               <button
                 onClick={() => handleStepStatus(activeBooking.id, 'DRIVER_ARRIVING')}
                 className="btn-yellow"
-                style={{ padding: '14px', borderRadius: '12px', fontSize: '0.95rem' }}
+                style={{ padding: '16px', borderRadius: '14px', fontSize: '1.05rem', fontWeight: 800, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                📍 Arrived at Pickup
+                📍 1. ARRIVED AT PICKUP
               </button>
             )}
 
-            {(activeBooking.status === 'DRIVER_ACCEPTED' || activeBooking.status === 'DRIVER_ARRIVING') && (
+            {/* STEP 2 BUTTON: Passenger Onboard */}
+            {activeBooking.status === 'DRIVER_ARRIVING' && (
               <button
                 onClick={() => handleStepStatus(activeBooking.id, 'PASSENGER_PICKED_UP')}
                 className="btn-primary"
-                style={{ padding: '14px', borderRadius: '12px', fontSize: '0.95rem' }}
+                style={{ padding: '16px', borderRadius: '14px', fontSize: '1.05rem', fontWeight: 800, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
               >
-                🛺 Passenger Onboard
+                🛺 2. PASSENGER ONBOARD (Start Trip)
               </button>
             )}
 
-            <button
-              onClick={() => handleStepStatus(activeBooking.id, 'COMPLETED')}
-              style={{
-                background: 'linear-gradient(135deg, #052e16 0%, #15803d 100%)',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '12px',
-                padding: '14px',
-                fontWeight: 800,
-                fontSize: '1rem',
-                cursor: 'pointer'
-              }}
-            >
-              ✅ COMPLETE RIDE (Collect ₱{activeBooking.estimatedFare})
-            </button>
+            {/* STEP 3 BUTTON: Complete Ride */}
+            {activeBooking.status === 'PASSENGER_PICKED_UP' && (
+              <button
+                onClick={() => handleStepStatus(activeBooking.id, 'COMPLETED')}
+                style={{
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '16px',
+                  fontWeight: 800,
+                  fontSize: '1.05rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(22, 163, 74, 0.3)'
+                }}
+              >
+                ✅ 3. COMPLETE RIDE (Collect ₱{activeBooking.estimatedFare})
+              </button>
+            )}
 
             <button
               onClick={() => setReportPassengerModal(activeBooking)}
@@ -372,13 +426,18 @@ export const DriverDashboard: React.FC = () => {
                 border: '1px solid #ef4444',
                 color: '#ef4444',
                 borderRadius: '12px',
-                padding: '14px',
+                padding: '10px',
                 fontWeight: 700,
                 fontSize: '0.85rem',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                marginTop: '4px'
               }}
             >
-              <ShieldAlert size={16} /> Report Passenger
+              <ShieldAlert size={16} /> Report Issue / Passenger
             </button>
           </div>
         </div>

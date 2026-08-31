@@ -34,11 +34,11 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
       case 'WAITING_FOR_DRIVER':
         return { text: 'Searching Gonzaga Drivers...', sub: 'Connecting with nearby TODA', color: '#FF9500', icon: '⏳' };
       case 'DRIVER_ACCEPTED':
-        return { text: `Driver ${activeBooking.driverName || 'Assigned'} Accepted`, sub: 'En route to pickup point', color: '#16a34a', icon: '🛺' };
+        return { text: `Driver ${activeBooking.driverName || 'Assigned'} En Route`, sub: `Heading to ${activeBooking.pickupBarangay}`, color: '#16a34a', icon: '🛺' };
       case 'DRIVER_ARRIVING':
-        return { text: 'Driver Arrived at Landmark', sub: 'Tricycle waiting for you', color: '#007AFF', icon: '📍' };
+        return { text: 'Arrived at Pickup', sub: `Tricycle waiting at ${activeBooking.pickupLandmark}`, color: '#007AFF', icon: '📍' };
       case 'PASSENGER_PICKED_UP':
-        return { text: `On the way to ${activeBooking.destinationBarangay}`, sub: 'Trip in progress', color: '#16a34a', icon: '🚀' };
+        return { text: 'Passenger Onboard', sub: `Heading to ${activeBooking.destinationBarangay}`, color: '#16a34a', icon: '🚀' };
       default:
         return { text: 'TriSakay Live Ride', sub: 'Active', color: '#16a34a', icon: '🛺' };
     }

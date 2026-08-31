@@ -343,28 +343,33 @@ class StoreService {
           next.driverId = driver.id;
           next.driverName = driver.name;
           next.driverMobile = driver.mobile;
-          next.todaName = driver.todaName || 'Gonzaga TODA';
-          next.plateNumber = driver.plateNumber || 'TZ-0000';
-          if (status === 'DRIVER_ACCEPTED') {
-            next.acceptedAt = new Date().toISOString();
-            // Dispatch Cellular SMS text message to passenger/student phone!
-            sendBookingAcceptedSMS(
-              b.passengerName,
-              b.passengerMobile,
-              driver.name,
-              driver.mobile,
-              driver.todaName || 'GOTODA',
-              driver.plateNumber || 'TZ-9842',
-              b.estimatedFare
-            );
-          }
+          next.todaName = driver.todaName || 'GOTODA (Gonzaga Toda)';
+          next.plateNumber = driver.plateNumber || 'TZ-9842';
         }
-        if (status === 'DRIVER_ARRIVING' && driver) {
+        if (status === 'DRIVER_ACCEPTED') {
+          next.acceptedAt = new Date().toISOString();
+          const dName = driver?.name || next.driverName || 'Driver';
+          const dMobile = driver?.mobile || next.driverMobile || '09185551234';
+          const toda = driver?.todaName || next.todaName || 'GOTODA (Gonzaga Toda)';
+          const plate = driver?.plateNumber || next.plateNumber || 'TZ-9842';
+          sendBookingAcceptedSMS(
+            b.passengerName,
+            b.passengerMobile,
+            dName,
+            dMobile,
+            toda,
+            plate,
+            b.estimatedFare
+          );
+        }
+        if (status === 'DRIVER_ARRIVING') {
+          const dName = driver?.name || next.driverName || 'Driver';
+          const plate = driver?.plateNumber || next.plateNumber || 'TZ-9842';
           sendDriverArrivingSMS(
             b.passengerName,
             b.passengerMobile,
-            driver.name,
-            driver.plateNumber || 'TZ-9842'
+            dName,
+            plate
           );
         }
         if (status === 'COMPLETED') {
