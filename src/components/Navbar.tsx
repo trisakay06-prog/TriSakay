@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, Menu, X, HelpCircle, FileText, Home, Sparkles } from 'lucide-react';
+import { Bike, LogIn, LogOut, Menu, X, HelpCircle, FileText, Home, Sparkles, ChevronDown, UserCheck } from 'lucide-react';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -12,6 +12,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActiveTab }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     return store.subscribe(() => setState(store.getState()));
@@ -204,45 +205,152 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           </button>
 
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ position: 'relative' }}>
               <button
-                onClick={() => setActiveTab('dashboard')}
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
                 style={{
-                  background: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  padding: '6px 12px',
-                  borderRadius: '10px',
+                  background: profileDropdownOpen ? '#dcfce7' : '#f0fdf4',
+                  border: '1.5px solid #86efac',
+                  padding: '5px 12px',
+                  borderRadius: '24px',
                   fontSize: '0.85rem',
                   color: '#15803d',
                   fontWeight: 700,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px'
+                  gap: '8px',
+                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.12)',
+                  transition: 'all 0.2s ease'
                 }}
               >
-                <span style={{
-                  width: '8px',
-                  height: '8px',
+                <div style={{
+                  width: '24px',
+                  height: '24px',
                   borderRadius: '50%',
-                  background: '#16a34a'
-                }} />
-                {user.name.split(' ')[0]}
+                  background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.75rem',
+                  fontWeight: 800
+                }}>
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <span>{user.name.split(' ')[0]}</span>
+                <ChevronDown size={14} color="#16a34a" />
               </button>
 
-              <button
-                onClick={() => store.setCurrentUser(null)}
-                title="Logout"
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: '#94a3b8',
-                  cursor: 'pointer',
-                  padding: '6px'
-                }}
-              >
-                <LogOut size={18} />
-              </button>
+              {/* PROFILE DROPDOWN MENU */}
+              {profileDropdownOpen && (
+                <div
+                  className="profile-dropdown-menu"
+                  style={{
+                    position: 'absolute',
+                    top: 'calc(100% + 10px)',
+                    right: 0,
+                    width: '270px',
+                    background: '#ffffff',
+                    borderRadius: '20px',
+                    boxShadow: '0 16px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
+                    padding: '16px',
+                    zIndex: 10001
+                  }}
+                >
+                  {/* Header Info */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                    <div style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.2rem',
+                      fontWeight: 800
+                    }}>
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {user.name}
+                      </div>
+                      <span style={{
+                        background: user.role === 'admin' ? '#dbeafe' : user.role === 'driver' ? '#fef3c7' : '#dcfce7',
+                        color: user.role === 'admin' ? '#1d4ed8' : user.role === 'driver' ? '#b45309' : '#15803d',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.72rem',
+                        fontWeight: 800,
+                        textTransform: 'uppercase'
+                      }}>
+                        {user.role}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Detail items */}
+                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '12px', fontSize: '0.8rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
+                    <div>📱 Mobile: <strong>{user.mobile}</strong></div>
+                    <div>📍 Barangay: <strong>{user.barangay}</strong></div>
+                    {user.plateNumber && <div>🛺 Plate No: <strong>{user.plateNumber}</strong></div>}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setActiveTab('dashboard');
+                        setProfileDropdownOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #e2e8f0',
+                        background: '#ffffff',
+                        color: '#0f172a',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <UserCheck size={16} color="#16a34a" /> My Dashboard
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        store.setCurrentUser(null);
+                        setProfileDropdownOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '10px 12px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: '#fee2e2',
+                        color: '#dc2626',
+                        fontSize: '0.85rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <LogOut size={16} /> Log Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button

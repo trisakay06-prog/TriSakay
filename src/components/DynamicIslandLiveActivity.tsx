@@ -134,12 +134,12 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
       <style>{`
         .ios-live-activity-wrapper {
           position: fixed;
-          top: 10px;
+          top: 76px;
           left: 0;
           right: 0;
           display: flex;
           justify-content: center;
-          z-index: 10000;
+          z-index: 9998;
           padding: 0 16px;
           pointer-events: none;
         }
