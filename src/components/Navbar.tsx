@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, ChevronDown, UserCheck, Settings } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, UserCheck, Settings, Bell } from 'lucide-react';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -26,6 +26,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
   }, [state.seniorMode]);
 
   const user = state.currentUser;
+
+  const userBookings = user
+    ? state.bookings.filter(b => b.passengerId === user.id || b.passengerMobile === user.mobile)
+    : [];
+  const activeUserBooking = userBookings.find(
+    b => b.status === 'DRIVER_ACCEPTED' || b.status === 'DRIVER_ARRIVING' || b.status === 'PASSENGER_PICKED_UP'
+  );
+  const pendingDriverRequests = user?.role === 'driver'
+    ? state.bookings.filter(b => b.status === 'WAITING_FOR_DRIVER').length
+    : 0;
+  const pendingAdminItems = user?.role === 'admin'
+    ? state.users.filter(u => u.role === 'driver' && !u.isApproved).length + state.reports.filter(r => r.status === 'pending').length
+    : 0;
+
+  const unreadCount = user?.role === 'driver' 
+    ? pendingDriverRequests 
+    : user?.role === 'admin'
+    ? pendingAdminItems
+    : (activeUserBooking ? 1 : 0);
 
   const getDashboardLabel = () => {
     if (!user) return 'Dashboard';
@@ -204,41 +223,72 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           </button>
 
           {user ? (
-            <div style={{ position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+              
+              {/* NOTIFICATION BELL ICON (CLICKABLE) */}
               <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                onClick={() => setActiveTab('notifications')}
                 style={{
-                  background: profileDropdownOpen ? '#dcfce7' : '#f0fdf4',
-                  border: '1.5px solid #86efac',
-                  padding: '5px 12px',
-                  borderRadius: '24px',
-                  fontSize: '0.85rem',
-                  color: '#15803d',
-                  fontWeight: 700,
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  background: activeTab === 'notifications' ? '#dcfce7' : '#ffffff',
+                  color: activeTab === 'notifications' ? '#15803d' : '#475569',
+                  border: activeTab === 'notifications' ? '1.5px solid #86efac' : '1.5px solid #e2e8f0',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: '0 2px 8px rgba(22, 163, 74, 0.12)',
-                  transition: 'all 0.2s ease'
+                  justifyContent: 'center',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  flexShrink: 0
                 }}
+                aria-label="Notifications"
+                title="Notifications & Alerts"
               >
-                <div style={{
-                  width: '24px',
-                  height: '24px',
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-2px',
+                    right: '-2px',
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    background: '#ef4444',
+                    border: '2px solid #ffffff',
+                    boxShadow: '0 0 6px rgba(239, 68, 68, 0.6)'
+                  }} />
+                )}
+              </button>
+
+              {/* CIRCLE PROFILE AVATAR ONLY (NO NAME, CLICKABLE DROPDOWN) */}
+              <button
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                style={{
+                  width: '38px',
+                  height: '38px',
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
                   color: '#ffffff',
+                  border: profileDropdownOpen ? '2.5px solid #86efac' : '2px solid #ffffff',
+                  fontSize: '0.95rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 800
-                }}>
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <span>{user.name.split(' ')[0]}</span>
-                <ChevronDown size={14} color="#16a34a" />
+                  boxShadow: profileDropdownOpen
+                    ? '0 0 0 3px rgba(22, 163, 74, 0.35)'
+                    : '0 4px 12px rgba(22, 163, 74, 0.25)',
+                  transition: 'all 0.2s ease',
+                  flexShrink: 0
+                }}
+                aria-label="User Profile"
+                title={`${user.name} (${user.role})`}
+              >
+                {user.name.charAt(0).toUpperCase()}
               </button>
 
               {/* PROFILE DROPDOWN MENU */}

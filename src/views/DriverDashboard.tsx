@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
-import { Bike, Phone, CheckCircle2, ShieldAlert, Navigation, Bell, User, Lock, Settings, ArrowLeft } from 'lucide-react';
+import { Bike, Phone, CheckCircle2, ShieldAlert, Navigation, Bell, User, Lock, ArrowLeft } from 'lucide-react';
 import { DriverNotificationModal } from '../components/DriverNotificationModal';
 import { INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
 
@@ -248,22 +248,6 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
           <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>TODAY'S EARNINGS</span>
           <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#854d0e', marginTop: '4px' }}>
             ₱{totalEarnings}
-          </div>
-        </div>
-
-        {/* NOTIFICATIONS CARD */}
-        <div onClick={() => setActiveTab('notifications')} className="glass-card" style={{ padding: '18px', borderRadius: '16px', borderLeft: '4px solid #f97316', cursor: 'pointer', background: activeTab === 'notifications' ? '#fff7ed' : '#ffffff' }}>
-          <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>NOTIFICATIONS</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ea580c', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Bell size={20} /> Alerts
-          </div>
-        </div>
-
-        {/* PROFILE SETTINGS CARD */}
-        <div onClick={() => setActiveTab('profile')} className="glass-card" style={{ padding: '18px', borderRadius: '16px', borderLeft: '4px solid #475569', cursor: 'pointer', background: activeTab === 'profile' ? '#f8fafc' : '#ffffff' }}>
-          <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>PROFILE SETTINGS</span>
-          <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#334155', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Settings size={20} /> Account
           </div>
         </div>
 

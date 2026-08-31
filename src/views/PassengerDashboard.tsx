@@ -3,7 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, ArrowLeft, Bell, User, Lock, Settings, Radio, Smartphone, Sparkles } from 'lucide-react';
+import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, ArrowLeft, Bell, User, Lock, Radio, Smartphone, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
 import { playNotificationSound } from '../services/sound';
@@ -348,50 +348,6 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               </div>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>RIDE HISTORY</h3>
               <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>View past Gonzaga trips & ratings ({passengerBookings.length})</p>
-            </div>
-
-            {/* 5. NOTIFICATIONS (ORANGE CARD) */}
-            <div 
-              onClick={() => setActiveTab('notifications')} 
-              style={{
-                background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-                color: '#ffffff',
-                padding: '20px',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                boxShadow: '0 8px 20px rgba(249, 115, 22, 0.3)'
-              }}
-            >
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%', width: 'fit-content' }}>
-                <Bell size={32} color="#ffffff" />
-              </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>NOTIFICATIONS</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>Live booking updates & driver alerts</p>
-            </div>
-
-            {/* 6. PROFILE SETTINGS (SLATE CARD) */}
-            <div 
-              onClick={() => setActiveTab('profile')} 
-              style={{
-                background: 'linear-gradient(135deg, #475569 0%, #334155 100%)',
-                color: '#ffffff',
-                padding: '20px',
-                borderRadius: '20px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                boxShadow: '0 8px 20px rgba(71, 85, 105, 0.3)'
-              }}
-            >
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%', width: 'fit-content' }}>
-                <Settings size={32} color="#ffffff" />
-              </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>PROFILE SETTINGS</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>Edit info, password & privacy settings</p>
             </div>
 
           </div>
