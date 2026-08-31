@@ -400,9 +400,15 @@ h1, h2, h3, h4, h5, h6 {
   to { transform: translateY(0); }
 }
 
+@media (max-width: 768px) {
+  .main-content-area {
+    padding: 16px 12px 96px 12px !important;
+  }
+}
+
 @media (max-width: 480px) {
   .main-content-area {
-    padding: 12px 8px 88px 8px !important;
+    padding: 12px 8px 96px 8px !important;
   }
 
   .grid-card-green,
@@ -418,4 +424,5 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 18px !important;
   }
 }
+
 
