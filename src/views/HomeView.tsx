@@ -4,13 +4,11 @@ import { store } from '../services/store';
 
 interface HomeViewProps {
   onStartBooking: () => void;
-  onCreateAccount: () => void;
   onOpenFareMatrix: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onStartBooking,
-  onCreateAccount,
   onOpenFareMatrix
 }) => {
   const [currentUser, setCurrentUser] = useState(store.getState().currentUser);
@@ -47,7 +45,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <button type="button" onClick={onOpenFareMatrix} className="guest-fare-button">
               <PhilippinePeso size={20} /> Check Gonzaga Fare Rates <span>›</span>
             </button>
-            <p>New to TriSakay? <button type="button" onClick={onCreateAccount}>Create an Account</button></p>
           </div>
         </section>
 

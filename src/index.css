@@ -558,7 +558,7 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   color: #fff;
   background:
-    linear-gradient(115deg, rgba(5, 46, 22, .98), rgba(22, 163, 74, .82)),
+    linear-gradient(115deg, rgba(5, 46, 22, .72), rgba(22, 163, 74, .35)),
     url('./assets/BGfor.jpg');
   background-size: cover;
   background-position: center;
@@ -661,7 +661,14 @@ h1, h2, h3, h4, h5, h6 {
 .auth-page-form { gap: clamp(8px, 1.4vh, 14px) !important; }
 .auth-page-form input, .auth-page-form select { padding: 10px 12px !important; }
 .auth-mode-login,
-.auth-mode-reset { display: flex; flex-direction: column; justify-content: center; }
+.auth-mode-reset { display: flex; flex-direction: column; justify-content: center; position: relative; }
+.auth-mode-login > .auth-page-brand-row,
+.auth-mode-reset > .auth-page-brand-row {
+  position: absolute;
+  top: clamp(18px, 3vh, 30px);
+  left: clamp(20px, 5vw, 38px);
+  right: clamp(20px, 5vw, 38px);
+}
 .auth-mode-login,
 .auth-mode-reset,
 .auth-mode-register {

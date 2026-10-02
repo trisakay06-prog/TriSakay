@@ -43,7 +43,6 @@ export const App: React.FC = () => {
               setActiveTab('dashboard');
             }
           }}
-          onCreateAccount={() => openAuth('register')}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
         />
       );
@@ -83,7 +82,6 @@ export const App: React.FC = () => {
             if (!currentUser) openAuth('login');
             else setActiveTab('dashboard');
           }}
-          onCreateAccount={() => openAuth('register')}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
         />
       );
@@ -173,7 +171,6 @@ export const App: React.FC = () => {
           if (!currentUser) openAuth('login');
           else setActiveTab('dashboard');
         }}
-        onCreateAccount={() => openAuth('register')}
         onOpenFareMatrix={() => setActiveTab('fare-matrix')}
       />
     );
