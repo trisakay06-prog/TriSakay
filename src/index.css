@@ -379,12 +379,12 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Add public/auth-background.jpg later; the gradient remains as a readable fallback. */
+/* Authentication backdrop */
 .auth-modal-background {
   background-color: #052e16;
   background-image:
     linear-gradient(135deg, rgba(5, 46, 22, 0.9), rgba(21, 128, 61, 0.72)),
-    url('/auth-background.jpg');
+    url('./assets/BG.jpg');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -526,4 +526,148 @@ h1, h2, h3, h4, h5, h6 {
   section {
     border-radius: 18px !important;
   }
+}
+
+/* Public landing page: the complete guest experience stays within one viewport. */
+.guest-main-content {
+  height: calc(100dvh - 78px);
+  max-width: 720px !important;
+  padding: 14px 16px !important;
+  overflow: hidden;
+}
+
+.guest-home-screen {
+  height: 100%;
+  display: grid;
+  grid-template-rows: minmax(220px, 1.5fr) minmax(150px, .8fr) minmax(190px, 1fr);
+  gap: 14px;
+  overflow: hidden;
+}
+
+.guest-hero-card,
+.guest-info-card {
+  min-height: 0;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.guest-hero-card {
+  padding: clamp(20px, 4vh, 38px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
+  background:
+    linear-gradient(115deg, rgba(5, 46, 22, .98), rgba(22, 163, 74, .82)),
+    url('./assets/BG.jpg');
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 18px 34px -18px rgba(22, 163, 74, .55);
+}
+
+.guest-system-label {
+  display: inline-flex;
+  max-width: max-content;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  color: #fef08a;
+  font-size: clamp(.7rem, 1.5vh, .85rem);
+  font-weight: 800;
+}
+
+.guest-hero-copy h1 {
+  margin-top: clamp(10px, 2vh, 20px);
+  font-size: clamp(2rem, 5vh, 3rem);
+  line-height: 1;
+}
+
+.guest-hero-copy h2 { color: #fde047; font-size: clamp(1.15rem, 2.7vh, 1.55rem); margin-top: 8px; }
+.guest-hero-copy p { max-width: 440px; margin-top: 9px; line-height: 1.45; color: #e2e8f0; font-size: clamp(.8rem, 1.8vh, 1rem); }
+.guest-hero-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.guest-fare-button {
+  min-height: 48px;
+  width: 100%;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: #fff;
+  color: #0f172a;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.guest-fare-button span { margin-left: auto; font-size: 1.5rem; }
+.guest-hero-actions p { margin: 0; text-align: center; font-size: .86rem; color: #dcfce7; }
+.guest-hero-actions p button { border: 0; background: transparent; color: #fde047; font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
+
+.guest-info-card { padding: clamp(12px, 2vh, 20px); background: #fff; border: 1px solid #e2e8f0; box-shadow: var(--shadow-sm); }
+.guest-section-heading { text-align: center; }
+.guest-section-heading span { color: #15803d; font-size: .7rem; font-weight: 900; letter-spacing: .12em; }
+.guest-section-heading h2 { margin-top: 3px; font-size: clamp(1rem, 2.3vh, 1.3rem); }
+.guest-section-heading.compact { margin-bottom: 8px; }
+.guest-steps-grid, .guest-benefits-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+.guest-step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; font-size: .75rem; }
+.guest-step-icon { width: clamp(38px, 6vh, 52px); height: clamp(38px, 6vh, 52px); border-radius: 50%; display: grid; place-items: center; background: #dcfce7; color: #159447; }
+.guest-step small { width: 19px; height: 19px; display: grid; place-items: center; margin-top: -8px; border-radius: 50%; background: #15803d; color: #fff; font-weight: 800; }
+.guest-benefits-grid { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
+.guest-benefit { padding: 9px 7px; border-radius: 14px; border: 1px solid #bbf7d0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; color: #15803d; }
+.guest-benefit strong { color: #0f172a; font-size: clamp(.7rem, 1.5vh, .84rem); }
+.guest-benefit p { color: #64748b; font-size: clamp(.62rem, 1.3vh, .74rem); }
+.guest-about-link { margin-top: 9px; border: 1px solid #e2e8f0; border-radius: 12px; }
+.guest-about-link summary { min-height: 35px; padding: 7px 11px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: .82rem; font-weight: 800; list-style: none; }
+.guest-about-link summary span { margin-left: auto; font-size: 1.2rem; }
+.guest-about-link > p { padding: 0 12px 8px; font-size: .7rem; color: #64748b; }
+
+/* Full-page authentication uses the Gonzaga background supplied in src/assets/BG.jpg. */
+.auth-modal-background { padding: 0 !important; align-items: center !important; overflow: hidden !important; }
+.auth-modal-background > .auth-page-panel {
+  width: 100% !important;
+  max-width: 560px !important;
+  height: 100dvh;
+  max-height: 100dvh !important;
+  padding: clamp(18px, 3vh, 30px) clamp(20px, 5vw, 38px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background-color: #fff !important;
+  background-image:
+    linear-gradient(rgba(255,255,255,.95), rgba(255,255,255,.88)),
+    url('./assets/BG.jpg') !important;
+  background-position: center bottom !important;
+  background-size: cover !important;
+}
+.auth-page-brand-row { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; }
+.auth-back-button { width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #f1f5f9; color: #0f172a; cursor: pointer; }
+.auth-brand-lockup { display: flex; align-items: center; justify-content: center; gap: 9px; }
+.auth-brand-icon { width: 45px; height: 45px; border-radius: 13px; display: grid; place-items: center; color: #fef08a; background: linear-gradient(135deg, #16a34a, #15803d); }
+.auth-brand-lockup div { display: flex; flex-direction: column; }
+.auth-brand-lockup strong { color: #15803d; font-size: 1.25rem; }
+.auth-brand-lockup small { color: #64748b; font-size: .68rem; }
+.auth-brand-lockup b { padding: 3px 6px; border-radius: 5px; background: #facc15; font-size: .6rem; }
+.auth-page-heading { margin: clamp(14px, 3vh, 28px) 0 14px; text-align: center; }
+.auth-page-heading h2 { color: #0f172a; font-size: clamp(1.35rem, 3vh, 1.7rem); }
+.auth-page-heading p { margin-top: 4px; color: #64748b; font-size: .88rem; }
+.auth-page-form { gap: clamp(8px, 1.4vh, 14px) !important; }
+.auth-page-form input, .auth-page-form select { padding: 10px 12px !important; }
+
+@media (max-height: 760px) {
+  .guest-main-content { padding-top: 8px !important; padding-bottom: 8px !important; }
+  .guest-home-screen { gap: 8px; grid-template-rows: 1.25fr .68fr .9fr; }
+  .guest-info-card { padding: 9px 12px; }
+  .guest-steps-grid { margin-top: 5px; }
+  .guest-benefit { padding: 5px; }
+  .guest-about-link { margin-top: 5px; }
+  .auth-modal-background > .auth-page-panel { padding-top: 12px !important; padding-bottom: 12px !important; }
+  .auth-page-heading { margin: 9px 0; }
+  .auth-page-form { gap: 7px !important; }
+  .auth-page-form input, .auth-page-form select { padding: 8px 10px !important; }
+}
+
+@media (min-width: 769px) {
+  .auth-modal-background > .auth-page-panel { box-shadow: 0 24px 60px rgba(0,0,0,.24) !important; }
 }

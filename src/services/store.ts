@@ -310,7 +310,7 @@ class StoreService {
   }
 
   private loadCurrentUser(): User | null {
-    if (typeof window === 'undefined') return INITIAL_USERS[0];
+    if (typeof window === 'undefined') return null;
     try {
       const session = sessionStorage.getItem(SESSION_USER_KEY);
       if (session) return JSON.parse(session);
@@ -319,7 +319,7 @@ class StoreService {
     } catch (e) {
       console.error('Failed to parse current user', e);
     }
-    return INITIAL_USERS[0];
+    return null;
   }
 
   private loadState(): AppStoreData {

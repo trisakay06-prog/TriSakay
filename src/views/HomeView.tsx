@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bike, Shield, Users, MapPin, Phone, Mail, Sparkles } from 'lucide-react';
+import { Accessibility, Bike, Clock3, Info, Leaf, Map, MapPin, Phone, Mail, PhilippinePeso, Shield, Sparkles, Users } from 'lucide-react';
 import { store } from '../services/store';
 
 interface HomeViewProps {
@@ -20,6 +20,74 @@ export const HomeView: React.FC<HomeViewProps> = ({
       setCurrentUser(store.getState().currentUser);
     });
   }, []);
+
+  if (!currentUser) {
+    const steps = [
+      { icon: MapPin, label: 'Set Pickup' },
+      { icon: Map, label: 'Choose Destination' },
+      { icon: PhilippinePeso, label: 'View Fare' },
+      { icon: Bike, label: 'Confirm Ride' }
+    ];
+    const benefits = [
+      { icon: Clock3, title: 'Reduced Waiting Time', text: 'Find nearby drivers faster.' },
+      { icon: Accessibility, title: 'Senior & PWD Friendly', text: 'Accessible local transport.' },
+      { icon: Leaf, title: 'Fuel & Route Efficiency', text: 'Smarter routes for faster trips.' }
+    ];
+
+    return (
+      <div className="guest-home-screen">
+        <section className="guest-hero-card">
+          <div className="guest-hero-copy">
+            <span className="guest-system-label">🏛️ Municipality of Gonzaga Tricycle Booking System</span>
+            <h1>TriSakay</h1>
+            <h2>Sakay Mo, Isang Click Lang!</h2>
+            <p>Convenient local tricycle service with registered drivers across Gonzaga.</p>
+          </div>
+          <div className="guest-hero-actions">
+            <button type="button" onClick={onOpenFareMatrix} className="guest-fare-button">
+              <PhilippinePeso size={20} /> Check Gonzaga Fare Rates <span>›</span>
+            </button>
+            <p>New to TriSakay? <button type="button" onClick={onCreateAccount}>Create an Account</button></p>
+          </div>
+        </section>
+
+        <section className="guest-info-card guest-steps-card">
+          <div className="guest-section-heading">
+            <span>HOW TRISAKAY WORKS</span>
+            <h2>Get a Ride in 4 Simple Steps</h2>
+          </div>
+          <div className="guest-steps-grid">
+            {steps.map(({ icon: Icon, label }, index) => (
+              <div key={label} className="guest-step">
+                <div className="guest-step-icon"><Icon size={23} /></div>
+                <small>{index + 1}</small>
+                <strong>{label}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="guest-info-card guest-benefits-card">
+          <div className="guest-section-heading compact">
+            <span>WHY CHOOSE TRISAKAY?</span>
+          </div>
+          <div className="guest-benefits-grid">
+            {benefits.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="guest-benefit">
+                <Icon size={25} />
+                <strong>{title}</strong>
+                <p>{text}</p>
+              </div>
+            ))}
+          </div>
+          <details className="guest-about-link">
+            <summary><Info size={18} /> About TriSakay <span>›</span></summary>
+            <p>TriSakay connects passengers with registered local tricycle drivers throughout Gonzaga.</p>
+          </details>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '48px', paddingBottom: '60px' }}>
@@ -155,72 +223,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 </button>
 
               </>
-            ) : currentUser?.role === 'passenger' ? (
-              <>
-                <button
-                  onClick={onStartBooking}
-                  className="btn-yellow hero-btn"
-                  style={{
-                    fontSize: '1.15rem',
-                    padding: '16px 32px',
-                    borderRadius: '16px',
-                    boxShadow: '0 8px 20px rgba(234, 179, 8, 0.4)'
-                  }}
-                >
-                  <Bike size={24} /> Book a Ride Now
-                </button>
-
-              </>
-            ) : (
-              /* GUEST / VISITOR NOT LOGGED IN YET */
-              <>
-                <button
-                  onClick={onCreateAccount}
-                  className="btn-yellow hero-btn"
-                  style={{
-                    fontSize: '1.15rem',
-                    padding: '16px 32px',
-                    borderRadius: '16px',
-                    boxShadow: '0 8px 20px rgba(234, 179, 8, 0.4)'
-                  }}
-                >
-                  Create New Account
-                </button>
-
-                <button
-                  onClick={onOpenFareMatrix}
-                  className="hero-btn"
-                  style={{
-                    background: '#ffffff',
-                    color: '#15803d',
-                    border: 'none',
-                    borderRadius: '16px',
-                    padding: '16px 28px',
-                    fontSize: '1.1rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 8px 20px rgba(255,255,255,0.2)'
-                  }}
-                >
-                  📋 Check Gonzaga Fare Rates
-                </button>
-
-                <p style={{ width: '100%', color: '#dcfce7', fontSize: '0.9rem', marginTop: '-2px' }}>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={onStartBooking}
-                    style={{ border: 0, padding: 0, background: 'transparent', color: '#fef08a', font: 'inherit', fontWeight: 800, textDecoration: 'underline', cursor: 'pointer' }}
-                  >
-                    Sign In
-                  </button>
-                </p>
-              </>
-            )}
+            ) : null}
           </div>
         </div>
       </section>

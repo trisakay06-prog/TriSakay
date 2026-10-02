@@ -548,12 +548,9 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
               <Bike size={48} color="#cbd5e1" style={{ marginBottom: '16px' }} />
               <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#64748b' }}>No Active Ride Booking</h3>
-              <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '20px' }}>
-                Click below to book a ride.
+              <p style={{ fontSize: '0.9rem', color: '#94a3b8' }}>
+                Return to the passenger dashboard when you are ready to create a booking.
               </p>
-              <button onClick={() => setActiveTab('book')} className="btn-primary">
-                Book a Ride Now
-              </button>
             </div>
           ) : (
             <div>

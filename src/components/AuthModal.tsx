@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { store } from '../services/store';
 import type { UserRole } from '../types';
-import { X, UserCheck, Bike, ShieldCheck, CheckCircle, AlertCircle, Phone, Lock } from 'lucide-react';
+import { ArrowLeft, UserCheck, Bike, ShieldCheck, CheckCircle, AlertCircle, Phone, Lock } from 'lucide-react';
 import { INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
-import { ProfileAvatarUpload } from './ProfileAvatarUpload';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -24,7 +23,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   const [todaName, setTodaName] = useState('Poblacion Cluster Gontoda Association');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
-  const [profileImage, setProfileImage] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -35,6 +33,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
       setSuccessMsg('');
     }
   }, [initialMode, isOpen]);
+
+  const closeAuthPage = () => {
+    if (successMsg && role === 'driver' && mode === 'register') {
+      setMode('login');
+      setRole('driver');
+      setSuccessMsg('');
+      setPassword('');
+    } else {
+      onClose();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -161,7 +170,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         password,
         role,
         barangay,
-        profileImage: profileImage || undefined,
         todaName: role === 'driver' ? todaName : undefined,
         plateNumber: role === 'driver' ? plateNumber : undefined
       });
@@ -181,18 +189,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   };
 
   return (
-    <div className="modal-overlay auth-modal-background" onClick={() => {
-      if (successMsg && role === 'driver' && mode === 'register') {
-        setMode('login');
-        setRole('driver');
-        setSuccessMsg('');
-        setPassword('');
-      } else {
-        onClose();
-      }
-    }}>
+    <div className="modal-overlay auth-modal-background">
       <div 
-        className="glass-panel" 
+        className="glass-panel auth-page-panel"
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%',
@@ -203,30 +202,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a' }}>
-              {mode === 'login' ? 'Sign In to TriSakay' : mode === 'register' ? 'Register Account' : 'Reset Password / PIN'}
-            </h2>
-            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-              Municipality of Gonzaga Tricycle Booking System
-            </p>
-          </div>
-          <button 
-            onClick={() => {
-              if (successMsg && role === 'driver' && mode === 'register') {
-                setMode('login');
-                setRole('driver');
-                setSuccessMsg('');
-                setPassword('');
-              } else {
-                onClose();
-              }
-            }}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
-          >
-            <X size={24} />
+        <div className="auth-page-brand-row">
+          <button onClick={closeAuthPage} className="auth-back-button" aria-label="Back to homepage">
+            <ArrowLeft size={25} />
           </button>
+          <div className="auth-brand-lockup">
+            <span className="auth-brand-icon"><Bike size={24} /></span>
+            <div><strong>TriSakay</strong><small>Municipality of Gonzaga</small></div>
+            <b>GONZAGA</b>
+          </div>
+          <span className="auth-row-spacer" />
+        </div>
+
+        <div className="auth-page-heading">
+          <h2>{mode === 'login' ? 'Welcome Back!' : mode === 'register' ? 'Create Your Account' : 'Reset Password / PIN'}</h2>
+          <p>{mode === 'login' ? 'Sign in to check fares and manage your rides.' : mode === 'register' ? 'Register to start booking rides in Gonzaga.' : 'Enter your registered mobile number and a new PIN.'}</p>
         </div>
 
         {/* ROLE SELECTION TABS */}
@@ -387,21 +377,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           </div>
         )}
 
-        {!(successMsg && role === 'driver' && mode === 'register') && <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {mode === 'register' && (
-            <div style={{ marginBottom: '6px' }}>
-              <ProfileAvatarUpload
-                currentImageUrl={profileImage}
-                name={name || 'User'}
-                role={role}
-                size={84}
-                label="Profile Picture (Optional)"
-                onImageUploaded={(url) => setProfileImage(url)}
-                onImageRemoved={() => setProfileImage('')}
-              />
-            </div>
-          )}
-
+        {!(successMsg && role === 'driver' && mode === 'register') && <form className="auth-page-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {mode === 'register' && (
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
@@ -547,33 +523,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           )}
         </form>}
 
-        <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b' }}>
-          {mode === 'login' ? (
-            <span>
-              Don't have an account yet?{' '}
-              <button 
-                onClick={() => { setMode('register'); setRole('passenger'); setError(''); }} 
-                style={{ color: '#16a34a', fontWeight: 700, border: 'none', background: 'transparent', cursor: 'pointer' }}
-              >
-                Register Now
-              </button>
-            </span>
-          ) : mode === 'register' ? (
-            <span>
-              Already registered?{' '}
-              <button 
-                onClick={() => { setMode('login'); setError(''); }} 
-                style={{ color: '#16a34a', fontWeight: 700, border: 'none', background: 'transparent', cursor: 'pointer' }}
-              >
-                Sign In
-              </button>
-            </span>
-          ) : (
+        {mode === 'reset' && <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b' }}>
             <button onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }} style={{ color: '#16a34a', fontWeight: 700, border: 'none', background: 'transparent', cursor: 'pointer' }}>
               Back to Sign In
             </button>
-          )}
-        </div>
+        </div>}
       </div>
     </div>
   );

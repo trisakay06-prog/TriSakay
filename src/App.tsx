@@ -210,7 +210,7 @@ export const App: React.FC = () => {
       {currentUser && currentUser.role !== 'admin' && (
         <UserSideNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       )}
-      <main className="main-content-area" style={{
+      <main className={`main-content-area ${!currentUser ? 'guest-main-content' : ''}`} style={{
         flex: 1,
         maxWidth: currentUser && currentUser.role !== 'admin' ? '980px' : '1200px',
         width: '100%',
@@ -228,7 +228,7 @@ export const App: React.FC = () => {
         onSuccess={() => setActiveTab('dashboard')}
       />
 
-      <footer className="desktop-footer" style={{
+      {currentUser && <footer className="desktop-footer" style={{
         background: '#ffffff',
         borderTop: '1px solid #e2e8f0',
         padding: '16px 20px',
@@ -237,7 +237,7 @@ export const App: React.FC = () => {
         color: '#64748b'
       }}>
         TriSakay © 2026 Municipality of Gonzaga Tricycle Booking System • Sakay Mo, Isang Click Lang!
-      </footer>
+      </footer>}
 
     </div>
   );
