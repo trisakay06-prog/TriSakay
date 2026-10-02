@@ -9,6 +9,7 @@ import { PassengerDashboard } from './views/PassengerDashboard';
 import { DriverDashboard } from './views/DriverDashboard';
 import { AdminDashboard } from './views/AdminDashboard';
 import { FareMatrixView } from './views/FareMatrixView';
+import { AboutView } from './views/AboutView';
 import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivity';
 import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
@@ -44,12 +45,17 @@ export const App: React.FC = () => {
             }
           }}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
+          onOpenAbout={() => setActiveTab('about')}
         />
       );
     }
 
     if (activeTab === 'fare-matrix') {
       return <FareMatrixView />;
+    }
+
+    if (activeTab === 'about') {
+      return <AboutView onBack={() => setActiveTab('home')} />;
     }
 
     if (activeTab === 'service-benefits') {
@@ -83,6 +89,7 @@ export const App: React.FC = () => {
             else setActiveTab('dashboard');
           }}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
+          onOpenAbout={() => setActiveTab('about')}
         />
       );
     }
@@ -172,6 +179,7 @@ export const App: React.FC = () => {
           else setActiveTab('dashboard');
         }}
         onOpenFareMatrix={() => setActiveTab('fare-matrix')}
+        onOpenAbout={() => setActiveTab('about')}
       />
     );
   };

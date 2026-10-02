@@ -578,34 +578,18 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: space-between;
   color: #fff;
   background:
-    linear-gradient(115deg, rgba(5, 46, 22, .72), rgba(22, 163, 74, .35)),
+    linear-gradient(135deg, rgba(22, 163, 74, .64), rgba(21, 128, 61, .5)),
     url('./assets/BGfor.jpg');
   background-size: cover;
   background-position: center;
   box-shadow: 0 18px 34px -18px rgba(22, 163, 74, .55);
 }
 
-.guest-system-label {
-  display: block;
-  width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: #fef08a;
-  font-family: 'Cinzel', Georgia, serif;
-  font-size: clamp(.9rem, 2.2vh, 1.15rem);
-  font-weight: 800;
-  letter-spacing: .09em;
-  line-height: 1.2;
-  text-align: center;
-  text-transform: uppercase;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, .38);
-}
-
 .guest-hero-copy h1 {
-  margin-top: clamp(10px, 2vh, 20px);
+  margin-top: 0;
   font-size: clamp(2rem, 5vh, 3rem);
   line-height: 1;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, .35);
 }
 
 .guest-hero-copy h2 { color: #fde047; font-size: clamp(1.15rem, 2.7vh, 1.55rem); margin-top: 8px; }
@@ -637,17 +621,46 @@ h1, h2, h3, h4, h5, h6 {
 .guest-section-heading h2 { margin-top: 3px; font-size: clamp(1rem, 2.3vh, 1.3rem); }
 .guest-section-heading.compact { margin-bottom: 8px; }
 .guest-steps-grid, .guest-benefits-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
-.guest-step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; font-size: .75rem; }
-.guest-step-icon { width: clamp(38px, 6vh, 52px); height: clamp(38px, 6vh, 52px); border-radius: 50%; display: grid; place-items: center; background: #dcfce7; color: #159447; }
-.guest-step small { width: 19px; height: 19px; display: grid; place-items: center; margin-top: -8px; border-radius: 50%; background: #15803d; color: #fff; font-weight: 800; }
+.guest-steps-grid { position: relative; }
+.guest-steps-grid::before { content: ''; position: absolute; top: clamp(19px, 3vh, 26px); left: 11%; right: 11%; height: 3px; border-radius: 99px; background: linear-gradient(90deg, #16a34a, #15803d); opacity: .25; }
+.guest-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; font-size: .75rem; }
+.guest-step-icon { width: clamp(38px, 6vh, 52px); height: clamp(38px, 6vh, 52px); border: 3px solid #fff; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; box-shadow: 0 5px 12px rgba(21, 128, 61, .2); }
+.guest-step small { width: 19px; height: 19px; display: grid; place-items: center; margin-top: -8px; border: 2px solid #fff; border-radius: 50%; background: #15803d; color: #fff; font-weight: 800; }
 .guest-benefits-grid { grid-template-columns: repeat(3, 1fr); margin-top: 0; }
 .guest-benefit { padding: 9px 7px; border-radius: 14px; border: 1px solid #bbf7d0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; color: #15803d; }
 .guest-benefit strong { color: #0f172a; font-size: clamp(.7rem, 1.5vh, .84rem); }
 .guest-benefit p { color: #64748b; font-size: clamp(.62rem, 1.3vh, .74rem); }
-.guest-about-link { margin-top: 9px; border: 1px solid #e2e8f0; border-radius: 12px; }
-.guest-about-link summary { min-height: 35px; padding: 7px 11px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: .82rem; font-weight: 800; list-style: none; }
-.guest-about-link summary span { margin-left: auto; font-size: 1.2rem; }
-.guest-about-link > p { padding: 0 12px 8px; font-size: .7rem; color: #64748b; }
+.guest-about-link { width: 100%; min-height: 35px; margin-top: 9px; padding: 7px 11px; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; align-items: center; gap: 8px; background: #fff; color: #0f172a; cursor: pointer; font: inherit; font-size: .82rem; font-weight: 800; }
+.guest-about-link span { margin-left: auto; font-size: 1.2rem; }
+
+.about-page-screen {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: clamp(8px, 1.5vh, 14px);
+  overflow: hidden;
+}
+.about-page-header { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; text-align: center; }
+.about-page-header button { width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #fff; color: #0f172a; box-shadow: var(--shadow-sm); cursor: pointer; }
+.about-page-header span { color: #15803d; font-size: .68rem; font-weight: 900; letter-spacing: .14em; }
+.about-page-header h1 { color: #0f172a; font-size: clamp(1.35rem, 3vh, 1.8rem); }
+.about-intro-card { padding: clamp(14px, 2.3vh, 22px); border-radius: 20px; display: flex; align-items: center; gap: 14px; color: #fff; background: linear-gradient(125deg, rgba(5,46,22,.82), rgba(22,163,74,.55)), url('./assets/BGfor.jpg') center/cover; }
+.about-intro-card svg { flex: 0 0 auto; color: #fef08a; }
+.about-intro-card h2 { font-size: clamp(1.05rem, 2.4vh, 1.4rem); }
+.about-intro-card p { margin-top: 4px; color: #dcfce7; font-size: clamp(.72rem, 1.5vh, .88rem); line-height: 1.45; }
+.about-purpose-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.about-purpose-grid article { padding: clamp(12px, 2vh, 18px); border: 1px solid #bbf7d0; border-radius: 17px; background: #fff; }
+.about-purpose-grid span { color: #15803d; font-size: .64rem; font-weight: 900; letter-spacing: .1em; }
+.about-purpose-grid h3 { margin-top: 3px; font-size: clamp(.88rem, 1.8vh, 1.05rem); }
+.about-purpose-grid p { margin-top: 5px; color: #64748b; font-size: clamp(.66rem, 1.35vh, .8rem); line-height: 1.4; }
+.about-details-card { min-height: 0; padding: clamp(12px, 2vh, 18px); border-radius: 20px; background: #fff; border: 1px solid #e2e8f0; }
+.about-details-card > h2 { margin-bottom: 9px; text-align: center; color: #15803d; font-size: clamp(.95rem, 2vh, 1.2rem); }
+.about-benefit-grid { height: calc(100% - 30px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.about-benefit-grid > div { min-height: 0; padding: 8px 6px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; background: #f0fdf4; color: #15803d; }
+.about-benefit-grid strong { color: #0f172a; font-size: clamp(.68rem, 1.4vh, .82rem); }
+.about-benefit-grid p { color: #64748b; font-size: clamp(.6rem, 1.2vh, .72rem); }
+.about-contact-card { padding: 10px 14px; border-radius: 16px; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 16px; background: #052e16; color: #dcfce7; font-size: clamp(.65rem, 1.3vh, .78rem); }
+.about-contact-card span { display: flex; align-items: center; gap: 5px; }
 
 /* Full-page authentication uses the Gonzaga background supplied in BGLogin.jpg. */
 .auth-modal-background { padding: 0 !important; align-items: center !important; overflow: hidden !important; }
@@ -681,9 +694,11 @@ h1, h2, h3, h4, h5, h6 {
 .auth-page-form { gap: clamp(8px, 1.4vh, 14px) !important; }
 .auth-page-form input, .auth-page-form select { padding: 10px 12px !important; }
 .auth-mode-login,
-.auth-mode-reset { display: flex; flex-direction: column; justify-content: center; position: relative; }
+.auth-mode-reset,
+.auth-mode-register { display: flex; flex-direction: column; justify-content: center; position: relative; }
 .auth-mode-login > .auth-page-brand-row,
-.auth-mode-reset > .auth-page-brand-row {
+.auth-mode-reset > .auth-page-brand-row,
+.auth-mode-register > .auth-page-brand-row {
   position: absolute;
   top: clamp(18px, 3vh, 30px);
   left: clamp(20px, 5vw, 38px);
@@ -693,7 +708,7 @@ h1, h2, h3, h4, h5, h6 {
 .auth-mode-reset,
 .auth-mode-register {
   background-image:
-    linear-gradient(rgba(255,255,255,.94), rgba(255,255,255,.86)),
+    linear-gradient(rgba(255,255,255,.62), rgba(255,255,255,.48)),
     url('./assets/BGLogin.jpg') !important;
 }
 .auth-create-account-prompt { margin-top: clamp(14px, 2.4vh, 22px); text-align: center; color: #64748b; font-size: .88rem; }
@@ -710,6 +725,9 @@ h1, h2, h3, h4, h5, h6 {
   .auth-page-heading { margin: 9px 0; }
   .auth-page-form { gap: 7px !important; }
   .auth-page-form input, .auth-page-form select { padding: 8px 10px !important; }
+  .about-page-screen { gap: 6px; }
+  .about-intro-card, .about-purpose-grid article, .about-details-card { padding: 8px 10px; }
+  .about-contact-card { padding: 6px 10px; }
 }
 
 @media (min-width: 769px) {

@@ -5,11 +5,13 @@ import { store } from '../services/store';
 interface HomeViewProps {
   onStartBooking: () => void;
   onOpenFareMatrix: () => void;
+  onOpenAbout: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onStartBooking,
-  onOpenFareMatrix
+  onOpenFareMatrix,
+  onOpenAbout
 }) => {
   const [currentUser, setCurrentUser] = useState(store.getState().currentUser);
 
@@ -23,7 +25,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
     const steps = [
       { icon: MapPin, label: 'Set Pickup' },
       { icon: Map, label: 'Choose Destination' },
-      { icon: PhilippinePeso, label: 'View Fare' },
+      { icon: PhilippinePeso, label: 'Check Fare' },
       { icon: Bike, label: 'Confirm Ride' }
     ];
     const benefits = [
@@ -36,14 +38,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <div className="guest-home-screen">
         <section className="guest-hero-card">
           <div className="guest-hero-copy">
-            <span className="guest-system-label">Municipality of Gonzaga</span>
             <h1>TriSakay</h1>
             <h2>Sakay Mo, Isang Click Lang!</h2>
-            <p>Convenient local tricycle service with registered drivers across Gonzaga.</p>
           </div>
           <div className="guest-hero-actions">
             <button type="button" onClick={onOpenFareMatrix} className="guest-fare-button">
-              <PhilippinePeso size={20} /> Check Gonzaga Fare Rates <span>›</span>
+              <PhilippinePeso size={20} /> Check Fare Rates <span>›</span>
             </button>
           </div>
         </section>
@@ -77,10 +77,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
               </div>
             ))}
           </div>
-          <details className="guest-about-link">
-            <summary><Info size={18} /> About TriSakay <span>›</span></summary>
-            <p>TriSakay connects passengers with registered local tricycle drivers throughout Gonzaga.</p>
-          </details>
+          <button type="button" className="guest-about-link" onClick={onOpenAbout}>
+            <Info size={18} /> About TriSakay <span>›</span>
+          </button>
         </section>
       </div>
     );
