@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { store } from '../services/store';
 import type { UserRole } from '../types';
-import { ArrowLeft, UserCheck, Bike, CheckCircle, AlertCircle, Phone } from 'lucide-react';
+import { ArrowLeft, UserCheck, Bike, CheckCircle, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
 import { INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
 
@@ -23,6 +23,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   const [todaName, setTodaName] = useState('Poblacion Cluster Gontoda Association');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -31,6 +32,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
       setMode(initialMode);
       setError('');
       setSuccessMsg('');
+      setShowPassword(false);
     }
   }, [initialMode, isOpen]);
 
@@ -443,19 +445,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
               {mode === 'reset' ? 'New Password / PIN' : 'Password / PIN'}
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '10px',
-                border: '1px solid #cbd5e1',
-                fontSize: '0.95rem'
-              }}
-            />
+            <div className="auth-password-field">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                style={{
+                  width: '100%',
+                  padding: '12px 46px 12px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.95rem'
+                }}
+              />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword(visible => !visible)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" className="btn-primary" style={{ marginTop: '10px', width: '100%' }}>

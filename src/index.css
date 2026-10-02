@@ -706,7 +706,7 @@ h1, h2, h3, h4, h5, h6 {
 .auth-mode-reset,
 .auth-mode-register {
   background-image:
-    linear-gradient(180deg, rgba(240,253,244,.16), rgba(220,252,231,.1)),
+    linear-gradient(180deg, rgba(240,253,244,.24), rgba(220,252,231,.18)),
     url('./assets/BGLogin.jpg') !important;
 }
 .auth-page-heading,
@@ -714,6 +714,10 @@ h1, h2, h3, h4, h5, h6 {
 .auth-page-panel .auth-page-form > div > div > label {
   text-shadow: 0 1px 4px rgba(255, 255, 255, .95);
 }
+.auth-password-field { position: relative; }
+.auth-password-toggle { position: absolute; top: 50%; right: 7px; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 9px; display: grid; place-items: center; transform: translateY(-50%); background: transparent; color: #475569; cursor: pointer; }
+.auth-password-toggle:hover { background: #f0fdf4; color: #15803d; }
+.auth-password-toggle:focus-visible { outline: 2px solid #16a34a; outline-offset: 1px; }
 .auth-create-account-prompt { margin-top: clamp(14px, 2.4vh, 22px); text-align: center; color: #64748b; font-size: .88rem; }
 .auth-create-account-prompt button { padding: 0; border: 0; background: transparent; color: #15803d; font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; }
 
