@@ -12,12 +12,12 @@ import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 
 interface PassengerDashboardProps {
-  initialTab?: 'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile';
+  initialTab?: 'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile';
 }
 
 export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialTab = 'home' }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'waiting' | 'status' | 'history' | 'notifications' | 'profile'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile'>(initialTab);
 
   useEffect(() => {
     if (initialTab) setActiveTab(initialTab);
@@ -32,9 +32,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const [discountType, setDiscountType] = useState<'regular' | 'senior_student_pwd'>('regular');
   const [specialNotes, setSpecialNotes] = useState('');
 
-  // Waiting Alert Form State
-  const [waitingBarangay, setWaitingBarangay] = useState(INITIAL_GONZAGA_BARANGAYS[0]);
-  const [waitingLandmark, setWaitingLandmark] = useState('');
+  const [waitingReminderBookingId, setWaitingReminderBookingId] = useState<string | null>(null);
 
   // Profile Edit State
   const [profileName, setProfileName] = useState(state.currentUser?.name || '');
@@ -72,14 +70,6 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const fareResult = calculateFare(
     pickupBarangay,
     destBarangay,
-    discountType,
-    state.fares,
-    state.settings.fuelSurgeMultiplier
-  );
-
-  const waitingFareResult = calculateFare(
-    waitingBarangay,
-    'Poblacion (Smart, Progressive, Paradise, Flourishing)',
     discountType,
     state.fares,
     state.settings.fuelSurgeMultiplier
@@ -123,7 +113,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
         setAcceptedDriverToast({
           driverName: currentActiveBooking.driverName || 'Gonzaga Driver',
-          todaName: currentActiveBooking.todaName || 'GOTODA',
+          todaName: currentActiveBooking.todaName || 'Cluster Gontoda Association',
           plateNumber: currentActiveBooking.plateNumber || 'TZ-9842',
           mobile: currentActiveBooking.driverMobile || '09185551234'
         });
@@ -139,7 +129,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
   const handleBookRide = (e: React.FormEvent) => {
     e.preventDefault();
-    store.createBooking({
+    const booking = store.createBooking({
       pickupBarangay,
       pickupLandmark: pickupLandmark || 'Main Road',
       destinationBarangay: destBarangay,
@@ -151,24 +141,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
     });
 
     confetti({ particleCount: 40, spread: 50 });
-    setActiveTab('status');
-  };
-
-  const handleCreateWaitingAlert = (e: React.FormEvent) => {
-    e.preventDefault();
-    store.createBooking({
-      pickupBarangay: waitingBarangay,
-      pickupLandmark: waitingLandmark || 'Roadside Dropoff Point',
-      destinationBarangay: 'On-The-Way Route',
-      destinationLandmark: 'Along Tricycle Route',
-      passengersCount,
-      discountType,
-      specialNotes: specialNotes || 'Waiting for pickup along route',
-      estimatedFare: waitingFareResult.finalFare,
-      isWaitingAlert: true
-    });
-
-    confetti({ particleCount: 40, spread: 50 });
+    setWaitingReminderBookingId(booking.id);
     setActiveTab('status');
   };
 
@@ -221,6 +194,25 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+      {waitingReminderBookingId && (
+        <div className="modal-overlay" style={{ zIndex: 10000 }}>
+          <div className="glass-panel" style={{ width: '100%', maxWidth: '430px', padding: '26px', background: '#fff', textAlign: 'center' }}>
+            <div style={{ fontSize: '2.4rem', marginBottom: '8px' }}>🖐️</div>
+            <h3 style={{ fontSize: '1.3rem', color: '#0f172a', marginBottom: '8px' }}>Are you already waiting?</h3>
+            <p style={{ color: '#64748b', lineHeight: 1.55, marginBottom: '20px' }}>
+              Send an “I’m Waiting” reminder so nearby drivers know you are ready at the pickup point.
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button type="button" className="btn-outline" onClick={() => setWaitingReminderBookingId(null)} style={{ flex: 1 }}>Not Now</button>
+              <button type="button" className="btn-yellow" onClick={() => {
+                store.markBookingWaiting(waitingReminderBookingId);
+                setWaitingReminderBookingId(null);
+              }} style={{ flex: 1 }}>Send Reminder</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* REAL-TIME DRIVER ACCEPTANCE CELEBRATION TOAST */}
       {acceptedDriverToast && (
@@ -326,27 +318,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>Enter pickup & destination for auto fare calculation</p>
             </div>
 
-            {/* 2. I'M WAITING (YELLOW CARD) */}
-            <div onClick={() => setActiveTab('waiting')} className="grid-card-yellow">
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%' }}>
-                <span style={{ fontSize: '1.8rem' }}>🖐️</span>
-              </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>I'M WAITING</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>Quick drop-off alert for passing TODA drivers</p>
-            </div>
-
-            {/* 3. TRACK DRIVER (BLUE CARD) */}
-            <div onClick={() => setActiveTab('status')} className="grid-card-blue">
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%' }}>
-                <Navigation size={32} color="#ffffff" />
-              </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>TRACK DRIVER</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>
-                {currentActiveBooking ? 'Active Ride Tracker ON' : 'View active ride & driver arrival ETA'}
-              </p>
-            </div>
-
-            {/* 4. RIDE HISTORY (PURPLE CARD) */}
+            {/* 2. RIDE HISTORY (PURPLE CARD) */}
             <div onClick={() => setActiveTab('history')} className="grid-card-purple">
               <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%' }}>
                 <Clock size={32} color="#ffffff" />
@@ -567,101 +539,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
         </div>
       )}
 
-      {/* "I'M WAITING" QUICK FORM */}
-      {activeTab === 'waiting' && (
-        <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '650px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('home')} />
-
-          <div style={{
-            background: '#fefce8',
-            border: '2px solid #eab308',
-            padding: '16px',
-            borderRadius: '16px',
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '12px'
-          }}>
-            <span style={{ fontSize: '2rem' }}>🖐️</span>
-            <div>
-              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#854d0e' }}>
-                "I'm Waiting" Quick Drop-Off Alert
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#713f12', lineHeight: 1.5, marginTop: '2px' }}>
-                Notifies nearby online drivers that you are waiting along their route!
-              </p>
-            </div>
-          </div>
-
-          <form onSubmit={handleCreateWaitingAlert} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                Waiting Barangay Location
-              </label>
-              <select
-                value={waitingBarangay}
-                onChange={e => setWaitingBarangay(e.target.value)}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', fontWeight: 700 }}
-              >
-                {INITIAL_GONZAGA_BARANGAYS.map(b => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                Waiting Landmark
-              </label>
-              <input
-                type="text"
-                value={waitingLandmark}
-                onChange={e => setWaitingLandmark(e.target.value)}
-                placeholder="e.g. Near Calayan Waiting Shed"
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                required
-              />
-            </div>
-
-            <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Passengers
-                </label>
-                <select
-                  value={passengersCount}
-                  onChange={e => setPassengersCount(Number(e.target.value))}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', fontWeight: 700 }}
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                    <option key={num} value={num}>{num} Person{num > 1 ? 's' : ''}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Rate Category
-                </label>
-                <select
-                  value={discountType}
-                  onChange={e => setDiscountType(e.target.value as 'regular' | 'senior_student_pwd')}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '1rem', fontWeight: 700 }}
-                >
-                  <option value="regular">Regular Rate</option>
-                  <option value="senior_student_pwd">Senior/Student/PWD</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="submit" className="btn-yellow" style={{ padding: '16px', fontSize: '1.15rem', borderRadius: '16px', width: '100%' }}>
-              🖐️ NOTIFY DRIVERS
-            </button>
-          </form>
-        </div>
-      )}
-
-      {/* STEP 4, 5, 6, 7: TRACK DRIVER & STATUS WORKFLOW (Matching Wireframe Steps 4, 5, 6, 7) */}
+      {/* ACTIVE RIDE STATUS WORKFLOW */}
       {activeTab === 'status' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
           <IOSBackButton onClick={() => setActiveTab('home')} />
@@ -671,7 +549,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               <Bike size={48} color="#cbd5e1" style={{ marginBottom: '16px' }} />
               <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#64748b' }}>No Active Ride Booking</h3>
               <p style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '20px' }}>
-                Click below to book a ride or notify nearby Gonzaga drivers.
+                Click below to book a ride.
               </p>
               <button onClick={() => setActiveTab('book')} className="btn-primary">
                 Book a Ride Now
@@ -729,10 +607,10 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                     </div>
 
                     <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
-                      Broadcasting to Nearby TODAs
+                      Broadcasting to Nearby Cluster Gontodas
                     </h3>
                     <p style={{ fontSize: '0.88rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
-                      Paging drivers in <strong>GOTODA, BAUATODA, CALAYANTODA, and PATENGTODA</strong>.
+                      Paging drivers in the registered <strong>Cluster Gontoda associations</strong>.
                     </p>
 
                     {/* CELLULAR SMS GUARANTEE BANNER */}
@@ -972,7 +850,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                               🛺 {currentActiveBooking.plateNumber || 'TZ-9842'}
                             </span>
                             <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
-                              {currentActiveBooking.todaName || 'GOTODA'}
+                              {currentActiveBooking.todaName || 'Cluster Gontoda Association'}
                             </span>
                           </div>
                         </div>
@@ -1199,7 +1077,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                   </span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
-                  {b.status === 'DRIVER_ACCEPTED' && `Driver ${b.driverName} (${b.todaName || 'GOTODA'} ${b.plateNumber || 'TZ-9842'}) accepted your ride to ${b.destinationBarangay}.`}
+                  {b.status === 'DRIVER_ACCEPTED' && `Driver ${b.driverName} (${b.todaName || 'Cluster Gontoda Association'} ${b.plateNumber || 'TZ-9842'}) accepted your ride to ${b.destinationBarangay}.`}
                   {b.status === 'DRIVER_ARRIVING' && `Driver ${b.driverName} has arrived at ${b.pickupLandmark || b.pickupBarangay}. Please proceed to the tricycle.`}
                   {b.status === 'COMPLETED' && `Your ride from ${b.pickupBarangay} to ${b.destinationBarangay} was completed. Fare paid: ₱${b.estimatedFare}.`}
                   {b.status === 'WAITING_FOR_DRIVER' && `Booking placed for ${b.pickupBarangay} to ${b.destinationBarangay}. Searching for nearby drivers...`}

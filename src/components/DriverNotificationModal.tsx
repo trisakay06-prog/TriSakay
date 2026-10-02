@@ -71,6 +71,11 @@ export const DriverNotificationModal: React.FC<DriverNotificationModalProps> = (
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>
             New Booking Request!
           </h3>
+          {activeBooking.isWaitingAlert && (
+            <div style={{ display: 'inline-block', marginTop: '8px', padding: '5px 10px', borderRadius: '999px', background: '#fef08a', color: '#854d0e', fontSize: '.78rem', fontWeight: 800 }}>
+              🖐️ Passenger is waiting at the pickup point
+            </div>
+          )}
           <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
             Municipality of Gonzaga Tricycle Network
           </p>

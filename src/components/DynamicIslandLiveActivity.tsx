@@ -41,7 +41,7 @@ export const DynamicIslandLiveActivity: React.FC<DynamicIslandProps> = ({ onOpen
   const getStatusLabel = () => {
     switch (activeBooking.status) {
       case 'WAITING_FOR_DRIVER':
-        return { text: 'Searching Gonzaga Drivers...', sub: 'Connecting with nearby TODA', color: '#FF9500', icon: '⏳' };
+        return { text: 'Searching Gonzaga Drivers...', sub: 'Connecting with nearby Cluster Gontoda', color: '#FF9500', icon: '⏳' };
       case 'DRIVER_ACCEPTED':
         return { text: `Driver ${activeBooking.driverName || 'Assigned'} En Route`, sub: `Heading to ${cleanBarangay(activeBooking.pickupBarangay)}`, color: '#16a34a', icon: '🛺' };
       case 'DRIVER_ARRIVING':

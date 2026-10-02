@@ -13,14 +13,14 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login');
   const [role, setRole] = useState<UserRole>('passenger');
 
   // Form Fields
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [barangay, setBarangay] = useState(INITIAL_GONZAGA_BARANGAYS[0]);
-  const [todaName, setTodaName] = useState('GOTODA (Gonzaga Toda)');
+  const [todaName, setTodaName] = useState('Poblacion Cluster Gontoda Association');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
   const [profileImage, setProfileImage] = useState('');
@@ -43,6 +43,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
     if (!cleanedMobile || !password) {
       setError('Please provide your mobile number and password.');
+      return;
+    }
+
+    if (mode === 'reset') {
+      if (!validateMobile(cleanedMobile)) {
+        setError('Please enter a valid 11-digit Philippine mobile number.');
+        return;
+      }
+      if (password.length < 4) {
+        setError('Your new password/PIN must have at least 4 characters.');
+        return;
+      }
+      if (!store.resetPassword(cleanedMobile, password)) {
+        setError('No account was found with this mobile number.');
+        return;
+      }
+      setSuccessMsg('Password/PIN reset successfully. You may now sign in.');
+      setPassword('');
+      setMode('login');
       return;
     }
 
@@ -78,6 +97,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       const state = store.getState();
       const existingUser = state.users.find(u => u.mobile === cleanedMobile);
       if (existingUser) {
+        if (existingUser.role !== role) {
+          setError(`This mobile number is registered as a ${existingUser.role}. Please select the correct account type.`);
+          return;
+        }
+        if (existingUser.password && existingUser.password !== password) {
+          setError('Incorrect password/PIN. Please try again or reset it.');
+          return;
+        }
         if (existingUser.isBlocked) {
           setError('This account has been blocked by the Administrator.');
           return;
@@ -90,19 +117,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         onSuccess();
         onClose();
       } else {
-        if (role === 'passenger') {
-          const registered = store.registerUser({
-            name: cleanedMobile === '09396591974' ? 'Sheena Soriano (Student)' : `Passenger ${cleanedMobile.slice(-4)}`,
-            mobile: cleanedMobile,
-            role: 'passenger',
-            barangay: 'Calayan'
-          });
-          sendRegistrationWelcomeSMS(registered.name, registered.mobile, registered.role, registered.barangay);
-          onSuccess();
-          onClose();
-          return;
-        }
-        setError('No driver account found with this mobile number. Please register your driver account first!');
+        setError('No account found with this mobile number. Please register and provide your information first.');
       }
     } else {
       // REGISTRATION MODE: Admin role cannot be registered
@@ -121,14 +136,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         return;
       }
 
+      if (store.getState().users.some(u => u.mobile === cleanedMobile)) {
+        setError('This mobile number is already registered. Please sign in instead.');
+        return;
+      }
+
       if (role === 'driver' && (!plateNumber || !todaName)) {
-        setError('Drivers must specify TODA Association and Tricycle Plate Number.');
+        setError('Drivers must specify a Cluster Gontoda Association and tricycle plate number.');
         return;
       }
 
       const newUser = store.registerUser({
         name,
         mobile: cleanedMobile,
+        password,
         role,
         barangay,
         profileImage: profileImage || undefined,
@@ -140,7 +161,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
       sendRegistrationWelcomeSMS(name, cleanedMobile, role, barangay);
 
       if (role === 'driver') {
-        setSuccessMsg('Registration submitted! Welcome SMS sent. Driver accounts require Admin verification.');
+        store.setCurrentUser(null);
+        setSuccessMsg("Registration Submitted, Waiting for Admin's Approval");
       } else {
         store.setCurrentUser(newUser);
         onSuccess();
@@ -150,7 +172,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay auth-modal-background" onClick={() => {
+      if (successMsg && role === 'driver' && mode === 'register') {
+        setMode('login');
+        setRole('driver');
+        setSuccessMsg('');
+        setPassword('');
+      } else {
+        onClose();
+      }
+    }}>
       <div 
         className="glass-panel" 
         onClick={e => e.stopPropagation()}
@@ -166,14 +197,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <div>
             <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a' }}>
-              {mode === 'login' ? 'Sign In to TriSakay' : 'Register Account'}
+              {mode === 'login' ? 'Sign In to TriSakay' : mode === 'register' ? 'Register Account' : 'Reset Password / PIN'}
             </h2>
             <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
               Municipality of Gonzaga Tricycle Booking System
             </p>
           </div>
           <button 
-            onClick={onClose} 
+            onClick={() => {
+              if (successMsg && role === 'driver' && mode === 'register') {
+                setMode('login');
+                setRole('driver');
+                setSuccessMsg('');
+                setPassword('');
+              } else {
+                onClose();
+              }
+            }}
             style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8' }}
           >
             <X size={24} />
@@ -181,14 +221,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
         </div>
 
         {/* ROLE SELECTION TABS */}
-        <div style={{
+        {mode !== 'reset' && <div style={{
           display: 'flex',
           background: '#f1f5f9',
           borderRadius: '12px',
           padding: '4px',
           marginBottom: '20px'
         }}>
-          {/* Passenger / Student Option */}
+          {/* Passenger Option */}
           <button
             type="button"
             onClick={() => setRole('passenger')}
@@ -209,7 +249,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               gap: '6px'
             }}
           >
-            <UserCheck size={16} /> Passenger / Student
+            <UserCheck size={16} /> Passenger
           </button>
 
           {/* Driver Option */}
@@ -261,7 +301,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
               <ShieldCheck size={16} /> Admin
             </button>
           )}
-        </div>
+        </div>}
 
         {error && (
           <div style={{
@@ -280,7 +320,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           </div>
         )}
 
-        {successMsg && (
+        {successMsg && role === 'driver' && mode === 'register' ? (
+          <div style={{ textAlign: 'center', padding: '24px 8px 8px' }}>
+            <CheckCircle size={58} color="#16a34a" style={{ marginBottom: '12px' }} />
+            <h3 style={{ fontSize: '1.25rem', color: '#15803d', marginBottom: '8px' }}>{successMsg}</h3>
+            <p style={{ color: '#64748b', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: '20px' }}>
+              You will be able to sign in after the administrator approves your driver registration.
+            </p>
+            <button type="button" className="btn-primary" onClick={() => {
+              store.setCurrentUser(null);
+              setMode('login');
+              setRole('driver');
+              setSuccessMsg('');
+              setPassword('');
+            }} style={{ width: '100%' }}>
+              Close
+            </button>
+          </div>
+        ) : successMsg && (
           <div style={{
             background: '#f0fdf4',
             border: '1px solid #bbf7d0',
@@ -321,7 +378,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {!(successMsg && role === 'driver' && mode === 'register') && <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {mode === 'register' && (
             <div style={{ marginBottom: '6px' }}>
               <ProfileAvatarUpload
@@ -412,7 +469,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             <>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                  TODA Association
+                  Cluster Gontoda Association
                 </label>
                 <select
                   value={todaName}
@@ -425,10 +482,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                     fontSize: '0.95rem'
                   }}
                 >
-                  <option value="GOTODA (Gonzaga Toda)">GOTODA (Gonzaga Toda)</option>
-                  <option value="BAUATODA">BAUATODA (Baua Drivers Association)</option>
-                  <option value="CALAYANTODA">CALAYANTODA</option>
-                  <option value="PATENGTODA">PATENGTODA</option>
+                  {store.getState().todas.map(cluster => (
+                    <option key={cluster.id} value={cluster.name}>{cluster.name}</option>
+                  ))}
                 </select>
               </div>
 
@@ -455,7 +511,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
           <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-              Password / PIN
+              {mode === 'reset' ? 'New Password / PIN' : 'Password / PIN'}
             </label>
             <input
               type="password"
@@ -473,9 +529,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
           </div>
 
           <button type="submit" className="btn-primary" style={{ marginTop: '10px', width: '100%' }}>
-            {mode === 'login' ? `Login as ${role.toUpperCase()}` : `Register as ${role.toUpperCase()}`}
+            {mode === 'login' ? `Sign In as ${role.toUpperCase()}` : mode === 'register' ? `Register as ${role.toUpperCase()}` : 'Reset Password / PIN'}
           </button>
-        </form>
+          {mode === 'login' && role !== 'admin' && (
+            <button type="button" onClick={() => { setMode('reset'); setError(''); setSuccessMsg(''); setPassword(''); }} style={{ border: 'none', background: 'transparent', color: '#15803d', fontWeight: 700, cursor: 'pointer' }}>
+              Forgot Password / PIN?
+            </button>
+          )}
+        </form>}
 
         <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b' }}>
           {mode === 'login' ? (
@@ -488,7 +549,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 Register Now
               </button>
             </span>
-          ) : (
+          ) : mode === 'register' ? (
             <span>
               Already registered?{' '}
               <button 
@@ -498,8 +559,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
                 Sign In
               </button>
             </span>
+          ) : (
+            <button onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }} style={{ color: '#16a34a', fontWeight: 700, border: 'none', background: 'transparent', cursor: 'pointer' }}>
+              Back to Sign In
+            </button>
           )}
         </div>
+        <style>{`
+          .auth-modal-background {
+            background:
+              radial-gradient(circle at 18% 20%, rgba(250, 204, 21, .24), transparent 30%),
+              linear-gradient(135deg, rgba(5, 46, 22, .94), rgba(21, 128, 61, .86));
+            padding: 20px;
+          }
+        `}</style>
       </div>
     </div>
   );

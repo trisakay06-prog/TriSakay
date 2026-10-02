@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Sparkles, UserCheck, Settings, Bell } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, UserCheck, Settings, Bell } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 
 interface NavbarProps {
@@ -38,14 +38,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
     ? state.bookings.filter(b => b.status === 'WAITING_FOR_DRIVER').length
     : 0;
   const pendingAdminItems = user?.role === 'admin'
-    ? state.users.filter(u => u.role === 'driver' && !u.isApproved).length + state.reports.filter(r => r.status === 'pending').length
+    ? state.users.filter(u => u.role === 'driver' && !u.isApproved && !u.isBlocked).length + state.reports.filter(r => r.status === 'pending').length
     : 0;
 
-  const unreadCount = user?.role === 'driver' 
-    ? pendingDriverRequests 
+  const unreadCount = user?.role === 'driver'
+    ? pendingDriverRequests
     : user?.role === 'admin'
-    ? pendingAdminItems
-    : (activeUserBooking ? 1 : 0);
+      ? pendingAdminItems
+      : (activeUserBooking ? 1 : 0);
 
   const getDashboardLabel = () => {
     if (!user) return 'Dashboard';
@@ -75,8 +75,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
       }}>
 
         {/* LOGO & BRANDING */}
-        <div 
-          onClick={() => setActiveTab('home')} 
+        <div
+          onClick={() => setActiveTab('home')}
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}
         >
           <div style={{
@@ -163,7 +163,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             <HelpCircle size={16} /> How It Works
           </button>
 
-          <button
+          {(!user || user.role === 'admin') && <button
             onClick={() => setActiveTab('fare-matrix')}
             style={{
               background: 'transparent',
@@ -178,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             }}
           >
             <FileText size={16} /> Fare Matrix
-          </button>
+          </button>}
 
           <button
             onClick={() => setActiveTab('dashboard')}
@@ -202,30 +202,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
 
         {/* RIGHT CONTROLS */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={() => store.toggleSeniorMode()}
-            className="desktop-senior-btn"
-            style={{
-              background: state.seniorMode ? '#fef08a' : '#f1f5f9',
-              color: state.seniorMode ? '#854d0e' : '#475569',
-              border: state.seniorMode ? '2px solid #eab308' : '1px solid #cbd5e1',
-              padding: '6px 12px',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-            title="Toggle Senior Citizen High Contrast & Large Text Mode"
-          >
-            <Sparkles size={16} color={state.seniorMode ? '#d97706' : '#64748b'} />
-            <span>Senior Mode: {state.seniorMode ? 'ON' : 'OFF'}</span>
-          </button>
-
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-              
+
               {/* NOTIFICATION BELL ICON (CLICKABLE) */}
               <button
                 onClick={() => setActiveTab('notifications')}

@@ -31,7 +31,7 @@ export const INITIAL_USERS: User[] = [
     mobile: '09185551234',
     role: 'driver',
     barangay: 'Calayan',
-    todaName: 'GOTODA (Gonzaga Toda)',
+    todaName: 'Calayan Cluster Gontoda Association',
     plateNumber: 'TZ-9842',
     isApproved: true,
     createdAt: '2026-08-01T10:00:00Z',
@@ -69,10 +69,10 @@ export const INITIAL_USERS: User[] = [
 ];
 
 export const INITIAL_TODAS: TodaGroup[] = [
-  { id: 't1', name: 'GOTODA (Gonzaga Tricycle Operators & Drivers Association)', zoneBarangay: 'Poblacion', presidentName: 'Manuel Valenzuela', contactNumber: '09173338899', activeCount: 45 },
-  { id: 't2', name: 'BAUATODA (Baua Drivers Association)', zoneBarangay: 'Baua', presidentName: 'Arnel Castillo', contactNumber: '09204445566', activeCount: 22 },
-  { id: 't3', name: 'CALAYANTODA (Calayan Transport Group)', zoneBarangay: 'Calayan', presidentName: 'Roberto Aguinaldo', contactNumber: '09187771122', activeCount: 18 },
-  { id: 't4', name: 'PATENGTODA (Pateng Tricycle Group)', zoneBarangay: 'Pateng', presidentName: 'Danilo Pascual', contactNumber: '09278889900', activeCount: 15 },
+  { id: 't1', name: 'Poblacion Cluster Gontoda Association', zoneBarangay: 'Poblacion', presidentName: 'Manuel Valenzuela', contactNumber: '09173338899', activeCount: 45 },
+  { id: 't2', name: 'Baua Cluster Gontoda Association', zoneBarangay: 'Baua', presidentName: 'Arnel Castillo', contactNumber: '09204445566', activeCount: 22 },
+  { id: 't3', name: 'Calayan Cluster Gontoda Association', zoneBarangay: 'Calayan', presidentName: 'Roberto Aguinaldo', contactNumber: '09187771122', activeCount: 18 },
+  { id: 't4', name: 'Pateng Cluster Gontoda Association', zoneBarangay: 'Pateng', presidentName: 'Danilo Pascual', contactNumber: '09278889900', activeCount: 15 },
 ];
 
 export const INITIAL_BOOKINGS: Booking[] = [
@@ -93,7 +93,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     driverId: 'user_driver_1',
     driverName: 'Juan Dela Cruz',
     driverMobile: '09185551234',
-    todaName: 'GOTODA',
+      todaName: 'Calayan Cluster Gontoda Association',
     plateNumber: 'TZ-9842',
     rating: 5,
     ratingComment: 'Very polite driver! Quick pickup.',
@@ -329,7 +329,15 @@ class StoreService {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return { ...parsed, currentUser };
+        const clusterByBarangay = new Map(INITIAL_TODAS.map(t => [t.zoneBarangay.toLowerCase(), t.name]));
+        const users = (parsed.users || INITIAL_USERS).map((user: User) => {
+          if (user.role !== 'driver' || user.todaName?.toLowerCase().includes('cluster gontoda')) return user;
+          return { ...user, todaName: clusterByBarangay.get(user.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' };
+        });
+        const migratedCurrentUser = currentUser?.role === 'driver' && !currentUser.todaName?.toLowerCase().includes('cluster gontoda')
+          ? { ...currentUser, todaName: clusterByBarangay.get(currentUser.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' }
+          : currentUser;
+        return { ...parsed, users, todas: INITIAL_TODAS, currentUser: migratedCurrentUser };
       }
     } catch (e) {
       console.error('Failed to parse state from localStorage', e);
@@ -499,14 +507,14 @@ class StoreService {
           next.driverName = driver.name;
           next.driverMobile = driver.mobile;
           next.driverProfileImage = driver.profileImage;
-          next.todaName = driver.todaName || 'GOTODA (Gonzaga Toda)';
+          next.todaName = driver.todaName || 'Cluster Gontoda Association';
           next.plateNumber = driver.plateNumber || 'TZ-9842';
         }
         if (status === 'DRIVER_ACCEPTED') {
           next.acceptedAt = new Date().toISOString();
           const dName = driver?.name || next.driverName || 'Driver';
           const dMobile = driver?.mobile || next.driverMobile || '09185551234';
-          const toda = driver?.todaName || next.todaName || 'GOTODA (Gonzaga Toda)';
+          const toda = driver?.todaName || next.todaName || 'Cluster Gontoda Association';
           const plate = driver?.plateNumber || next.plateNumber || 'TZ-9842';
           sendBookingAcceptedSMS(
             b.passengerName,
@@ -578,6 +586,14 @@ class StoreService {
     this.saveStateToStorage({ ...this.data, bookings: updatedBookings });
   }
 
+  public markBookingWaiting(bookingId: string) {
+    const updatedBookings = this.data.bookings.map(b =>
+      b.id === bookingId ? { ...b, isWaitingAlert: true } : b
+    );
+    this.saveStateToStorage({ ...this.data, bookings: updatedBookings }, true);
+    playNotificationSound();
+  }
+
   public registerUser(user: Omit<User, 'id' | 'createdAt'>): User {
     const newUser: User = {
       ...user,
@@ -599,6 +615,13 @@ class StoreService {
       return u;
     });
     this.saveStateToStorage({ ...this.data, users: updatedUsers });
+  }
+
+  public resetPassword(mobile: string, password: string): boolean {
+    const user = this.data.users.find(u => u.mobile === mobile);
+    if (!user) return false;
+    this.updateUser(user.id, { password });
+    return true;
   }
 
   public toggleBlockUser(userId: string) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Home, Bike, FileText, Sparkles, Shield } from 'lucide-react';
+import { Home, Bike, FileText, Shield } from 'lucide-react';
 
 interface MobileBottomNavProps {
   activeTab: string;
@@ -33,14 +33,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <span>Home</span>
         </button>
 
-        <button
+        {(!user || user.role === 'admin') && <button
           onClick={() => setActiveTab('fare-matrix')}
           className={`mobile-dock-btn ${activeTab === 'fare-matrix' ? 'active' : ''}`}
           aria-label="Fare Matrix"
         >
           <FileText size={20} />
           <span>Fares</span>
-        </button>
+        </button>}
 
         {user && (
           <button
@@ -59,14 +59,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           </button>
         )}
 
-        <button
-          onClick={() => store.toggleSeniorMode()}
-          className={`mobile-dock-btn ${state.seniorMode ? 'active-senior' : ''}`}
-          aria-label="Toggle Senior Mode"
-        >
-          <Sparkles size={19} color={state.seniorMode ? '#d97706' : '#64748b'} />
-          <span>{state.seniorMode ? 'Senior ON' : 'Senior'}</span>
-        </button>
       </nav>
 
       <style>{`

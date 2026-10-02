@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import { FileText, Search, Info } from 'lucide-react';
+import { FareCalculatorWidget } from '../components/FareCalculatorWidget';
 
 export const FareMatrixView: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
@@ -19,6 +20,7 @@ export const FareMatrixView: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <FareCalculatorWidget />
       
       {/* HEADER CARD */}
       <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff' }}>

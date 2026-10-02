@@ -11,11 +11,15 @@ import { AdminDashboard } from './views/AdminDashboard';
 import { FareMatrixView } from './views/FareMatrixView';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivity';
+import { UserSideNavigation } from './components/UserSideNavigation';
+import { DriverNotificationModal } from './components/DriverNotificationModal';
+import { Clock3, Fuel, HeartHandshake } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [activeTab, setActiveTab] = useState<string>('home');
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
+  const [dismissedHomeRequests, setDismissedHomeRequests] = useState<string[]>([]);
 
   useEffect(() => {
     return store.subscribe(() => setState(store.getState()));
@@ -34,13 +38,6 @@ export const App: React.FC = () => {
               setActiveTab('dashboard');
             }
           }}
-          onStartWaiting={() => {
-            if (!currentUser) {
-              setAuthModalOpen(true);
-            } else {
-              setActiveTab('dashboard');
-            }
-          }}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
         />
       );
@@ -50,14 +47,33 @@ export const App: React.FC = () => {
       return <FareMatrixView />;
     }
 
+    if (activeTab === 'service-benefits') {
+      const benefits = [
+        { title: 'Reduce Waiting Time', text: 'Send ride requests directly to available local drivers instead of waiting without an update.', icon: Clock3 },
+        { title: 'Senior & PWD Friendly', text: 'Clear controls, accessible booking details, and the proper discounted fare category support inclusive travel.', icon: HeartHandshake },
+        { title: 'Fuel & Route Efficiency', text: 'Pickup and destination details help drivers choose practical routes and avoid unnecessary trips.', icon: Fuel }
+      ];
+      return (
+        <section className="glass-panel" style={{ padding: '32px', background: '#fff' }}>
+          <h2 style={{ color: '#15803d', marginBottom: '8px' }}>Why use TriSakay?</h2>
+          <p style={{ color: '#64748b', marginBottom: '24px' }}>Designed for passengers and local tricycle drivers across Gonzaga.</p>
+          <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+            {benefits.map(({ title, text, icon: Icon }) => (
+              <article key={title} className="glass-card" style={{ padding: '22px' }}>
+                <Icon size={28} color="#15803d" />
+                <h3 style={{ margin: '12px 0 8px' }}>{title}</h3>
+                <p style={{ color: '#64748b', lineHeight: 1.6 }}>{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
     if (activeTab === 'how-it-works') {
       return (
         <HomeView
           onStartBooking={() => {
-            if (!currentUser) setAuthModalOpen(true);
-            else setActiveTab('dashboard');
-          }}
-          onStartWaiting={() => {
             if (!currentUser) setAuthModalOpen(true);
             else setActiveTab('dashboard');
           }}
@@ -123,7 +139,7 @@ export const App: React.FC = () => {
               Sign In to Your Dashboard
             </h2>
             <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto 24px auto', lineHeight: 1.5 }}>
-              Enter your registered Philippine mobile number to book rides, track drivers, or manage trips.
+              Enter your registered Philippine mobile number to book rides or manage trips.
             </p>
             <button onClick={() => setAuthModalOpen(true)} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '0 auto' }}>
               Sign In / Register Account
@@ -150,10 +166,6 @@ export const App: React.FC = () => {
           if (!currentUser) setAuthModalOpen(true);
           else setActiveTab('dashboard');
         }}
-        onStartWaiting={() => {
-          if (!currentUser) setAuthModalOpen(true);
-          else setActiveTab('dashboard');
-        }}
         onOpenFareMatrix={() => setActiveTab('fare-matrix')}
       />
     );
@@ -175,15 +187,31 @@ export const App: React.FC = () => {
         setActiveTab={setActiveTab}
       />
 
+      {currentUser?.role === 'driver' && activeTab === 'home' && (() => {
+        const request = state.bookings.find(b => b.status === 'WAITING_FOR_DRIVER' && !dismissedHomeRequests.includes(b.id));
+        return request ? (
+          <DriverNotificationModal
+            activeBooking={request}
+            currentDriver={currentUser}
+            onDismiss={() => setDismissedHomeRequests(ids => [...ids, request.id])}
+          />
+        ) : null;
+      })()}
+
+      <div className="app-content-shell">
+      {currentUser && currentUser.role !== 'admin' && (
+        <UserSideNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      )}
       <main className="main-content-area" style={{
         flex: 1,
-        maxWidth: '1200px',
+        maxWidth: currentUser && currentUser.role !== 'admin' ? '980px' : '1200px',
         width: '100%',
         margin: '0 auto',
         padding: '24px 20px'
       }}>
         {renderContent()}
       </main>
+      </div>
 
       <AuthModal
         isOpen={authModalOpen}

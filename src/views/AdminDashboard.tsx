@@ -45,7 +45,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
     return store.subscribe(() => setState(store.getState()));
   }, []);
 
-  const pendingDrivers = state.users.filter(u => u.role === 'driver' && !u.isApproved);
+  const pendingDrivers = state.users.filter(u => u.role === 'driver' && !u.isApproved && !u.isBlocked);
   const approvedDrivers = state.users.filter(u => u.role === 'driver' && u.isApproved);
   const passengers = state.users.filter(u => u.role === 'passenger');
   const blockedUsers = state.users.filter(u => u.isBlocked);
@@ -134,7 +134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
             📋 Fare Matrix
           </button>
           <button onClick={() => setActiveTab('todas')} className={activeTab === 'todas' ? 'btn-primary' : 'btn-outline'} style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
-            🏛️ Barangays & TODAs ({state.todas.length})
+            🏛️ Cluster Gontoda List ({state.todas.length})
           </button>
           <button onClick={() => setActiveTab('reports')} className={activeTab === 'reports' ? 'btn-primary' : 'btn-outline'} style={{ padding: '8px 14px', fontSize: '0.85rem' }}>
             🛡️ Reports ({state.reports.length})
@@ -254,22 +254,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                       </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button
-                        onClick={() => handleRejectDriver(d.id)}
-                        className="btn-danger"
-                        style={{ flex: 1, padding: '8px', fontSize: '0.85rem', borderRadius: '8px' }}
-                      >
-                        REJECT
-                      </button>
-                      <button
-                        onClick={() => handleApproveDriver(d.id)}
-                        className="btn-primary"
-                        style={{ flex: 1, padding: '8px', fontSize: '0.85rem', borderRadius: '8px' }}
-                      >
-                        APPROVE
-                      </button>
-                    </div>
+                    <p style={{ color: '#64748b', fontSize: '0.78rem', textAlign: 'center' }}>
+                      Review the submitted details, then approve once from the review window.
+                    </p>
                   </div>
                 ))}
               </div>
@@ -289,7 +276,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                     <th style={{ padding: '12px' }}>Driver Name</th>
                     <th style={{ padding: '12px' }}>Mobile</th>
                     <th style={{ padding: '12px' }}>Barangay</th>
-                    <th style={{ padding: '12px' }}>TODA</th>
+                    <th style={{ padding: '12px' }}>Cluster Gontoda</th>
                     <th style={{ padding: '12px' }}>Plate Number</th>
                     <th style={{ padding: '12px' }}>Actions</th>
                   </tr>
@@ -312,7 +299,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                           <button
                             onClick={() => setVerifyingDriver(d)}
                             style={{ background: '#f0f9ff', color: '#0369a1', border: '1px solid #bae6fd', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, cursor: 'pointer', fontSize: '0.75rem' }}
-                            title="Verify tricycle franchise and TODA records"
+                            title="Verify tricycle franchise and Cluster Gontoda records"
                           >
                             Details 🔍
                           </button>
@@ -558,24 +545,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
         </div>
       )}
 
-      {/* BARANGAYS & TODAS MANAGEMENT TAB */}
+      {/* BARANGAYS & CLUSTER GONTODA MANAGEMENT TAB */}
       {activeTab === 'todas' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          {/* TODA ASSOCIATIONS MANAGEMENT */}
+          {/* CLUSTER GONTODA ASSOCIATIONS MANAGEMENT */}
           <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#ffffff' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#16a34a', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Building size={22} /> TODA Driver Associations ({state.todas.length})
+                  <Building size={22} /> Cluster Gontoda Associations ({state.todas.length})
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                  Registered tricycle operators & drivers associations in Municipality of Gonzaga
+                  Barangay-based Cluster Gontoda associations in the Municipality of Gonzaga
                 </p>
               </div>
 
               <button onClick={() => setShowAddTodaModal(true)} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                <Plus size={16} /> Register New TODA
+                <Plus size={16} /> Add Cluster Association
               </button>
             </div>
 
@@ -605,7 +592,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                       }}
                       style={{ background: 'transparent', border: '1px solid #fee2e2', color: '#dc2626', padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      <Trash2 size={12} /> Remove TODA
+                      <Trash2 size={12} /> Remove Association
                     </button>
                   </div>
                 </div>
@@ -817,12 +804,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
         </div>
       )}
 
-      {/* ADD TODA MODAL */}
+      {/* ADD CLUSTER GONTODA MODAL */}
       {showAddTodaModal && (
         <div className="modal-overlay" onClick={() => setShowAddTodaModal(false)}>
           <div className="glass-panel" onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: '420px', padding: '24px', borderRadius: '20px', background: '#ffffff' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#16a34a', marginBottom: '12px' }}>
-              Register New TODA Association
+              Add Cluster Gontoda Association
             </h3>
 
             <form onSubmit={(e) => {
@@ -842,8 +829,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               setNewTodaContact('');
             }} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>TODA Name</label>
-                <input type="text" value={newTodaName} onChange={e => setNewTodaName(e.target.value)} placeholder="e.g. MINANGATODA" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} required />
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>Cluster Association Name</label>
+                <input type="text" value={newTodaName} onChange={e => setNewTodaName(e.target.value)} placeholder="e.g. Minanga Cluster Gontoda Association" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} required />
               </div>
 
               <div>
@@ -866,7 +853,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                   Cancel
                 </button>
                 <button type="submit" className="btn-primary" style={{ flex: 1, padding: '10px' }}>
-                  Register TODA
+                  Add Association
                 </button>
               </div>
             </form>
@@ -912,9 +899,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>TODA Association</span>
+                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Cluster Gontoda Association</span>
                 <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 800 }}>
-                  {verifyingDriver.todaName || 'GOTODA'}
+                  {verifyingDriver.todaName || 'Not specified'}
                 </span>
               </div>
 
@@ -941,17 +928,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               </button>
 
               {!verifyingDriver.isApproved ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleApproveDriver(verifyingDriver.id);
-                    setVerifyingDriver(null);
-                  }}
-                  className="btn-primary"
-                  style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '0.9rem' }}
-                >
-                  <CheckCircle2 size={16} /> Approve Driver
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleRejectDriver(verifyingDriver.id);
+                      setVerifyingDriver(null);
+                    }}
+                    className="btn-danger"
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '0.9rem' }}
+                  >
+                    Reject
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleApproveDriver(verifyingDriver.id);
+                      setVerifyingDriver(null);
+                    }}
+                    className="btn-primary"
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', fontSize: '0.9rem' }}
+                  >
+                    <CheckCircle2 size={16} /> Approve Once
+                  </button>
+                </>
               ) : (
                 <button
                   type="button"

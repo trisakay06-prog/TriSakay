@@ -4,6 +4,7 @@ export interface User {
   id: string;
   name: string;
   mobile: string;
+  password?: string;
   role: UserRole;
   barangay: string;
   profileImage?: string; // Cloudinary URL or local Base64

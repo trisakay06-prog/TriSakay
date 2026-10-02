@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Bike, Shield, Users, MapPin, Phone, Mail, Sparkles } from 'lucide-react';
-import { FareCalculatorWidget } from '../components/FareCalculatorWidget';
 import { store } from '../services/store';
 
 interface HomeViewProps {
   onStartBooking: () => void;
-  onStartWaiting: () => void;
   onOpenFareMatrix: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onStartBooking,
-  onStartWaiting,
   onOpenFareMatrix
 }) => {
   const [currentUser, setCurrentUser] = useState(store.getState().currentUser);
@@ -155,27 +152,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Bike size={24} /> Open Driver Cockpit
                 </button>
 
-                <button
-                  onClick={onOpenFareMatrix}
-                  className="hero-btn"
-                  style={{
-                    background: '#ffffff',
-                    color: '#15803d',
-                    border: 'none',
-                    borderRadius: '16px',
-                    padding: '16px 28px',
-                    fontSize: '1.1rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 8px 20px rgba(255,255,255,0.2)'
-                  }}
-                >
-                  📋 View Official Fare Matrix
-                </button>
               </>
             ) : currentUser?.role === 'passenger' ? (
               <>
@@ -192,27 +168,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Bike size={24} /> Book a Ride Now
                 </button>
 
-                <button
-                  onClick={onStartWaiting}
-                  className="hero-btn"
-                  style={{
-                    background: '#ffffff',
-                    color: '#15803d',
-                    border: 'none',
-                    borderRadius: '16px',
-                    padding: '16px 28px',
-                    fontSize: '1.1rem',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    boxShadow: '0 8px 20px rgba(255,255,255,0.2)'
-                  }}
-                >
-                  🖐️ "I'm Waiting" Quick Alert
-                </button>
               </>
             ) : (
               /* GUEST / VISITOR NOT LOGGED IN YET */
@@ -259,10 +214,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
 
 
-      {/* FARE CALCULATOR & ABOUT US GRID */}
-      <section style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }} className="grid-responsive">
-        
-        <div className="glass-panel" style={{ padding: '32px', borderRadius: '24px', background: '#ffffff' }}>
+      {/* ABOUT US — kept below the homepage hero and expanded only on click */}
+      <details className="glass-panel" style={{ padding: '24px 28px', borderRadius: '24px', background: '#ffffff' }}>
+        <summary style={{ cursor: 'pointer', color: '#16a34a', fontSize: '1.2rem', fontWeight: 800 }}>
+          About Us — click to learn more
+        </summary>
+        <div style={{ paddingTop: '22px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
             <div style={{ background: '#dcfce7', color: '#15803d', padding: '8px', borderRadius: '12px' }}>
               <Shield size={24} />
@@ -290,17 +247,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onOpenFareMatrix}
-            className="btn-outline"
-            style={{ marginTop: '20px', width: '100%', fontSize: '0.9rem' }}
-          >
-            📋 View Complete Official Fare Matrix
-          </button>
         </div>
-
-        <FareCalculatorWidget />
-      </section>
+      </details>
 
       {/* HOW IT WORKS SECTION */}
       <section className="glass-panel" style={{ padding: '36px', borderRadius: '24px', background: '#ffffff' }}>
@@ -320,7 +268,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </h3>
             <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.95rem', color: '#1e293b' }}>
               <li>Open TriSakay website (No installation required!)</li>
-              <li>Choose <strong>Book a Ride</strong> or <strong>I'm Waiting</strong></li>
+              <li>Choose <strong>Book a Ride</strong></li>
               <li>Enter pickup & destination barangays and landmarks</li>
               <li>Select number of passengers & discount category</li>
               <li>View auto-calculated estimated fare</li>
@@ -385,10 +333,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         <div>
           <h4 style={{ fontSize: '1rem', fontWeight: 700, color: '#ffffff', marginBottom: '12px' }}>
-            TODA Coverage
+            Cluster Gontoda Coverage
           </h4>
           <p style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.5 }}>
-            Partnered with GOTODA, BAUATODA, CALAYANTODA, and PATENGTODA tricycle driver associations.
+            Serving registered Cluster Gontoda associations across Gonzaga barangays.
           </p>
         </div>
       </section>

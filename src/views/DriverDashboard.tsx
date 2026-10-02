@@ -26,7 +26,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
   const currentDriver = state.currentUser || state.users[2];
   const [driverName, setDriverName] = useState(currentDriver.name || '');
   const [driverBarangay, setDriverBarangay] = useState(currentDriver.barangay || INITIAL_GONZAGA_BARANGAYS[0]);
-  const [driverToda, setDriverToda] = useState(currentDriver.todaName || 'GOTODA (Gonzaga Toda)');
+  const [driverToda, setDriverToda] = useState(currentDriver.todaName || 'Poblacion Cluster Gontoda Association');
   const [driverPlate, setDriverPlate] = useState(currentDriver.plateNumber || 'TZ-9842');
   const [driverProfileImage, setDriverProfileImage] = useState(currentDriver.profileImage || '');
   const [newPassword, setNewPassword] = useState('');
@@ -44,7 +44,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
       if (s.currentUser) {
         setDriverName(s.currentUser.name);
         setDriverBarangay(s.currentUser.barangay);
-        setDriverToda(s.currentUser.todaName || 'GOTODA (Gonzaga Toda)');
+        setDriverToda(s.currentUser.todaName || 'Poblacion Cluster Gontoda Association');
         setDriverPlate(s.currentUser.plateNumber || 'TZ-9842');
         setDriverProfileImage(s.currentUser.profileImage || '');
       }
@@ -152,7 +152,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
             </span>
 
             <span style={{ background: '#F2F2F7', color: '#1C1C1E', padding: '5px 12px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: 800, border: '1px solid #E5E5EA' }}>
-              🛺 {currentDriver.todaName || 'GOTODA'} • Plate: <strong style={{ color: '#007AFF' }}>{currentDriver.plateNumber || 'TZ-9842'}</strong>
+              🛺 {currentDriver.todaName || 'Cluster Gontoda Association'} • Plate: <strong style={{ color: '#007AFF' }}>{currentDriver.plateNumber || 'TZ-9842'}</strong>
             </span>
           </div>
 
@@ -160,7 +160,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
             Driver Cockpit: {currentDriver.name} 🛺
           </h2>
           <p style={{ fontSize: '0.85rem', color: '#8E8E93' }}>
-            Operating Zone: <strong>{currentDriver.barangay}</strong> • Verified Gonzaga TODA Member
+            Operating Zone: <strong>{currentDriver.barangay}</strong> • Verified Cluster Gontoda Member
           </p>
         </div>
 
@@ -679,11 +679,11 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
 
             <div className="glass-card" style={{ padding: '16px', borderRadius: '16px', borderLeft: '4px solid #3b82f6' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>ℹ️ TODA Driver Network Online</strong>
+                <strong style={{ fontSize: '0.95rem', color: '#0f172a' }}>ℹ️ Cluster Gontoda Driver Network Online</strong>
                 <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>System</span>
               </div>
               <p style={{ fontSize: '0.85rem', color: '#475569' }}>
-                You are registered as a verified driver with {currentDriver.todaName || 'GOTODA'}. Remember to stay Online to receive incoming ride requests!
+                You are registered as a verified driver with {currentDriver.todaName || 'your Cluster Gontoda Association'}. Remember to stay Online to receive incoming ride requests!
               </p>
             </div>
           </div>
@@ -704,7 +704,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
                 Driver Profile & Vehicle Settings
               </h3>
               <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Manage tricycle vehicle details, TODA association, and account security
+                Manage tricycle vehicle details, Cluster Gontoda association, and account security
               </p>
             </div>
           </div>
@@ -794,17 +794,16 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                  TODA Association
+                  Cluster Gontoda Association
                 </label>
                 <select
                   value={driverToda}
                   onChange={e => setDriverToda(e.target.value)}
                   style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
                 >
-                  <option value="GOTODA (Gonzaga Toda)">GOTODA (Gonzaga Toda)</option>
-                  <option value="BAUATODA">BAUATODA</option>
-                  <option value="CALAYANTODA">CALAYANTODA</option>
-                  <option value="PATENGTODA">PATENGTODA</option>
+                  {state.todas.map(cluster => (
+                    <option key={cluster.id} value={cluster.name}>{cluster.name}</option>
+                  ))}
                 </select>
               </div>
 
