@@ -210,6 +210,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           <span className="auth-row-spacer" />
         </div>
 
+        <div className="auth-form-surface">
         <div className="auth-page-heading">
           <h2>{mode === 'login' ? 'Welcome Back!' : mode === 'register' ? 'Create Your Account' : 'Reset Password / PIN'}</h2>
           <p>{mode === 'login' ? 'Sign in to check fares and manage your rides.' : mode === 'register' ? 'Register to start booking rides in Gonzaga.' : 'Enter your registered mobile number and a new PIN.'}</p>
@@ -494,6 +495,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               Back to Sign In
             </button>
         </div>}
+        </div>
       </div>
     </div>
   );
