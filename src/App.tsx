@@ -9,7 +9,6 @@ import { PassengerDashboard } from './views/PassengerDashboard';
 import { DriverDashboard } from './views/DriverDashboard';
 import { AdminDashboard } from './views/AdminDashboard';
 import { FareMatrixView } from './views/FareMatrixView';
-import { MobileBottomNav } from './components/MobileBottomNav';
 import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivity';
 import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
@@ -19,6 +18,7 @@ export const App: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [activeTab, setActiveTab] = useState<string>('home');
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
   const [dismissedHomeRequests, setDismissedHomeRequests] = useState<string[]>([]);
 
   useEffect(() => {
@@ -27,17 +27,23 @@ export const App: React.FC = () => {
 
   const currentUser = state.currentUser;
 
+  const openAuth = (mode: 'login' | 'register' = 'login') => {
+    setAuthInitialMode(mode);
+    setAuthModalOpen(true);
+  };
+
   const renderContent = () => {
     if (activeTab === 'home') {
       return (
         <HomeView
           onStartBooking={() => {
             if (!currentUser) {
-              setAuthModalOpen(true);
+              openAuth('login');
             } else {
               setActiveTab('dashboard');
             }
           }}
+          onCreateAccount={() => openAuth('register')}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
         />
       );
@@ -74,9 +80,10 @@ export const App: React.FC = () => {
       return (
         <HomeView
           onStartBooking={() => {
-            if (!currentUser) setAuthModalOpen(true);
+            if (!currentUser) openAuth('login');
             else setActiveTab('dashboard');
           }}
+          onCreateAccount={() => openAuth('register')}
           onOpenFareMatrix={() => setActiveTab('fare-matrix')}
         />
       );
@@ -89,8 +96,8 @@ export const App: React.FC = () => {
             <h2 style={{ color: '#16a34a', fontSize: '1.6rem', fontWeight: 800, marginBottom: '10px' }}>
               Sign In to View Notifications
             </h2>
-            <button onClick={() => setAuthModalOpen(true)} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '16px auto 0 auto' }}>
-              Sign In / Register Account
+            <button onClick={() => openAuth('login')} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '16px auto 0 auto' }}>
+              Sign In
             </button>
           </div>
         );
@@ -112,8 +119,8 @@ export const App: React.FC = () => {
             <h2 style={{ color: '#16a34a', fontSize: '1.6rem', fontWeight: 800, marginBottom: '10px' }}>
               Sign In to View Settings
             </h2>
-            <button onClick={() => setAuthModalOpen(true)} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '16px auto 0 auto' }}>
-              Sign In / Register Account
+            <button onClick={() => openAuth('login')} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '16px auto 0 auto' }}>
+              Sign In
             </button>
           </div>
         );
@@ -141,8 +148,8 @@ export const App: React.FC = () => {
             <p style={{ color: '#64748b', fontSize: '0.95rem', maxWidth: '400px', margin: '0 auto 24px auto', lineHeight: 1.5 }}>
               Enter your registered Philippine mobile number to book rides or manage trips.
             </p>
-            <button onClick={() => setAuthModalOpen(true)} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '0 auto' }}>
-              Sign In / Register Account
+            <button onClick={() => openAuth('login')} className="btn-primary" style={{ padding: '14px 28px', maxWidth: '320px', margin: '0 auto' }}>
+              Sign In
             </button>
           </div>
         );
@@ -163,9 +170,10 @@ export const App: React.FC = () => {
     return (
       <HomeView
         onStartBooking={() => {
-          if (!currentUser) setAuthModalOpen(true);
+          if (!currentUser) openAuth('login');
           else setActiveTab('dashboard');
         }}
+        onCreateAccount={() => openAuth('register')}
         onOpenFareMatrix={() => setActiveTab('fare-matrix')}
       />
     );
@@ -182,7 +190,7 @@ export const App: React.FC = () => {
 
       {/* Navigation Header */}
       <Navbar
-        onOpenAuth={() => setAuthModalOpen(true)}
+        onOpenAuth={openAuth}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
@@ -215,6 +223,7 @@ export const App: React.FC = () => {
 
       <AuthModal
         isOpen={authModalOpen}
+        initialMode={authInitialMode}
         onClose={() => setAuthModalOpen(false)}
         onSuccess={() => setActiveTab('dashboard')}
       />
@@ -229,13 +238,6 @@ export const App: React.FC = () => {
       }}>
         TriSakay © 2026 Municipality of Gonzaga Tricycle Booking System • Sakay Mo, Isang Click Lang!
       </footer>
-
-      {/* Mobile Smartphone Bottom Navigation Bar */}
-      <MobileBottomNav
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenAuth={() => setAuthModalOpen(true)}
-      />
 
     </div>
   );

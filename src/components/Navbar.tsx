@@ -5,7 +5,7 @@ import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, UserCheck, Settings, B
 import { UserAvatar } from './UserAvatar';
 
 interface NavbarProps {
-  onOpenAuth: () => void;
+  onOpenAuth: (mode?: 'login' | 'register') => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
 }
@@ -401,11 +401,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             </div>
           ) : (
             <button
-              onClick={onOpenAuth}
+              onClick={() => onOpenAuth('login')}
               className="btn-primary"
               style={{ padding: '8px 16px', fontSize: '0.9rem' }}
             >
-              <LogIn size={16} /> Login / Register
+              <LogIn size={16} /> Sign In
             </button>
           )}
         </div>

@@ -379,6 +379,18 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-overflow-scrolling: touch;
 }
 
+/* Add public/auth-background.jpg later; the gradient remains as a readable fallback. */
+.auth-modal-background {
+  background-color: #052e16;
+  background-image:
+    linear-gradient(135deg, rgba(5, 46, 22, 0.9), rgba(21, 128, 61, 0.72)),
+    url('/auth-background.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  padding: 20px;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -398,7 +410,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .main-content-area {
-    padding: 16px 12px 88px 12px !important;
+    padding: 16px 12px 24px 12px !important;
   }
 
   .desktop-footer {
@@ -493,13 +505,13 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .main-content-area {
-    padding: 16px 12px 96px 12px !important;
+    padding: 16px 12px 24px 12px !important;
   }
 }
 
 @media (max-width: 480px) {
   .main-content-area {
-    padding: 12px 8px 96px 8px !important;
+    padding: 12px 8px 24px 8px !important;
   }
 
   .grid-card-green,
@@ -515,4 +527,3 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 18px !important;
   }
 }
-

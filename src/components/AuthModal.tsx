@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { store } from '../services/store';
 import type { UserRole } from '../types';
 import { X, UserCheck, Bike, ShieldCheck, CheckCircle, AlertCircle, Phone, Lock } from 'lucide-react';
@@ -8,12 +8,13 @@ import { ProfileAvatarUpload } from './ProfileAvatarUpload';
 
 interface AuthModalProps {
   isOpen: boolean;
+  initialMode?: 'login' | 'register';
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login');
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'login', onClose, onSuccess }) => {
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>(initialMode);
   const [role, setRole] = useState<UserRole>('passenger');
 
   // Form Fields
@@ -26,6 +27,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
   const [profileImage, setProfileImage] = useState('');
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setError('');
+      setSuccessMsg('');
+    }
+  }, [initialMode, isOpen]);
 
   if (!isOpen) return null;
 
@@ -565,14 +574,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
             </button>
           )}
         </div>
-        <style>{`
-          .auth-modal-background {
-            background:
-              radial-gradient(circle at 18% 20%, rgba(250, 204, 21, .24), transparent 30%),
-              linear-gradient(135deg, rgba(5, 46, 22, .94), rgba(21, 128, 61, .86));
-            padding: 20px;
-          }
-        `}</style>
       </div>
     </div>
   );

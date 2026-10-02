@@ -4,11 +4,13 @@ import { store } from '../services/store';
 
 interface HomeViewProps {
   onStartBooking: () => void;
+  onCreateAccount: () => void;
   onOpenFareMatrix: () => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
   onStartBooking,
+  onCreateAccount,
   onOpenFareMatrix
 }) => {
   const [currentUser, setCurrentUser] = useState(store.getState().currentUser);
@@ -173,7 +175,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               /* GUEST / VISITOR NOT LOGGED IN YET */
               <>
                 <button
-                  onClick={onStartBooking}
+                  onClick={onCreateAccount}
                   className="btn-yellow hero-btn"
                   style={{
                     fontSize: '1.15rem',
@@ -182,7 +184,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     boxShadow: '0 8px 20px rgba(234, 179, 8, 0.4)'
                   }}
                 >
-                  🚀 Sign In / Register to Book
+                  Create New Account
                 </button>
 
                 <button
@@ -206,6 +208,17 @@ export const HomeView: React.FC<HomeViewProps> = ({
                 >
                   📋 Check Gonzaga Fare Rates
                 </button>
+
+                <p style={{ width: '100%', color: '#dcfce7', fontSize: '0.9rem', marginTop: '-2px' }}>
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={onStartBooking}
+                    style={{ border: 0, padding: 0, background: 'transparent', color: '#fef08a', font: 'inherit', fontWeight: 800, textDecoration: 'underline', cursor: 'pointer' }}
+                  >
+                    Sign In
+                  </button>
+                </p>
               </>
             )}
           </div>
