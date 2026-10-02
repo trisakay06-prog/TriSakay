@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { store } from '../services/store';
 import type { UserRole } from '../types';
-import { ArrowLeft, UserCheck, Bike, ShieldCheck, CheckCircle, AlertCircle, Phone, Lock } from 'lucide-react';
+import { ArrowLeft, UserCheck, Bike, CheckCircle, AlertCircle, Phone } from 'lucide-react';
 import { INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
 
@@ -84,27 +84,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
     }
 
     if (mode === 'login') {
-      // Hardcoded Admin Credentials Check
-      if (role === 'admin') {
-        if ((cleanedMobile === '09628039440' || cleanedMobile === '09000000000' || cleanedMobile === 'admin') && 
-            (password === 'admin' || password === 'admin123')) {
-          const state = store.getState();
-          const adminUser = state.users.find(u => u.role === 'admin') || {
-            id: 'user_admin_1',
-            name: 'Gonzaga LGU Admin',
-            mobile: '09628039440',
-            role: 'admin',
-            barangay: 'Poblacion',
-            createdAt: new Date().toISOString()
-          };
-          store.setCurrentUser(adminUser);
-          onSuccess();
-          onClose();
-          return;
-        } else {
-          setError('Invalid Admin credentials. Mobile: 09628039440 | Password: admin');
+      const isAdminLogin = cleanedMobile === '09628039440' || cleanedMobile === '09000000000' || cleanedMobile === 'admin';
+      if (isAdminLogin) {
+        if (password !== 'admin' && password !== 'admin123') {
+          setError('Invalid administrator credentials.');
           return;
         }
+        const state = store.getState();
+        const adminUser = state.users.find(u => u.role === 'admin') || {
+          id: 'user_admin_1',
+          name: 'Gonzaga LGU Admin',
+          mobile: '09628039440',
+          role: 'admin' as const,
+          barangay: 'Poblacion',
+          createdAt: new Date().toISOString()
+        };
+        store.setCurrentUser(adminUser);
+        onSuccess();
+        onClose();
+        return;
       }
 
       if (!validateMobile(cleanedMobile)) {
@@ -115,10 +113,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
       const state = store.getState();
       const existingUser = state.users.find(u => u.mobile === cleanedMobile);
       if (existingUser) {
-        if (existingUser.role !== role) {
-          setError(`This mobile number is registered as a ${existingUser.role}. Please select the correct account type.`);
-          return;
-        }
         if (existingUser.password && existingUser.password !== password) {
           setError('Incorrect password/PIN. Please try again or reset it.');
           return;
@@ -191,7 +185,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   return (
     <div className="modal-overlay auth-modal-background">
       <div 
-        className="glass-panel auth-page-panel"
+        className={`glass-panel auth-page-panel auth-mode-${mode}`}
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%',
@@ -220,7 +214,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         </div>
 
         {/* ROLE SELECTION TABS */}
-        {mode !== 'reset' && <div style={{
+        {mode === 'register' && <div style={{
           display: 'flex',
           background: '#f1f5f9',
           borderRadius: '12px',
@@ -275,31 +269,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             <Bike size={16} /> Driver
           </button>
 
-          {/* Admin Option ONLY in LOGIN MODE */}
-          {mode === 'login' && (
-            <button
-              type="button"
-              onClick={() => setRole('admin')}
-              style={{
-                flex: 1,
-                padding: '10px 6px',
-                border: 'none',
-                borderRadius: '8px',
-                fontWeight: 700,
-                fontSize: '0.85rem',
-                cursor: 'pointer',
-                background: role === 'admin' ? '#ffffff' : 'transparent',
-                color: role === 'admin' ? '#16a34a' : '#64748b',
-                boxShadow: role === 'admin' ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px'
-              }}
-            >
-              <ShieldCheck size={16} /> Admin
-            </button>
-          )}
         </div>}
 
         {error && (
@@ -353,30 +322,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           </div>
         )}
 
-        {/* ADMIN CREDENTIALS HINT BOX FOR ADMIN LOGIN */}
-        {mode === 'login' && role === 'admin' && (
-          <div style={{
-            background: '#eff6ff',
-            border: '1px solid #bfdbfe',
-            color: '#1e40af',
-            padding: '12px',
-            borderRadius: '12px',
-            fontSize: '0.8rem',
-            marginBottom: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Lock size={16} />
-            <div>
-              <strong>Gonzaga LGU Admin Login Credentials:</strong>
-              <div style={{ fontFamily: 'monospace', marginTop: '2px' }}>
-                Mobile: <strong>09628039440</strong> | Password: <strong>admin</strong>
-              </div>
-            </div>
-          </div>
-        )}
-
         {!(successMsg && role === 'driver' && mode === 'register') && <form className="auth-page-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {mode === 'register' && (
             <div>
@@ -402,17 +347,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 700 }}>
-                PH Mobile Number (Cellular SMS)
+                {mode === 'login' ? 'Mobile Number or Admin ID' : 'PH Mobile Number'}
               </label>
-              <span style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              {mode === 'register' && <span style={{ fontSize: '0.75rem', color: '#15803d', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <Phone size={12} /> SMS Enabled
-              </span>
+              </span>}
             </div>
             <input
               type="text"
               value={mobile}
               onChange={e => setMobile(e.target.value)}
-              placeholder={role === 'admin' ? '09628039440' : '09171234567'}
+              placeholder={mode === 'login' ? 'Mobile number or admin' : '09171234567'}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -422,9 +367,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                 fontWeight: 700
               }}
             />
-            <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginTop: '2px' }}>
+            {mode === 'register' && <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginTop: '2px' }}>
               📲 Cellular SMS notifications will be delivered to this mobile number.
-            </span>
+            </span>}
           </div>
 
           {mode === 'register' && (
@@ -514,14 +459,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           </div>
 
           <button type="submit" className="btn-primary" style={{ marginTop: '10px', width: '100%' }}>
-            {mode === 'login' ? `Sign In as ${role.toUpperCase()}` : mode === 'register' ? `Register as ${role.toUpperCase()}` : 'Reset Password / PIN'}
+            {mode === 'login' ? 'Sign In' : mode === 'register' ? `Register as ${role.toUpperCase()}` : 'Reset Password / PIN'}
           </button>
-          {mode === 'login' && role !== 'admin' && (
+          {mode === 'login' && (
             <button type="button" onClick={() => { setMode('reset'); setError(''); setSuccessMsg(''); setPassword(''); }} style={{ border: 'none', background: 'transparent', color: '#15803d', fontWeight: 700, cursor: 'pointer' }}>
               Forgot Password / PIN?
             </button>
           )}
         </form>}
+
+        {mode === 'login' && <div className="auth-create-account-prompt">
+          <span>No account?</span>{' '}
+          <button type="button" onClick={() => { setMode('register'); setRole('passenger'); setError(''); setSuccessMsg(''); }}>
+            Create New Account
+          </button>
+        </div>}
 
         {mode === 'reset' && <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b' }}>
             <button onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }} style={{ color: '#16a34a', fontWeight: 700, border: 'none', background: 'transparent', cursor: 'pointer' }}>

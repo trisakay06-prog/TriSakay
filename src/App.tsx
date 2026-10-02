@@ -236,7 +236,7 @@ export const App: React.FC = () => {
         fontSize: '0.85rem',
         color: '#64748b'
       }}>
-        TriSakay © 2026 Municipality of Gonzaga Tricycle Booking System • Sakay Mo, Isang Click Lang!
+        TriSakay © 2026 Municipality of Gonzaga • Sakay Mo, Isang Click Lang!
       </footer>}
 
     </div>

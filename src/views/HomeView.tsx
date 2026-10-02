@@ -38,7 +38,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       <div className="guest-home-screen">
         <section className="guest-hero-card">
           <div className="guest-hero-copy">
-            <span className="guest-system-label">🏛️ Municipality of Gonzaga Tricycle Booking System</span>
+            <span className="guest-system-label">Municipality of Gonzaga</span>
             <h1>TriSakay</h1>
             <h2>Sakay Mo, Isang Click Lang!</h2>
             <p>Convenient local tricycle service with registered drivers across Gonzaga.</p>
@@ -126,7 +126,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             color: '#fef08a',
             marginBottom: '16px'
           }}>
-            <Sparkles size={16} /> Municipality of Gonzaga Tricycle Booking System
+            <Sparkles size={16} /> Municipality of Gonzaga
           </div>
 
           <h1 style={{
@@ -323,7 +323,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             TriSakay Gonzaga
           </h3>
           <p style={{ fontSize: '0.9rem', color: '#94a3b8', lineHeight: 1.6 }}>
-            Official Municipality of Gonzaga Tricycle Booking System. Dedicated to safe, accessible, and connected community transport.
+            Official Municipality of Gonzaga platform dedicated to safe, accessible, and connected community transport.
           </p>
         </div>
 
