@@ -177,7 +177,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className={!currentUser ? 'app-root guest-app' : 'app-root'} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       {/* iOS Dynamic Island / Live Activity Floating Capsule */}
       <DynamicIslandLiveActivity onOpenTracking={() => setActiveTab('dashboard')} />

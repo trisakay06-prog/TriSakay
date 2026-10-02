@@ -529,11 +529,31 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Public landing page: the complete guest experience stays within one viewport. */
+.guest-app {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0 !important;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.guest-app > nav {
+  flex: 0 0 auto;
+}
+
+.guest-app > .app-content-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .guest-main-content {
-  height: calc(100dvh - 78px);
+  height: 100%;
+  min-height: 0;
   max-width: 720px !important;
   padding: 14px 16px !important;
   overflow: hidden;
+  overscroll-behavior: none;
 }
 
 .guest-home-screen {
