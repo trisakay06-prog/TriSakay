@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&family=Montserrat:wght@800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@700;800&display=swap');
 
 :root {
   --primary-green: #34C759;
@@ -585,15 +585,45 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 0 18px 34px -18px rgba(22, 163, 74, .55);
 }
 
-.guest-hero-copy h1 {
-  margin-top: 0;
-  font-size: clamp(2rem, 5vh, 3rem);
-  line-height: 1;
-  text-shadow: 0 2px 16px rgba(0, 0, 0, .35);
+.guest-hero-copy {
+  width: 100%;
+  text-align: center;
 }
 
-.guest-hero-copy h2 { color: #fde047; font-size: clamp(1.15rem, 2.7vh, 1.55rem); margin-top: 8px; }
-.guest-hero-copy p { max-width: 440px; margin-top: 9px; line-height: 1.45; color: #e2e8f0; font-size: clamp(.8rem, 1.8vh, 1rem); }
+.guest-hero-copy h1 {
+  margin: 0;
+  color: #fff;
+  font-family: 'Poppins', var(--font-heading);
+  font-size: clamp(2rem, 5vh, 2.75rem) !important;
+  font-weight: 800;
+  line-height: 1.05 !important;
+  letter-spacing: -.04em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .28);
+}
+
+.guest-hero-copy h2 {
+  margin: 9px 0 0;
+  color: #fde047;
+  font-family: 'Poppins', var(--font-heading);
+  font-size: clamp(1.05rem, 2.6vh, 1.4rem) !important;
+  font-weight: 700;
+  line-height: 1.2 !important;
+  letter-spacing: -.025em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, .24);
+}
+
+.guest-hero-copy .guest-hero-value {
+  max-width: 440px;
+  margin: 14px auto 0;
+  color: #fff;
+  font-family: 'Montserrat', 'Poppins', var(--font-heading);
+  font-size: clamp(1.25rem, 3.2vh, 1.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .32);
+}
 .guest-hero-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
 .guest-fare-button {
   min-height: 48px;

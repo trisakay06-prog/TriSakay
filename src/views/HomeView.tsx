@@ -40,6 +40,10 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="guest-hero-copy">
             <h1>TriSakay</h1>
             <h2>Sakay Mo, Isang Click Lang!</h2>
+            <p className="guest-hero-value">
+              Your local ride,<br />
+              made easier.
+            </p>
           </div>
           <div className="guest-hero-actions">
             <button type="button" onClick={onOpenFareMatrix} className="guest-fare-button">
