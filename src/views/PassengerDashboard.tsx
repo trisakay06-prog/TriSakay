@@ -3,9 +3,8 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Clock, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles } from 'lucide-react';
+import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { StudentCommuteWidget } from '../components/StudentCommuteWidget';
 import { playNotificationSound } from '../services/sound';
 import { IOSBackButton } from '../components/IOSBackButton';
 import { UserAvatar } from '../components/UserAvatar';
@@ -14,9 +13,10 @@ import { REGISTRATION_BARANGAYS } from '../services/barangayClusters';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile';
+  onNavigateHome?: () => void;
 }
 
-export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialTab = 'home' }) => {
+export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialTab = 'home', onNavigateHome }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [activeTab, setActiveTab] = useState<'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile'>(initialTab);
 
@@ -32,6 +32,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const [passengersCount, setPassengersCount] = useState(1);
   const [discountType, setDiscountType] = useState<'regular' | 'senior_student_pwd'>('regular');
   const [specialNotes, setSpecialNotes] = useState('');
+  const [fareEstimatorOpen, setFareEstimatorOpen] = useState(false);
 
   const [waitingReminderBookingId, setWaitingReminderBookingId] = useState<string | null>(null);
 
@@ -67,6 +68,11 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   }, []);
 
   const currentUser = state.currentUser || state.users[0];
+
+  const navigateHome = () => {
+    setActiveTab('home');
+    onNavigateHome?.();
+  };
 
   const fareResult = calculateFare(
     pickupBarangay,
@@ -143,30 +149,6 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
     confetti({ particleCount: 40, spread: 50 });
     setWaitingReminderBookingId(booking.id);
-    setActiveTab('status');
-  };
-
-  const handleQuickBookCSU = (pickup: string, count: number) => {
-    const csuFare = calculateFare(
-      pickup,
-      'CSU Gonzaga Campus',
-      'senior_student_pwd',
-      state.fares,
-      state.settings.fuelSurgeMultiplier
-    );
-
-    store.createBooking({
-      pickupBarangay: pickup,
-      pickupLandmark: 'Student Waiting Point',
-      destinationBarangay: 'CSU Gonzaga Campus',
-      destinationLandmark: 'CSU Main Gate',
-      passengersCount: count,
-      discountType: 'senior_student_pwd',
-      specialNotes: 'CSU Gonzaga Student Commuter (20% Student Discount)',
-      estimatedFare: csuFare.finalFare
-    });
-
-    confetti({ particleCount: 50, spread: 60 });
     setActiveTab('status');
   };
 
@@ -296,7 +278,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                 )}
               </div>
               <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', marginTop: '6px' }}>
-                Hello, {currentUser.name}! 👋
+                Welcome, {currentUser.name}! 👋
               </h2>
               <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
                 Barangay: <strong>{currentUser.barangay}</strong> • Mobile: <strong>{currentUser.mobile}</strong>
@@ -304,31 +286,56 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
             </div>
           </div>
 
-          {/* CSU GONZAGA STUDENT QUICK COMMUTE WIDGET */}
-          <StudentCommuteWidget onQuickBookCSU={handleQuickBookCSU} />
+          <section className="passenger-booking-actions" aria-label="Passenger booking actions">
+            <button type="button" className="passenger-booking-cta" onClick={() => setActiveTab('book')}>
+              <span className="passenger-booking-cta-icon"><Bike size={30} /></span>
+              <span className="passenger-booking-cta-copy">
+                <strong>Book a Ride Now</strong>
+                <small>Choose your pickup and destination</small>
+              </span>
+              <ChevronRight size={25} />
+            </button>
 
-          {/* WIREFRAME COLOR-CODED DASHBOARD ACTION CARDS */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-            
-            {/* 1. BOOK A RIDE (GREEN CARD) */}
-            <div onClick={() => setActiveTab('book')} className="grid-card-green">
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%' }}>
-                <Bike size={32} color="#ffffff" />
+            <button
+              type="button"
+              className="passenger-fare-estimate-trigger"
+              onClick={() => setFareEstimatorOpen(open => !open)}
+              aria-expanded={fareEstimatorOpen}
+              aria-controls="passenger-fare-estimator"
+            >
+              <PhilippinePeso size={20} />
+              <span>Check Fare Estimate</span>
+              <ChevronRight className={fareEstimatorOpen ? 'expanded' : ''} size={20} />
+            </button>
+          </section>
+
+          {fareEstimatorOpen && (
+            <section id="passenger-fare-estimator" className="passenger-fare-estimator">
+              <div className="passenger-fare-estimator-fields">
+                <label>
+                  <span>Pickup Barangay</span>
+                  <select value={pickupBarangay} onChange={event => setPickupBarangay(event.target.value)}>
+                    {INITIAL_GONZAGA_BARANGAYS.map(barangay => (
+                      <option key={barangay} value={barangay}>{barangay}</option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  <span>Destination Barangay</span>
+                  <select value={destBarangay} onChange={event => setDestBarangay(event.target.value)}>
+                    {INITIAL_GONZAGA_BARANGAYS.map(barangay => (
+                      <option key={barangay} value={barangay}>{barangay}</option>
+                    ))}
+                  </select>
+                </label>
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>BOOK A RIDE</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>Enter pickup & destination for auto fare calculation</p>
-            </div>
-
-            {/* 2. RIDE HISTORY (PURPLE CARD) */}
-            <div onClick={() => setActiveTab('history')} className="grid-card-purple">
-              <div style={{ background: 'rgba(255,255,255,0.2)', padding: '14px', borderRadius: '50%' }}>
-                <Clock size={32} color="#ffffff" />
+              <div className="passenger-fare-estimator-result">
+                <span>Estimated fare</span>
+                <strong>₱{fareResult.finalFare}</strong>
+                <small>{fareResult.routeName}</small>
               </div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>RIDE HISTORY</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.9 }}>View past Gonzaga trips & ratings ({passengerBookings.length})</p>
-            </div>
-
-          </div>
+            </section>
+          )}
 
           {/* ACTIVE RIDE QUICK CARD IF AVAILABLE */}
           {currentActiveBooking && (
@@ -373,7 +380,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* STEP 3: BOOK A RIDE FORM (Matching Wireframe Step 3) */}
       {activeTab === 'book' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('home')} />
+          <IOSBackButton onClick={navigateHome} />
 
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#16a34a' }}>
@@ -543,7 +550,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* ACTIVE RIDE STATUS WORKFLOW */}
       {activeTab === 'status' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('home')} />
+          <IOSBackButton onClick={navigateHome} />
 
           {!currentActiveBooking ? (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -1001,7 +1008,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* RIDE HISTORY TAB */}
       {activeTab === 'history' && (
         <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#ffffff' }}>
-          <IOSBackButton onClick={() => setActiveTab('home')} />
+          <IOSBackButton onClick={navigateHome} />
 
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a', marginBottom: '16px' }}>
             Your Ride History
@@ -1047,7 +1054,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* NOTIFICATIONS TAB */}
       {activeTab === 'notifications' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('home')} />
+          <IOSBackButton onClick={navigateHome} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#ffedd5', color: '#ea580c', padding: '10px', borderRadius: '12px' }}>
@@ -1100,7 +1107,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* PROFILE SETTINGS TAB */}
       {activeTab === 'profile' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '620px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('home')} />
+          <IOSBackButton onClick={navigateHome} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#f1f5f9', color: '#334155', padding: '10px', borderRadius: '12px' }}>

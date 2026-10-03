@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, UserCheck, Settings, Bell } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, UserCheck, Settings, Bell, History, Menu, X, Info, HeartHandshake, ChevronRight } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
 
@@ -14,6 +14,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActiveTab }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [passengerMenuOpen, setPassengerMenuOpen] = useState(false);
 
   useEffect(() => {
     return store.subscribe(() => setState(store.getState()));
@@ -28,6 +29,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
   }, [state.seniorMode]);
 
   const user = state.currentUser;
+  const isPassenger = user?.role === 'passenger';
+
+  useEffect(() => {
+    setPassengerMenuOpen(false);
+  }, [activeTab, user?.id]);
 
   const userBookings = user
     ? state.bookings.filter(b => b.passengerId === user.id || b.passengerMobile === user.mobile)
@@ -66,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
       zIndex: 900,
       boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
     }}>
-      <div style={{
+      <div className={isPassenger ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'} style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '12px 20px',
@@ -75,12 +81,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
         justifyContent: 'space-between'
       }}>
 
+        {isPassenger && (
+          <button
+            type="button"
+            className="passenger-menu-trigger"
+            onClick={() => setPassengerMenuOpen(true)}
+            aria-label="Open navigation menu"
+            aria-expanded={passengerMenuOpen}
+          >
+            <Menu size={21} />
+          </button>
+        )}
+
         {/* LOGO & BRANDING */}
         <div
-          onClick={() => setActiveTab('home')}
+          className="navbar-brand"
+          onClick={() => setActiveTab(isPassenger ? 'dashboard' : 'home')}
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}
         >
-          <div style={{
+          <div className="navbar-brand-logo" style={{
             width: '50px',
             height: '50px',
             borderRadius: '14px',
@@ -97,9 +116,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             />
           </div>
 
-          <div>
+          <div className="navbar-brand-copy">
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{
+              <span className="navbar-brand-title" style={{
                 fontFamily: 'Outfit, sans-serif',
                 fontSize: '1.6rem',
                 fontWeight: 800,
@@ -108,7 +127,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               }}>
                 TriSakay
               </span>
-              <span style={{
+              <span className="navbar-brand-location" style={{
                 background: '#eab308',
                 color: '#052e16',
                 fontSize: '0.65rem',
@@ -206,28 +225,35 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
         </div>
 
         {/* RIGHT CONTROLS */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="navbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+
+              {isPassenger && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('ride-history')}
+                  className="navbar-action-icon"
+                  style={{
+                    background: activeTab === 'ride-history' ? '#dcfce7' : '#ffffff',
+                    color: activeTab === 'ride-history' ? '#15803d' : '#475569',
+                    border: activeTab === 'ride-history' ? '1.5px solid #86efac' : '1.5px solid #e2e8f0'
+                  }}
+                  aria-label="Ride history"
+                  title="Ride History"
+                >
+                  <History size={18} />
+                </button>
+              )}
 
               {/* NOTIFICATION BELL ICON (CLICKABLE) */}
               <button
                 onClick={() => setActiveTab('notifications')}
+                className="navbar-action-icon"
                 style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
                   background: activeTab === 'notifications' ? '#dcfce7' : '#ffffff',
                   color: activeTab === 'notifications' ? '#15803d' : '#475569',
                   border: activeTab === 'notifications' ? '1.5px solid #86efac' : '1.5px solid #e2e8f0',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  flexShrink: 0
                 }}
                 aria-label="Notifications"
                 title="Notifications & Alerts"
@@ -251,6 +277,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               {/* CIRCLE PROFILE AVATAR ONLY (NO NAME, CLICKABLE DROPDOWN) */}
               <button
                 onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="profile-avatar-control"
                 style={{
                   padding: 0,
                   border: profileDropdownOpen ? '2.5px solid #86efac' : '2px solid #ffffff',
@@ -415,6 +442,51 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           )}
         </div>
       </div>
+
+      {isPassenger && passengerMenuOpen && (
+        <>
+          <button
+            type="button"
+            className="passenger-menu-backdrop"
+            onClick={() => setPassengerMenuOpen(false)}
+            aria-label="Close navigation menu"
+          />
+          <aside className="passenger-menu-drawer" aria-label="Passenger information menu">
+            <div className="passenger-menu-header">
+              <div>
+                <strong>TriSakay Menu</strong>
+                <span>Passenger information</span>
+              </div>
+              <button type="button" onClick={() => setPassengerMenuOpen(false)} aria-label="Close navigation menu">
+                <X size={21} />
+              </button>
+            </div>
+
+            <nav className="passenger-menu-links">
+              <button type="button" onClick={() => setActiveTab('fare-matrix')}>
+                <span className="passenger-menu-link-icon"><FileText size={20} /></span>
+                <span><strong>Fare Rate Matrix</strong><small>View official Gonzaga fare rates</small></span>
+                <ChevronRight size={18} />
+              </button>
+              <button type="button" onClick={() => setActiveTab('how-it-works')}>
+                <span className="passenger-menu-link-icon"><HelpCircle size={20} /></span>
+                <span><strong>How TriSakay Works</strong><small>Follow the simple booking steps</small></span>
+                <ChevronRight size={18} />
+              </button>
+              <button type="button" onClick={() => setActiveTab('about')}>
+                <span className="passenger-menu-link-icon"><Info size={20} /></span>
+                <span><strong>About Us</strong><small>Learn about TriSakay Gonzaga</small></span>
+                <ChevronRight size={18} />
+              </button>
+              <button type="button" onClick={() => setActiveTab('service-benefits')}>
+                <span className="passenger-menu-link-icon"><HeartHandshake size={20} /></span>
+                <span><strong>Why Choose TriSakay</strong><small>Accessible, efficient local rides</small></span>
+                <ChevronRight size={18} />
+              </button>
+            </nav>
+          </aside>
+        </>
+      )}
 
       <style>{`
         .desktop-senior-btn {

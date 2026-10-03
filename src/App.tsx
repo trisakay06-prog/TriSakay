@@ -13,7 +13,7 @@ import { AboutView } from './views/AboutView';
 import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivity';
 import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
-import { Clock3, Fuel, HeartHandshake } from 'lucide-react';
+import { Bike, Clock3, Fuel, HeartHandshake, Map, MapPin, PhilippinePeso } from 'lucide-react';
 
 export const App: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
@@ -51,7 +51,7 @@ export const App: React.FC = () => {
     }
 
     if (activeTab === 'fare-matrix') {
-      return <FareMatrixView />;
+      return <FareMatrixView onBack={() => setActiveTab('home')} />;
     }
 
     if (activeTab === 'about') {
@@ -82,16 +82,41 @@ export const App: React.FC = () => {
     }
 
     if (activeTab === 'how-it-works') {
+      const steps = [
+        { title: 'Set Pickup', text: 'Choose your barangay and add a clear pickup landmark.', icon: MapPin },
+        { title: 'Choose Destination', text: 'Select where you are going within the available service area.', icon: Map },
+        { title: 'Check Fare', text: 'Review the estimated fare before sending your request.', icon: PhilippinePeso },
+        { title: 'Confirm Ride', text: 'Book and wait for an available registered driver.', icon: Bike }
+      ];
       return (
-        <HomeView
-          onStartBooking={() => {
-            if (!currentUser) openAuth('login');
-            else setActiveTab('dashboard');
-          }}
-          onOpenFareMatrix={() => setActiveTab('fare-matrix')}
-          onOpenAbout={() => setActiveTab('about')}
-        />
+        <section className="glass-panel" style={{ padding: '28px', background: '#fff' }}>
+          <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+            <span style={{ color: '#15803d', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '.1em' }}>HOW TRISAKAY WORKS</span>
+            <h2 style={{ marginTop: '5px', color: '#0f172a' }}>Book a Ride in 4 Simple Steps</h2>
+          </div>
+          <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+            {steps.map(({ title, text, icon: Icon }, index) => (
+              <article key={title} className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
+                <div style={{ width: '48px', height: '48px', margin: '0 auto 11px', borderRadius: '50%', display: 'grid', placeItems: 'center', background: '#f0fdf4', color: '#15803d' }}>
+                  <Icon size={23} />
+                </div>
+                <small style={{ color: '#eab308', fontWeight: 900 }}>STEP {index + 1}</small>
+                <h3 style={{ margin: '4px 0 6px', fontSize: '1rem' }}>{title}</h3>
+                <p style={{ color: '#64748b', fontSize: '.8rem', lineHeight: 1.45 }}>{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
       );
+    }
+
+    if (activeTab === 'ride-history') {
+      if (currentUser?.role === 'passenger') {
+        return <PassengerDashboard initialTab="history" onNavigateHome={() => setActiveTab('dashboard')} />;
+      }
+      if (currentUser?.role === 'driver') return <DriverDashboard />;
+      if (currentUser?.role === 'admin') return <AdminDashboard />;
+      return <HomeView onStartBooking={() => openAuth('login')} onOpenFareMatrix={() => setActiveTab('fare-matrix')} onOpenAbout={() => setActiveTab('about')} />;
     }
 
     if (activeTab === 'notifications') {
@@ -114,7 +139,7 @@ export const App: React.FC = () => {
       if (currentUser.role === 'admin') {
         return <AdminDashboard initialTab="overview" />;
       }
-      return <PassengerDashboard initialTab="notifications" />;
+      return <PassengerDashboard initialTab="notifications" onNavigateHome={() => setActiveTab('dashboard')} />;
     }
 
     if (activeTab === 'profile' || activeTab === 'settings') {
@@ -137,7 +162,7 @@ export const App: React.FC = () => {
       if (currentUser.role === 'admin') {
         return <AdminDashboard initialTab="overview" />;
       }
-      return <PassengerDashboard initialTab="profile" />;
+      return <PassengerDashboard initialTab="profile" onNavigateHome={() => setActiveTab('dashboard')} />;
     }
 
     if (activeTab === 'dashboard') {
@@ -169,7 +194,7 @@ export const App: React.FC = () => {
         return <AdminDashboard />;
       }
 
-      return <PassengerDashboard />;
+      return <PassengerDashboard onNavigateHome={() => setActiveTab('dashboard')} />;
     }
 
     return (
@@ -212,7 +237,7 @@ export const App: React.FC = () => {
       })()}
 
       <div className="app-content-shell">
-      {currentUser && currentUser.role !== 'admin' && (
+      {currentUser?.role === 'driver' && (
         <UserSideNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       )}
       <main className={`main-content-area ${!currentUser ? 'guest-main-content' : ''}`} style={{
