@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS public.users (
   mobile TEXT NOT NULL UNIQUE,
   role TEXT NOT NULL CHECK (role IN ('passenger', 'driver', 'admin')),
   barangay TEXT NOT NULL,
+  cluster SMALLINT CHECK (cluster BETWEEN 1 AND 5),
   toda_name TEXT,
   plate_number TEXT,
   is_approved BOOLEAN DEFAULT TRUE,
@@ -17,8 +18,25 @@ CREATE TABLE IF NOT EXISTS public.users (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Existing deployments need the cluster column added separately because
+-- CREATE TABLE IF NOT EXISTS does not update an existing users table.
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS cluster SMALLINT;
+ALTER TABLE public.users DROP CONSTRAINT IF EXISTS users_cluster_check;
+ALTER TABLE public.users ADD CONSTRAINT users_cluster_check CHECK (cluster BETWEEN 1 AND 5);
+
+UPDATE public.users
+SET cluster = CASE
+  WHEN barangay IN ('Flourishing', 'Paradise', 'Progressive', 'Smart', 'Sta. Clara') THEN 1
+  WHEN barangay IN ('Callao', 'Minanga') THEN 2
+  WHEN barangay IN ('Amunitan', 'Batangan', 'Calayan', 'Ipil', 'Magrafil', 'Sta. Isabel', 'Tapel') THEN 3
+  WHEN barangay IN ('Cabanbanan Norte', 'Cabanbanan Sur', 'Caroan', 'Casitan', 'Isca', 'Pateng', 'Rebecca') THEN 4
+  WHEN barangay IN ('Baua', 'Cabiraoan', 'San Jose', 'Sta. Cruz', 'Sta. Maria') THEN 5
+  ELSE cluster
+END;
+
 -- Index for mobile lookup
 CREATE INDEX IF NOT EXISTS idx_users_mobile ON public.users(mobile);
+CREATE INDEX IF NOT EXISTS idx_users_cluster ON public.users(cluster);
 
 -- 2. TODAS TABLE
 CREATE TABLE IF NOT EXISTS public.todas (

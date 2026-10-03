@@ -1,3 +1,5 @@
+import type { BarangayClusterNumber } from '../services/barangayClusters';
+
 export type UserRole = 'passenger' | 'driver' | 'admin';
 
 export interface User {
@@ -7,6 +9,7 @@ export interface User {
   password?: string;
   role: UserRole;
   barangay: string;
+  cluster?: BarangayClusterNumber;
   profileImage?: string; // Cloudinary URL or local Base64
   todaName?: string;
   plateNumber?: string;

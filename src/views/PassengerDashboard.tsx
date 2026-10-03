@@ -10,6 +10,7 @@ import { playNotificationSound } from '../services/sound';
 import { IOSBackButton } from '../components/IOSBackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
+import { REGISTRATION_BARANGAYS } from '../services/barangayClusters';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile';
@@ -1189,7 +1190,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                 onChange={e => setProfileBarangay(e.target.value)}
                 style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
               >
-                {INITIAL_GONZAGA_BARANGAYS.map(b => (
+                {REGISTRATION_BARANGAYS.map(b => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>

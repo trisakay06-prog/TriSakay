@@ -3,6 +3,7 @@ import { INITIAL_GONZAGA_FARES, INITIAL_GONZAGA_BARANGAYS } from './fareCalculat
 import { playNotificationSound } from './sound';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { sendBookingAcceptedSMS, sendDriverArrivingSMS } from './smsService';
+import { getBarangayCluster } from './barangayClusters';
 
 const STORAGE_KEY = 'trisakay_app_state_v1';
 const SESSION_USER_KEY = 'trisakay_session_user_v1';
@@ -15,6 +16,7 @@ export const INITIAL_USERS: User[] = [
     mobile: '09396591974',
     role: 'passenger',
     barangay: 'Calayan',
+    cluster: 3,
     createdAt: '2026-08-10T08:00:00Z',
   },
   {
@@ -31,6 +33,7 @@ export const INITIAL_USERS: User[] = [
     mobile: '09185551234',
     role: 'driver',
     barangay: 'Calayan',
+    cluster: 3,
     todaName: 'Calayan Cluster Gontoda Association',
     plateNumber: 'TZ-9842',
     isApproved: true,
@@ -42,6 +45,7 @@ export const INITIAL_USERS: User[] = [
     mobile: '09224443322',
     role: 'driver',
     barangay: 'Baua',
+    cluster: 5,
     todaName: 'BAUATODA',
     plateNumber: 'TZ-1123',
     isApproved: true,
@@ -53,6 +57,7 @@ export const INITIAL_USERS: User[] = [
     mobile: '09356667788',
     role: 'driver',
     barangay: 'Pateng',
+    cluster: 4,
     todaName: 'PATENGTODA',
     plateNumber: 'TZ-5544',
     isApproved: false,
@@ -331,12 +336,20 @@ class StoreService {
         const parsed = JSON.parse(stored);
         const clusterByBarangay = new Map(INITIAL_TODAS.map(t => [t.zoneBarangay.toLowerCase(), t.name]));
         const users = (parsed.users || INITIAL_USERS).map((user: User) => {
-          if (user.role !== 'driver' || user.todaName?.toLowerCase().includes('cluster gontoda')) return user;
-          return { ...user, todaName: clusterByBarangay.get(user.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' };
+          const assignedCluster = getBarangayCluster(user.barangay)?.number;
+          const migratedUser = assignedCluster && user.cluster !== assignedCluster
+            ? { ...user, cluster: assignedCluster }
+            : user;
+          if (migratedUser.role !== 'driver' || migratedUser.todaName?.toLowerCase().includes('cluster gontoda')) return migratedUser;
+          return { ...migratedUser, todaName: clusterByBarangay.get(migratedUser.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' };
         });
-        const migratedCurrentUser = currentUser?.role === 'driver' && !currentUser.todaName?.toLowerCase().includes('cluster gontoda')
-          ? { ...currentUser, todaName: clusterByBarangay.get(currentUser.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' }
+        const currentUserCluster = currentUser ? getBarangayCluster(currentUser.barangay)?.number : undefined;
+        const currentUserWithCluster = currentUser && currentUserCluster && currentUser.cluster !== currentUserCluster
+          ? { ...currentUser, cluster: currentUserCluster }
           : currentUser;
+        const migratedCurrentUser = currentUserWithCluster?.role === 'driver' && !currentUserWithCluster.todaName?.toLowerCase().includes('cluster gontoda')
+          ? { ...currentUserWithCluster, todaName: clusterByBarangay.get(currentUserWithCluster.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' }
+          : currentUserWithCluster;
         return { ...parsed, users, todas: INITIAL_TODAS, currentUser: migratedCurrentUser };
       }
     } catch (e) {
@@ -594,9 +607,15 @@ class StoreService {
     playNotificationSound();
   }
 
-  public registerUser(user: Omit<User, 'id' | 'createdAt'>): User {
+  public registerUser(user: Omit<User, 'id' | 'createdAt' | 'cluster'>): User {
+    const cluster = getBarangayCluster(user.barangay)?.number;
+    if (!cluster) {
+      throw new Error(`No official cluster is assigned to barangay: ${user.barangay}`);
+    }
+
     const newUser: User = {
       ...user,
+      cluster,
       id: `user_${Date.now()}`,
       createdAt: new Date().toISOString(),
       isApproved: user.role === 'driver' ? false : true
@@ -604,6 +623,23 @@ class StoreService {
 
     const updatedUsers = [...this.data.users, newUser];
     this.saveStateToStorage({ ...this.data, users: updatedUsers, currentUser: newUser });
+
+    if (supabase) {
+      supabase.from('users').insert({
+        name: newUser.name,
+        mobile: newUser.mobile,
+        role: newUser.role,
+        barangay: newUser.barangay,
+        cluster: newUser.cluster,
+        toda_name: newUser.todaName || null,
+        plate_number: newUser.plateNumber || null,
+        is_approved: newUser.isApproved,
+        is_blocked: false
+      }).then(({ error }) => {
+        if (error) console.error('[TriSakay Supabase] Failed to save registered user:', error.message);
+      });
+    }
+
     return newUser;
   }
 
@@ -690,14 +726,16 @@ class StoreService {
   }
 
   public updateUser(userId: string, updates: Partial<User>) {
+    const assignedCluster = updates.barangay ? getBarangayCluster(updates.barangay)?.number : undefined;
+    const normalizedUpdates = assignedCluster ? { ...updates, cluster: assignedCluster } : updates;
     const updatedUsers = this.data.users.map(u => {
       if (u.id === userId) {
-        return { ...u, ...updates };
+        return { ...u, ...normalizedUpdates };
       }
       return u;
     });
     const updatedCurrentUser = this.data.currentUser?.id === userId 
-      ? { ...this.data.currentUser, ...updates }
+      ? { ...this.data.currentUser, ...normalizedUpdates }
       : this.data.currentUser;
     this.saveStateToStorage({ ...this.data, users: updatedUsers, currentUser: updatedCurrentUser });
   }

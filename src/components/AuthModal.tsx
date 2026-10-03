@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { store } from '../services/store';
 import type { UserRole } from '../types';
 import { ArrowLeft, UserCheck, Bike, CheckCircle, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
-import { INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
 import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
+import { getBarangayCluster, REGISTRATION_BARANGAYS } from '../services/barangayClusters';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,34 +12,6 @@ interface AuthModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
-
-const PASSENGER_REGISTRATION_BARANGAYS = [
-  'Amunitan',
-  'Batangan',
-  'Baua',
-  'Cabanbanan Norte',
-  'Cabanbanan Sur',
-  'Cabiraoan',
-  'Calayan',
-  'Callao',
-  'Caroan',
-  'Casitan',
-  'Flourishing',
-  'Ipil',
-  'Isca',
-  'Magrafil',
-  'Minanga',
-  'Paradise',
-  'Pateng',
-  'Progressive',
-  'Rebecca',
-  'San Jose',
-  'Smart',
-  'Sta. Clara',
-  'Sta. Cruz',
-  'Sta. Maria',
-  'Tapel'
-];
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'login', onClose, onSuccess }) => {
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>(initialMode);
@@ -49,7 +21,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [barangay, setBarangay] = useState('');
-  const [todaName, setTodaName] = useState('Poblacion Cluster Gontoda Association');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -184,8 +155,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         return;
       }
 
-      if (role === 'driver' && (!plateNumber || !todaName)) {
-        setError('Drivers must specify a Cluster Gontoda Association and tricycle plate number.');
+      const assignedCluster = getBarangayCluster(barangay);
+      if (!assignedCluster) {
+        setError('Please select a barangay to assign your cluster.');
+        return;
+      }
+
+      if (role === 'driver' && !plateNumber) {
+        setError('Drivers must specify a tricycle plate number.');
         return;
       }
 
@@ -195,7 +172,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         password,
         role,
         barangay,
-        todaName: role === 'driver' ? todaName : undefined,
         plateNumber: role === 'driver' ? plateNumber : undefined
       });
 
@@ -212,6 +188,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
       }
     }
   };
+
+  const assignedCluster = getBarangayCluster(barangay);
 
   return (
     <div className="modal-overlay auth-modal-background">
@@ -291,7 +269,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             type="button"
             onClick={() => {
               setRole('driver');
-              setBarangay(INITIAL_GONZAGA_BARANGAYS[0]);
+              setBarangay('');
             }}
             style={{
               flex: 1,
@@ -433,37 +411,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                   fontSize: '0.95rem'
                 }}
               >
-                {role === 'passenger' && <option value="" disabled>Select Barangay</option>}
-                {(role === 'passenger' ? PASSENGER_REGISTRATION_BARANGAYS : INITIAL_GONZAGA_BARANGAYS).map(b => (
+                <option value="" disabled>Select Barangay</option>
+                {REGISTRATION_BARANGAYS.map(b => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
+              {assignedCluster && (
+                <span
+                  aria-label={`${assignedCluster.name}, ${assignedCluster.colorName}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    marginTop: '7px',
+                    padding: '4px 9px',
+                    border: `1px solid ${assignedCluster.borderColor}`,
+                    borderRadius: '999px',
+                    background: assignedCluster.backgroundColor,
+                    color: assignedCluster.textColor,
+                    fontSize: '0.75rem',
+                    fontWeight: 800
+                  }}
+                >
+                  {assignedCluster.name}
+                </span>
+              )}
             </div>
           )}
 
           {mode === 'register' && role === 'driver' && (
             <>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Cluster Gontoda Association
-                </label>
-                <select
-                  value={todaName}
-                  onChange={e => setTodaName(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    borderRadius: '10px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '0.95rem'
-                  }}
-                >
-                  {store.getState().todas.map(cluster => (
-                    <option key={cluster.id} value={cluster.name}>{cluster.name}</option>
-                  ))}
-                </select>
-              </div>
-
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
                   Tricycle / Plate Number

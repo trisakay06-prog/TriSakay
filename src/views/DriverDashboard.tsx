@@ -8,6 +8,7 @@ import { INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalcul
 import { IOSBackButton } from '../components/IOSBackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
+import { REGISTRATION_BARANGAYS } from '../services/barangayClusters';
 
 interface DriverDashboardProps {
   initialTab?: 'requests' | 'active' | 'history' | 'notifications' | 'profile';
@@ -785,7 +786,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
                 onChange={e => setDriverBarangay(e.target.value)}
                 style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
               >
-                {INITIAL_GONZAGA_BARANGAYS.map(b => (
+                {REGISTRATION_BARANGAYS.map(b => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
