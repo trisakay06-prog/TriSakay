@@ -9,7 +9,7 @@ import { playNotificationSound } from '../services/sound';
 import { IOSBackButton } from '../components/IOSBackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
-import { REGISTRATION_BARANGAYS } from '../services/barangayClusters';
+import { getBarangayCluster, REGISTRATION_BARANGAYS } from '../services/barangayClusters';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile';
@@ -68,6 +68,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   }, []);
 
   const currentUser = state.currentUser || state.users[0];
+  const passengerCluster = currentUser.cluster ?? getBarangayCluster(currentUser.barangay)?.number;
 
   const navigateHome = () => {
     setActiveTab('home');
@@ -280,8 +281,10 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0f172a', marginTop: '6px' }}>
                 Welcome, {currentUser.name}! 👋
               </h2>
-              <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
-                Barangay: <strong>{currentUser.barangay}</strong> • Mobile: <strong>{currentUser.mobile}</strong>
+              <p className="passenger-welcome-location">
+                <MapPin size={16} aria-hidden="true" />
+                <strong>{currentUser.barangay}</strong>
+                {passengerCluster && <><span aria-hidden="true">•</span><span>Cluster {passengerCluster}</span></>}
               </p>
             </div>
           </div>

@@ -1,14 +1,16 @@
 import React from 'react';
-import { ArrowLeft, Clock3, Fuel, HeartHandshake, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { Clock3, Fuel, HeartHandshake, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { InformationBackButton } from '../components/InformationBackButton';
 
 interface AboutViewProps {
   onBack: () => void;
+  backLabel?: string;
 }
 
-export const AboutView: React.FC<AboutViewProps> = ({ onBack }) => (
+export const AboutView: React.FC<AboutViewProps> = ({ onBack, backLabel }) => (
   <div className="about-page-screen">
+    <InformationBackButton onClick={onBack} label={backLabel} />
     <header className="about-page-header">
-      <button type="button" onClick={onBack} aria-label="Back to Home"><ArrowLeft size={22} /></button>
       <div>
         <span>ABOUT US</span>
         <h1>About TriSakay</h1>

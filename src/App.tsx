@@ -14,6 +14,7 @@ import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivit
 import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
 import { Bike, Clock3, Fuel, HeartHandshake, Map, MapPin, PhilippinePeso } from 'lucide-react';
+import { InformationBackButton } from './components/InformationBackButton';
 
 export const App: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
@@ -27,6 +28,11 @@ export const App: React.FC = () => {
   }, []);
 
   const currentUser = state.currentUser;
+  const informationBackLabel = currentUser?.role === 'passenger' ? 'Back to Dashboard' : 'Back to Home';
+
+  const navigateBackFromInformation = () => {
+    setActiveTab(currentUser?.role === 'passenger' ? 'dashboard' : 'home');
+  };
 
   const openAuth = (mode: 'login' | 'register' = 'login') => {
     setAuthInitialMode(mode);
@@ -51,11 +57,11 @@ export const App: React.FC = () => {
     }
 
     if (activeTab === 'fare-matrix') {
-      return <FareMatrixView onBack={() => setActiveTab('home')} />;
+      return <FareMatrixView onBack={navigateBackFromInformation} backLabel={informationBackLabel} />;
     }
 
     if (activeTab === 'about') {
-      return <AboutView onBack={() => setActiveTab('home')} />;
+      return <AboutView onBack={navigateBackFromInformation} backLabel={informationBackLabel} />;
     }
 
     if (activeTab === 'service-benefits') {
@@ -65,19 +71,22 @@ export const App: React.FC = () => {
         { title: 'Fuel & Route Efficiency', text: 'Pickup and destination details help drivers choose practical routes and avoid unnecessary trips.', icon: Fuel }
       ];
       return (
-        <section className="glass-panel" style={{ padding: '32px', background: '#fff' }}>
-          <h2 style={{ color: '#15803d', marginBottom: '8px' }}>Why use TriSakay?</h2>
-          <p style={{ color: '#64748b', marginBottom: '24px' }}>Designed for passengers and local tricycle drivers across Gonzaga.</p>
-          <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-            {benefits.map(({ title, text, icon: Icon }) => (
-              <article key={title} className="glass-card" style={{ padding: '22px' }}>
-                <Icon size={28} color="#15803d" />
-                <h3 style={{ margin: '12px 0 8px' }}>{title}</h3>
-                <p style={{ color: '#64748b', lineHeight: 1.6 }}>{text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        <div className="information-page-layout">
+          <InformationBackButton onClick={navigateBackFromInformation} label={informationBackLabel} />
+          <section className="glass-panel" style={{ padding: '32px', background: '#fff' }}>
+            <h2 style={{ color: '#15803d', marginBottom: '8px' }}>Why use TriSakay?</h2>
+            <p style={{ color: '#64748b', marginBottom: '24px' }}>Designed for passengers and local tricycle drivers across Gonzaga.</p>
+            <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+              {benefits.map(({ title, text, icon: Icon }) => (
+                <article key={title} className="glass-card" style={{ padding: '22px' }}>
+                  <Icon size={28} color="#15803d" />
+                  <h3 style={{ margin: '12px 0 8px' }}>{title}</h3>
+                  <p style={{ color: '#64748b', lineHeight: 1.6 }}>{text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
       );
     }
 
@@ -89,24 +98,27 @@ export const App: React.FC = () => {
         { title: 'Confirm Ride', text: 'Book and wait for an available registered driver.', icon: Bike }
       ];
       return (
-        <section className="glass-panel" style={{ padding: '28px', background: '#fff' }}>
-          <div style={{ textAlign: 'center', marginBottom: '22px' }}>
-            <span style={{ color: '#15803d', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '.1em' }}>HOW TRISAKAY WORKS</span>
-            <h2 style={{ marginTop: '5px', color: '#0f172a' }}>Book a Ride in 4 Simple Steps</h2>
-          </div>
-          <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
-            {steps.map(({ title, text, icon: Icon }, index) => (
-              <article key={title} className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                <div style={{ width: '48px', height: '48px', margin: '0 auto 11px', borderRadius: '50%', display: 'grid', placeItems: 'center', background: '#f0fdf4', color: '#15803d' }}>
-                  <Icon size={23} />
-                </div>
-                <small style={{ color: '#eab308', fontWeight: 900 }}>STEP {index + 1}</small>
-                <h3 style={{ margin: '4px 0 6px', fontSize: '1rem' }}>{title}</h3>
-                <p style={{ color: '#64748b', fontSize: '.8rem', lineHeight: 1.45 }}>{text}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        <div className="information-page-layout">
+          <InformationBackButton onClick={navigateBackFromInformation} label={informationBackLabel} />
+          <section className="glass-panel" style={{ padding: '28px', background: '#fff' }}>
+            <div style={{ textAlign: 'center', marginBottom: '22px' }}>
+              <span style={{ color: '#15803d', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '.1em' }}>HOW TRISAKAY WORKS</span>
+              <h2 style={{ marginTop: '5px', color: '#0f172a' }}>Book a Ride in 4 Simple Steps</h2>
+            </div>
+            <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+              {steps.map(({ title, text, icon: Icon }, index) => (
+                <article key={title} className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
+                  <div style={{ width: '48px', height: '48px', margin: '0 auto 11px', borderRadius: '50%', display: 'grid', placeItems: 'center', background: '#f0fdf4', color: '#15803d' }}>
+                    <Icon size={23} />
+                  </div>
+                  <small style={{ color: '#eab308', fontWeight: 900 }}>STEP {index + 1}</small>
+                  <h3 style={{ margin: '4px 0 6px', fontSize: '1rem' }}>{title}</h3>
+                  <p style={{ color: '#64748b', fontSize: '.8rem', lineHeight: 1.45 }}>{text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
       );
     }
 

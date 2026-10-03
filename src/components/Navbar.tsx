@@ -280,7 +280,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 className="profile-avatar-control"
                 style={{
                   padding: 0,
-                  border: profileDropdownOpen ? '2.5px solid #86efac' : '2px solid #ffffff',
+                  width: '40px',
+                  height: '40px',
+                  border: '2px solid #ffffff',
                   borderRadius: '50%',
                   cursor: 'pointer',
                   background: 'transparent',
@@ -290,7 +292,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                   boxShadow: profileDropdownOpen
                     ? '0 0 0 3px rgba(22, 163, 74, 0.35)'
                     : '0 4px 12px rgba(22, 163, 74, 0.25)',
-                  transition: 'all 0.2s ease',
+                  transition: 'box-shadow 0.2s ease',
                   flexShrink: 0
                 }}
                 aria-label="User Profile"
