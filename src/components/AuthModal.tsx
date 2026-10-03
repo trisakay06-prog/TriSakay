@@ -12,6 +12,34 @@ interface AuthModalProps {
   onSuccess: () => void;
 }
 
+const PASSENGER_REGISTRATION_BARANGAYS = [
+  'Amunitan',
+  'Batangan',
+  'Baua',
+  'Cabanbanan Norte',
+  'Cabanbanan Sur',
+  'Cabiraoan',
+  'Calayan',
+  'Callao',
+  'Caroan',
+  'Casitan',
+  'Flourishing',
+  'Ipil',
+  'Isca',
+  'Magrafil',
+  'Minanga',
+  'Paradise',
+  'Pateng',
+  'Progressive',
+  'Rebecca',
+  'San Jose',
+  'Smart',
+  'Sta. Clara',
+  'Sta. Cruz',
+  'Sta. Maria',
+  'Tapel'
+];
+
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'login', onClose, onSuccess }) => {
   const [mode, setMode] = useState<'login' | 'register' | 'reset'>(initialMode);
   const [role, setRole] = useState<UserRole>('passenger');
@@ -19,7 +47,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   // Form Fields
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
-  const [barangay, setBarangay] = useState(INITIAL_GONZAGA_BARANGAYS[0]);
+  const [barangay, setBarangay] = useState('');
   const [todaName, setTodaName] = useState('Poblacion Cluster Gontoda Association');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -227,7 +255,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           {/* Passenger Option */}
           <button
             type="button"
-            onClick={() => setRole('passenger')}
+            onClick={() => {
+              setRole('passenger');
+              setBarangay('');
+            }}
             style={{
               flex: 1,
               padding: '10px 6px',
@@ -251,7 +282,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           {/* Driver Option */}
           <button
             type="button"
-            onClick={() => setRole('driver')}
+            onClick={() => {
+              setRole('driver');
+              setBarangay(INITIAL_GONZAGA_BARANGAYS[0]);
+            }}
             style={{
               flex: 1,
               padding: '10px 6px',
@@ -383,6 +417,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               <select
                 value={barangay}
                 onChange={e => setBarangay(e.target.value)}
+                required
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -391,7 +426,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                   fontSize: '0.95rem'
                 }}
               >
-                {INITIAL_GONZAGA_BARANGAYS.map(b => (
+                {role === 'passenger' && <option value="" disabled>Select Barangay</option>}
+                {(role === 'passenger' ? PASSENGER_REGISTRATION_BARANGAYS : INITIAL_GONZAGA_BARANGAYS).map(b => (
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
