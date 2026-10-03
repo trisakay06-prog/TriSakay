@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { FileText, Search, Info } from 'lucide-react';
+import { ArrowLeft, FileText, Search, Info } from 'lucide-react';
 import { FareCalculatorWidget } from '../components/FareCalculatorWidget';
 
-export const FareMatrixView: React.FC = () => {
+interface FareMatrixViewProps {
+  onBack: () => void;
+}
+
+export const FareMatrixView: React.FC<FareMatrixViewProps> = ({ onBack }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [search, setSearch] = useState('');
 
@@ -20,6 +24,16 @@ export const FareMatrixView: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <button
+        type="button"
+        onClick={onBack}
+        className="ios-back-btn fare-matrix-back"
+        aria-label="Back to Home"
+      >
+        <ArrowLeft size={20} />
+        <span>Back to Home</span>
+      </button>
+
       <FareCalculatorWidget />
       
       {/* HEADER CARD */}
