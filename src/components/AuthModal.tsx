@@ -4,6 +4,7 @@ import type { UserRole } from '../types';
 import { ArrowLeft, UserCheck, Bike, CheckCircle, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
 import { INITIAL_GONZAGA_BARANGAYS } from '../services/fareCalculator';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
+import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -231,7 +232,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             <ArrowLeft size={25} />
           </button>
           <div className="auth-brand-lockup">
-            <span className="auth-brand-icon"><Bike size={24} /></span>
+            <span className="auth-brand-icon">
+              <img
+                src={appLogo}
+                alt="TriSakay logo"
+                style={{ width: '100%', height: '100%', display: 'block', borderRadius: 'inherit', objectFit: 'cover' }}
+              />
+            </span>
             <div><strong>TriSakay</strong><small>Municipality of Gonzaga</small></div>
             <b>GONZAGA</b>
           </div>

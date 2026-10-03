@@ -3,6 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, UserCheck, Settings, Bell } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
+import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
 
 interface NavbarProps {
   onOpenAuth: (mode?: 'login' | 'register') => void;
@@ -80,16 +81,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}
         >
           <div style={{
-            background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-            color: '#ffffff',
-            padding: '10px 14px',
+            width: '50px',
+            height: '50px',
             borderRadius: '14px',
             boxShadow: '0 4px 10px rgba(22, 163, 74, 0.3)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            overflow: 'hidden'
           }}>
-            <Bike size={28} color="#fef08a" />
+            <img
+              src={appLogo}
+              alt="TriSakay logo"
+              style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
+            />
           </div>
 
           <div>
