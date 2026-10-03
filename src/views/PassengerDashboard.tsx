@@ -283,7 +283,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
           {/* WELCOME BANNER */}
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '20px', background: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div className="glass-panel passenger-welcome-card" style={{ padding: '24px', borderRadius: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 800 }}>
