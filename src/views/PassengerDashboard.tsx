@@ -16,6 +16,29 @@ interface PassengerDashboardProps {
   onNavigateHome?: () => void;
 }
 
+const DISMISSED_RATINGS_STORAGE_KEY = 'trisakay_dismissed_rating_booking_ids';
+
+function getDismissedRatingIds(): string[] {
+  try {
+    const raw = localStorage.getItem(DISMISSED_RATINGS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function markRatingDismissed(bookingId: string): void {
+  try {
+    const existing = getDismissedRatingIds();
+    if (!existing.includes(bookingId)) {
+      existing.push(bookingId);
+      localStorage.setItem(DISMISSED_RATINGS_STORAGE_KEY, JSON.stringify(existing));
+    }
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialTab = 'home', onNavigateHome }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [activeTab, setActiveTab] = useState<'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile'>(initialTab);
@@ -44,7 +67,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const [profileSavedMsg, setProfileSavedMsg] = useState('');
 
   // Rating Modal & Report Modal State
-  const [ratingModalOpen, setRatingModalOpen] = useState(true);
+  const [ratingTargetBooking, setRatingTargetBooking] = useState<Booking | null>(null);
   const [starCount, setStarCount] = useState(5);
   const [reportDriverModal, setReportDriverModal] = useState<Booking | null>(null);
   const [reportReason, setReportReason] = useState('Overcharging');
@@ -134,7 +157,59 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
     }
   }, [currentActiveBooking?.status]);
 
-  const completedBookingForRating = passengerBookings.find(b => b.status === 'COMPLETED' && !b.rating);
+  const prevBookingStatusesRef = React.useRef<Record<string, string>>({});
+  const isInitialMountRef = React.useRef(true);
+
+  // Trigger driver rating prompt ONLY when an active ride transitions to COMPLETED in real-time
+  useEffect(() => {
+    // On first mount (e.g. page refresh, back navigation from sidebar/other views),
+    // record existing statuses without showing any rating prompts.
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      const initialMap: Record<string, string> = {};
+      passengerBookings.forEach(b => {
+        initialMap[b.id] = b.status;
+      });
+      prevBookingStatusesRef.current = initialMap;
+      return;
+    }
+
+    const dismissedIds = getDismissedRatingIds();
+
+    for (const b of passengerBookings) {
+      const prevStatus = prevBookingStatusesRef.current[b.id];
+      const wasActiveRide = prevStatus === 'PASSENGER_PICKED_UP' ||
+                            prevStatus === 'DRIVER_ARRIVING' ||
+                            prevStatus === 'DRIVER_ACCEPTED' ||
+                            prevStatus === 'WAITING_FOR_DRIVER';
+
+      // Only trigger if an active in-flight ride just transitioned to COMPLETED
+      if (wasActiveRide && b.status === 'COMPLETED' && !b.rating && !dismissedIds.includes(b.id)) {
+        playNotificationSound();
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+        setRatingTargetBooking(b);
+        break;
+      }
+    }
+
+    // Keep tracked statuses up to date
+    const updatedMap: Record<string, string> = {};
+    passengerBookings.forEach(b => {
+      updatedMap[b.id] = b.status;
+    });
+    prevBookingStatusesRef.current = updatedMap;
+  }, [state.bookings, passengerBookings]);
+
+  const handleDismissRating = (bookingId: string) => {
+    markRatingDismissed(bookingId);
+    setRatingTargetBooking(null);
+  };
+
+  const handleSubmitRating = (bookingId: string) => {
+    store.rateBooking(bookingId, starCount, 'Great ride!');
+    markRatingDismissed(bookingId);
+    setRatingTargetBooking(null);
+  };
 
   const handleBookRide = (e: React.FormEvent) => {
     e.preventDefault();
@@ -920,8 +995,8 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       )}
 
       {/* WIREFRAME STEP 7: RIDE COMPLETED (Celebration Screen) */}
-      {completedBookingForRating && activeTab === 'home' && ratingModalOpen && (
-        <div className="modal-overlay" style={{ zIndex: 100000 }} onClick={() => setRatingModalOpen(false)}>
+      {ratingTargetBooking && (
+        <div className="modal-overlay" style={{ zIndex: 100000 }} onClick={() => handleDismissRating(ratingTargetBooking.id)}>
           <div
             className="glass-panel"
             onClick={e => e.stopPropagation()}
@@ -966,11 +1041,11 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               alignItems: 'center'
             }}>
               <span style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 700 }}>Fare Total</span>
-              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#16a34a' }}>₱{completedBookingForRating.estimatedFare}</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#16a34a' }}>₱{ratingTargetBooking.estimatedFare}</div>
             </div>
 
             <p style={{ fontSize: '0.88rem', fontWeight: 700, marginBottom: '6px', color: '#334155' }}>
-              Rate Driver {completedBookingForRating.driverName || 'Juan'}:
+              Rate Driver {ratingTargetBooking.driverName || 'Juan'}:
             </p>
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '18px' }}>
               {[1, 2, 3, 4, 5].map(star => (
@@ -994,17 +1069,14 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
-                onClick={() => {
-                  store.rateBooking(completedBookingForRating.id, starCount, 'Great ride!');
-                  setRatingModalOpen(false);
-                }}
+                onClick={() => handleSubmitRating(ratingTargetBooking.id)}
                 className="btn-primary"
                 style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '0.98rem', fontWeight: 800 }}
               >
                 <Home size={18} /> SUBMIT RATING & CONTINUE
               </button>
               <button
-                onClick={() => setRatingModalOpen(false)}
+                onClick={() => handleDismissRating(ratingTargetBooking.id)}
                 style={{
                   background: 'transparent',
                   border: 'none',
@@ -1058,6 +1130,30 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                         <span style={{ background: b.status === 'COMPLETED' ? '#dcfce7' : '#fef08a', color: b.status === 'COMPLETED' ? '#15803d' : '#854d0e', padding: '4px 8px', borderRadius: '6px', fontWeight: 700, fontSize: '0.75rem' }}>
                           {b.status.replace(/_/g, ' ')}
                         </span>
+                        {b.status === 'COMPLETED' && !b.rating && (
+                          <button
+                            type="button"
+                            onClick={() => setRatingTargetBooking(b)}
+                            style={{
+                              marginLeft: '8px',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid #eab308',
+                              background: '#fefce8',
+                              color: '#854d0e',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ★ Rate
+                          </button>
+                        )}
+                        {b.rating && (
+                          <span style={{ marginLeft: '8px', color: '#eab308', fontSize: '0.8rem', fontWeight: 700 }}>
+                            {'★'.repeat(b.rating)}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
