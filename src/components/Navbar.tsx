@@ -81,73 +81,76 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
         justifyContent: 'space-between'
       }}>
 
-        {isPassenger && (
-          <button
-            type="button"
-            className="passenger-menu-trigger"
-            onClick={() => setPassengerMenuOpen(true)}
-            aria-label="Open navigation menu"
-            aria-expanded={passengerMenuOpen}
+        <div className="navbar-left-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {isPassenger && (
+            <button
+              type="button"
+              className="passenger-menu-trigger"
+              onClick={() => setPassengerMenuOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={passengerMenuOpen}
+            >
+              <Menu size={21} />
+            </button>
+          )}
+
+          {/* LOGO & BRANDING */}
+          <div
+            className="navbar-brand"
+            onClick={() => setActiveTab(isPassenger ? 'dashboard' : 'home')}
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            <Menu size={21} />
-          </button>
-        )}
-
-        {/* LOGO & BRANDING */}
-        <div
-          className="navbar-brand"
-          onClick={() => setActiveTab(isPassenger ? 'dashboard' : 'home')}
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px' }}
-        >
-          <div className="navbar-brand-logo" style={{
-            width: '50px',
-            height: '50px',
-            borderRadius: '14px',
-            boxShadow: '0 4px 10px rgba(22, 163, 74, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}>
-            <img
-              src={appLogo}
-              alt="TriSakay logo"
-              style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
-            />
-          </div>
-
-          <div className="navbar-brand-copy">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span className="navbar-brand-title" style={{
-                fontFamily: 'Outfit, sans-serif',
-                fontSize: '1.6rem',
-                fontWeight: 800,
-                color: '#16a34a',
-                letterSpacing: '-0.5px'
-              }}>
-                TriSakay
-              </span>
-              <span className="navbar-brand-location" style={{
-                background: '#eab308',
-                color: '#052e16',
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                padding: '2px 6px',
-                borderRadius: '4px',
-                textTransform: 'uppercase'
-              }}>
-                GONZAGA
-              </span>
+            <div className="navbar-brand-logo" style={{
+              width: '46px',
+              height: '46px',
+              borderRadius: '13px',
+              boxShadow: '0 4px 10px rgba(22, 163, 74, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              flexShrink: 0
+            }}>
+              <img
+                src={appLogo}
+                alt="TriSakay logo"
+                style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }}
+              />
             </div>
 
-            <p style={{
-              fontSize: '0.75rem',
-              color: '#64748b',
-              fontWeight: 600,
-              marginTop: '-2px'
-            }}>
-              Sakay Mo, Isang Click Lang!
-            </p>
+            <div className="navbar-brand-copy">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span className="navbar-brand-title" style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  fontSize: '1.5rem',
+                  fontWeight: 800,
+                  color: '#16a34a',
+                  letterSpacing: '-0.5px'
+                }}>
+                  TriSakay
+                </span>
+                <span className="navbar-brand-location" style={{
+                  background: '#eab308',
+                  color: '#052e16',
+                  fontSize: '0.65rem',
+                  fontWeight: 800,
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  textTransform: 'uppercase'
+                }}>
+                  GONZAGA
+                </span>
+              </div>
+
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#64748b',
+                fontWeight: 600,
+                marginTop: '-2px'
+              }}>
+                Sakay Mo, Isang Click Lang!
+              </p>
+            </div>
           </div>
         </div>
 
@@ -454,19 +457,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             aria-label="Close navigation menu"
           />
           <aside className="passenger-menu-drawer" aria-label="Passenger information menu">
-            {/* Top TriSakay branding */}
-            <div className="passenger-drawer-brand">
-              <div className="drawer-brand-left">
-                <div className="drawer-logo-wrap">
-                  <img src={appLogo} alt="TriSakay logo" />
-                </div>
-                <div>
-                  <div className="drawer-title-row">
-                    <span className="drawer-title">TriSakay</span>
-                    <span className="drawer-lgu-badge">GONZAGA</span>
-                  </div>
-                  <p className="drawer-tagline">Sakay Mo, Isang Click Lang!</p>
-                </div>
+            <div className="passenger-menu-header">
+              <div>
+                <strong>TriSakay Menu</strong>
+                <span>Passenger information</span>
               </div>
               <button
                 type="button"
@@ -478,42 +472,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               </button>
             </div>
 
-            {/* Profile Section */}
-            {user && (
-              <div
-                className="drawer-profile-card"
-                onClick={() => {
-                  setActiveTab('profile');
-                  setPassengerMenuOpen(false);
-                }}
-                role="button"
-                tabIndex={0}
-                title="View Profile Settings"
-              >
-                <UserAvatar
-                  src={user.profileImage}
-                  name={user.name}
-                  size={42}
-                  role={user.role}
-                  showRoleBadge={false}
-                />
-                <div className="drawer-profile-info">
-                  <div className="drawer-profile-name">{user.name}</div>
-                  <div className="drawer-profile-sub">
-                    <span>{user.barangay}</span>
-                    <span className="drawer-role-tag">PASSENGER</span>
-                  </div>
-                </div>
-                <ChevronRight size={16} className="drawer-profile-arrow" />
-              </div>
-            )}
-
-            {/* Navigation links */}
-            <div className="drawer-section-label">MENU & SERVICES</div>
             <nav className="passenger-menu-links">
               <button type="button" onClick={() => { setActiveTab('fare-matrix'); setPassengerMenuOpen(false); }}>
                 <span className="passenger-menu-link-icon"><FileText size={18} /></span>
-                <span><strong>Fare Rate Matrix</strong><small>Official Gonzaga fare rates</small></span>
+                <span><strong>Fare Rate Matrix</strong><small>View official Gonzaga fare rates</small></span>
                 <ChevronRight size={16} />
               </button>
               <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
@@ -528,33 +490,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               </button>
               <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
                 <span className="passenger-menu-link-icon"><HeartHandshake size={18} /></span>
-                <span><strong>Why Choose TriSakay</strong><small>Accessible, efficient rides</small></span>
-                <ChevronRight size={16} />
-              </button>
-              <button type="button" onClick={() => { setActiveTab('ride-history'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><History size={18} /></span>
-                <span><strong>Ride History</strong><small>View past trips & receipts</small></span>
+                <span><strong>Why Choose TriSakay</strong><small>Accessible, efficient local rides</small></span>
                 <ChevronRight size={16} />
               </button>
             </nav>
-
-            {/* Logout footer */}
-            {user && (
-              <div className="drawer-footer">
-                <button
-                  type="button"
-                  className="drawer-logout-btn"
-                  onClick={() => {
-                    store.setCurrentUser(null);
-                    setPassengerMenuOpen(false);
-                    setActiveTab('home');
-                  }}
-                >
-                  <LogOut size={16} />
-                  <span>Sign Out</span>
-                </button>
-              </div>
-            )}
           </aside>
         </>
       )}
