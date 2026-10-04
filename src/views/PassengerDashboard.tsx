@@ -48,9 +48,9 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   }, [initialTab]);
 
   // Booking Form State
-  const [pickupBarangay, setPickupBarangay] = useState(INITIAL_GONZAGA_BARANGAYS[1]); // Pateng
+  const [pickupBarangay, setPickupBarangay] = useState(INITIAL_GONZAGA_BARANGAYS.find(b => b === 'Pateng') || INITIAL_GONZAGA_BARANGAYS[0]);
   const [pickupLandmark, setPickupLandmark] = useState('');
-  const [destBarangay, setDestBarangay] = useState(INITIAL_GONZAGA_BARANGAYS[0]); // Poblacion
+  const [destBarangay, setDestBarangay] = useState(INITIAL_GONZAGA_BARANGAYS.find(b => b === 'Smart') || INITIAL_GONZAGA_BARANGAYS[1]);
   const [destLandmark, setDestLandmark] = useState('');
   const [passengersCount, setPassengersCount] = useState(1);
   const [discountType, setDiscountType] = useState<'regular' | 'senior_student_pwd'>('regular');

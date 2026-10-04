@@ -4,8 +4,8 @@ import { Calculator, Tag } from 'lucide-react';
 import { store } from '../services/store';
 
 export const FareCalculatorWidget: React.FC = () => {
-  const [pickup, setPickup] = useState(INITIAL_GONZAGA_BARANGAYS[1]); // Pateng
-  const [destination, setDestination] = useState(INITIAL_GONZAGA_BARANGAYS[0]); // Poblacion
+  const [pickup, setPickup] = useState(INITIAL_GONZAGA_BARANGAYS.find(b => b === 'Pateng') || INITIAL_GONZAGA_BARANGAYS[0]);
+  const [destination, setDestination] = useState(INITIAL_GONZAGA_BARANGAYS.find(b => b === 'Smart') || INITIAL_GONZAGA_BARANGAYS[1]);
   const [discountType, setDiscountType] = useState<'regular' | 'senior_student_pwd'>('regular');
   const [passengersCount, setPassengersCount] = useState(1);
 

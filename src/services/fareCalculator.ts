@@ -1,32 +1,37 @@
 import type { GonzagaRouteFare } from '../types';
 
 export const INITIAL_GONZAGA_BARANGAYS = [
-  'Poblacion (Smart, Progressive, Paradise, Flourishing)',
-  'Pateng',
-  'Rebecca',
-  'Isca',
-  'Cabanbanan Sur',
+  'Amunitan',
+  'Batangan',
+  'Baua',
   'Cabanbanan Norte',
-  'Casitan',
+  'Cabanbanan Sur',
+  'Cabiraoan',
+  'Cabiraoan (Abbut)',
   'Calayan',
   'Callao',
-  'Minanga',
-  'Batangan',
-  'Magrafil',
-  'Sta. Isabel',
-  'Tapel',
-  'San Francisco',
+  'Caroan',
+  'Casitan',
+  'Flourishing',
   'Ipil',
-  'Amunitan',
-  'Cabiraoan',
-  'Baua',
-  'Sta. Cruz',
+  'Ipil (Burattok)',
+  'Ipil (San Francisco)',
+  'Isca',
+  'Magrafil',
+  'Minanga',
+  'Paradise',
+  'Pateng',
+  'Pateng (Laoc)',
+  'Progressive',
+  'Rebecca',
   'San Jose',
-  'Sta. Clara (Purok 1 & 2)',
-  'Sta. Clara (Purok 3, 4, 5, 6)',
-  'CSU Gonzaga Campus',
-  'Laoc',
-  'Abbut'
+  'Smart',
+  'Sta. Clara (Zone 1&2)',
+  'Sta. Clara (Zone 3,4,5, &6)',
+  'Sta. Cruz',
+  'Sta. Maria',
+  'Tapel',
+  'Tapel (Sta. Isabel)'
 ];
 
 export const INITIAL_GONZAGA_FARES: GonzagaRouteFare[] = [
@@ -62,6 +67,65 @@ export const INITIAL_GONZAGA_FARES: GonzagaRouteFare[] = [
   { id: '30', route: 'Sta. Clara (Purok 3, 4, 5, 6) to Poblacion', fromBarangay: 'Sta. Clara (Purok 3, 4, 5, 6)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 35 },
 ];
 
+const POBLACION_ENTITIES = ['smart', 'progressive', 'paradise', 'flourishing', 'poblacion'];
+
+function normalizeBrgyTokens(raw: string): string[] {
+  if (!raw) return [];
+  const lower = raw.toLowerCase().trim();
+  const tokens: string[] = [lower];
+
+  if (POBLACION_ENTITIES.some(p => lower.includes(p))) {
+    tokens.push('poblacion');
+  }
+
+  const parenMatch = lower.match(/^(.*?)\s*\((.*?)\)$/);
+  if (parenMatch) {
+    tokens.push(parenMatch[1].trim(), parenMatch[2].trim());
+  }
+
+  if (lower.includes('sta. clara') || lower.includes('santa clara')) {
+    tokens.push('sta. clara');
+    if (lower.includes('1') && lower.includes('2')) {
+      tokens.push('zone 1&2', 'zone 1 & 2', 'purok 1 & 2', 'purok 1');
+    }
+    if (lower.includes('3') || lower.includes('4') || lower.includes('5') || lower.includes('6')) {
+      tokens.push('zone 3,4,5, &6', 'purok 3, 4, 5, 6', 'purok 3', 'zone 3');
+    }
+  }
+
+  return tokens;
+}
+
+function matchesBarangay(routeBrgy: string, selectedBrgy: string): boolean {
+  if (!routeBrgy || !selectedBrgy) return false;
+  const rLower = routeBrgy.toLowerCase().trim();
+  const sLower = selectedBrgy.toLowerCase().trim();
+
+  if (rLower === sLower) return true;
+  if (rLower.includes(sLower) || sLower.includes(rLower)) return true;
+
+  const rTokens = normalizeBrgyTokens(routeBrgy);
+  const sTokens = normalizeBrgyTokens(selectedBrgy);
+
+  const rIsStaClara = rTokens.includes('sta. clara');
+  const sIsStaClara = sTokens.includes('sta. clara');
+  if (rIsStaClara && sIsStaClara) {
+    const rHas1 = rTokens.some(t => t.includes('1'));
+    const sHas1 = sTokens.some(t => t.includes('1'));
+    if (rHas1 && sHas1) return true;
+    const rHas3 = rTokens.some(t => t.includes('3'));
+    const sHas3 = sTokens.some(t => t.includes('3'));
+    if (rHas3 && sHas3) return true;
+    return false;
+  }
+
+  if (rTokens.includes('poblacion') && sTokens.includes('poblacion')) {
+    return true;
+  }
+
+  return rTokens.some(rt => sTokens.some(st => rt === st || rt.includes(st) || st.includes(rt)));
+}
+
 export function calculateFare(
   pickupBrgy: string,
   destBrgy: string,
@@ -91,8 +155,8 @@ export function calculateFare(
   }
 
   const matched = fareList.find(f => 
-    (f.fromBarangay.toLowerCase().includes(pickupBrgy.toLowerCase()) && f.toBarangay.toLowerCase().includes(destBrgy.toLowerCase())) ||
-    (f.toBarangay.toLowerCase().includes(pickupBrgy.toLowerCase()) && f.fromBarangay.toLowerCase().includes(destBrgy.toLowerCase()))
+    (matchesBarangay(f.fromBarangay, pickupBrgy) && matchesBarangay(f.toBarangay, destBrgy)) ||
+    (matchesBarangay(f.toBarangay, pickupBrgy) && matchesBarangay(f.fromBarangay, destBrgy))
   );
 
   const isCSUDestination = destBrgy.toLowerCase().includes('csu') || pickupBrgy.toLowerCase().includes('csu');
@@ -115,8 +179,10 @@ export function calculateFare(
   }
 
   const fallback = fareList.find(f => 
-    f.fromBarangay.toLowerCase().includes(pickupBrgy.toLowerCase()) || 
-    f.fromBarangay.toLowerCase().includes(destBrgy.toLowerCase())
+    matchesBarangay(f.fromBarangay, pickupBrgy) || 
+    matchesBarangay(f.fromBarangay, destBrgy) ||
+    matchesBarangay(f.toBarangay, pickupBrgy) ||
+    matchesBarangay(f.toBarangay, destBrgy)
   );
 
   if (fallback) {
@@ -149,9 +215,6 @@ export function calculateFare(
 
 export function cleanBarangay(name?: string): string {
   if (!name) return '';
-  if (name.toLowerCase().includes('poblacion')) return 'Poblacion';
-  if (name.toLowerCase().includes('csu')) return 'CSU Gonzaga';
-  if (name.toLowerCase().includes('sta. clara')) return 'Sta. Clara';
   if (name.includes('(')) {
     return name.split('(')[0].trim();
   }
