@@ -253,7 +253,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: activeTab === 'book' ? '0px' : '24px' }}>
 
       {waitingReminderBookingId && (
         <div className="modal-overlay" style={{ zIndex: 10000 }}>
@@ -459,108 +459,111 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
         </div>
       )}
 
-      {/* STEP 3: BOOK A RIDE FORM (Matching Wireframe Step 3) */}
+      {/* STEP 3: BOOK A RIDE FORM (Streamlined Single-Screen Mobile Layout) */}
       {activeTab === 'book' && (
-        <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <BackButton onClick={navigateHome} />
-
-          <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#16a34a' }}>
-              🛺 Book A Ride
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-              Select pickup and destination barangays in Gonzaga
-            </p>
+        <div className="booking-panel-container">
+          <div className="booking-panel-header">
+            <BackButton onClick={navigateHome} />
+            <div className="booking-header-text">
+              <div className="booking-header-badge-row">
+                <span className="booking-lgu-badge">LGU GONZAGA</span>
+                <span className="booking-live-badge">OFFICIAL RATES</span>
+              </div>
+              <h2 className="booking-header-title">Book a Ride</h2>
+              <p className="booking-header-sub">Select pickup & destination barangays in Gonzaga</p>
+            </div>
           </div>
 
-          <form onSubmit={handleBookRide} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            
-            {/* PICKUP */}
-            <div style={{ background: '#f0fdf4', padding: '16px', borderRadius: '16px', border: '1px solid #bbf7d0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#15803d', fontWeight: 800, marginBottom: '12px' }}>
-                <MapPin size={18} /> Pickup Barangay & Landmark
+          <form onSubmit={handleBookRide} className="booking-form-compact">
+            {/* UNIFIED ROUTE CARD */}
+            <div className="booking-route-card">
+              {/* PICKUP ROW */}
+              <div className="booking-stop-row pickup-stop">
+                <div className="booking-stop-indicator">
+                  <span className="stop-dot pickup-dot" />
+                  <span className="stop-line" />
+                </div>
+                <div className="booking-stop-content">
+                  <div className="booking-stop-label">
+                    <MapPin size={13} />
+                    <span>PICKUP POINT</span>
+                  </div>
+                  <div className="booking-stop-inputs">
+                    <div className="booking-field-barangay">
+                      <select
+                        value={pickupBarangay}
+                        onChange={e => setPickupBarangay(e.target.value)}
+                        className="booking-select"
+                        aria-label="Pickup Barangay"
+                      >
+                        {INITIAL_GONZAGA_BARANGAYS.map(b => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="booking-field-landmark">
+                      <input
+                        type="text"
+                        value={pickupLandmark}
+                        onChange={e => setPickupLandmark(e.target.value)}
+                        placeholder="Landmark (e.g. Market, School)"
+                        className="booking-input"
+                        aria-label="Pickup Landmark"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="grid-responsive">
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Pickup Barangay
-                  </label>
-                  <select
-                    value={pickupBarangay}
-                    onChange={e => setPickupBarangay(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
-                  >
-                    {INITIAL_GONZAGA_BARANGAYS.map(b => (
-                      <option key={b} value={b}>{b}</option>
-                    ))}
-                  </select>
+              {/* DESTINATION ROW */}
+              <div className="booking-stop-row dest-stop">
+                <div className="booking-stop-indicator">
+                  <span className="stop-dot dest-dot" />
                 </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Pickup Landmark
-                  </label>
-                  <input
-                    type="text"
-                    value={pickupLandmark}
-                    onChange={e => setPickupLandmark(e.target.value)}
-                    placeholder="e.g. Calayan Elementary School"
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* DESTINATION */}
-            <div style={{ background: '#eff6ff', padding: '16px', borderRadius: '16px', border: '1px solid #bfdbfe' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#1d4ed8', fontWeight: 800, marginBottom: '12px' }}>
-                <Navigation size={18} /> Destination Barangay & Landmark
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="grid-responsive">
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Destination Barangay
-                  </label>
-                  <select
-                    value={destBarangay}
-                    onChange={e => setDestBarangay(e.target.value)}
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
-                  >
-                    {INITIAL_GONZAGA_BARANGAYS.map(b => (
-                      <option key={b} value={b}>{b}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                    Destination Landmark
-                  </label>
-                  <input
-                    type="text"
-                    value={destLandmark}
-                    onChange={e => setDestLandmark(e.target.value)}
-                    placeholder="e.g. CSU Gonzaga Main Gate"
-                    style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                    required
-                  />
+                <div className="booking-stop-content">
+                  <div className="booking-stop-label">
+                    <Navigation size={13} />
+                    <span>DESTINATION</span>
+                  </div>
+                  <div className="booking-stop-inputs">
+                    <div className="booking-field-barangay">
+                      <select
+                        value={destBarangay}
+                        onChange={e => setDestBarangay(e.target.value)}
+                        className="booking-select"
+                        aria-label="Destination Barangay"
+                      >
+                        {INITIAL_GONZAGA_BARANGAYS.map(b => (
+                          <option key={b} value={b}>{b}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="booking-field-landmark">
+                      <input
+                        type="text"
+                        value={destLandmark}
+                        onChange={e => setDestLandmark(e.target.value)}
+                        placeholder="Landmark (e.g. CSU Main Gate)"
+                        className="booking-input"
+                        aria-label="Destination Landmark"
+                        required
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* PASSENGERS & DISCOUNT */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }} className="grid-responsive">
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Passengers Count (1 - 8)
-                </label>
+            <div className="booking-two-col">
+              <div className="booking-field-box">
+                <label className="booking-micro-label">Passengers Count (1 - 8)</label>
                 <select
                   value={passengersCount}
                   onChange={e => setPassengersCount(Number(e.target.value))}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
+                  className="booking-select"
+                  aria-label="Passengers Count"
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                     <option key={num} value={num}>{num} Passenger{num > 1 ? 's' : ''}</option>
@@ -568,14 +571,13 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                 </select>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                  Rate Category
-                </label>
+              <div className="booking-field-box">
+                <label className="booking-micro-label">Rate Category</label>
                 <select
                   value={discountType}
                   onChange={e => setDiscountType(e.target.value as 'regular' | 'senior_student_pwd')}
-                  style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
+                  className="booking-select"
+                  aria-label="Rate Category"
                 >
                   <option value="regular">Regular Fare Rate</option>
                   <option value="senior_student_pwd">Senior / Student / PWD Rate</option>
@@ -584,57 +586,41 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
             </div>
 
             {/* SPECIAL NOTES */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px' }}>
-                Special Notes (Optional)
-              </label>
+            <div className="booking-field-box">
               <input
                 type="text"
                 value={specialNotes}
                 onChange={e => setSpecialNotes(e.target.value)}
-                placeholder="e.g. Carrying heavy luggage"
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                placeholder="Special notes (Optional, e.g. carrying heavy luggage)"
+                className="booking-input booking-input-notes"
+                aria-label="Special Notes"
               />
             </div>
 
             {/* FARE PREVIEW BANNER */}
-            <div style={{
-              background: 'linear-gradient(135deg, #052e16 0%, #15803d 100%)',
-              color: '#ffffff',
-              padding: '16px 20px',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <div>
-                <span style={{ fontSize: '0.75rem', color: '#fef08a', textTransform: 'uppercase', fontWeight: 800 }}>
-                  ESTIMATED FARE
-                </span>
-                <p style={{ fontSize: '0.85rem', opacity: 0.9 }}>{fareResult.routeName}</p>
+            <div className="booking-fare-banner">
+              <div className="fare-banner-left">
+                <span className="fare-banner-pill">ESTIMATED FARE</span>
+                <div className="fare-banner-route">{fareResult.routeName}</div>
                 {passengersCount > 1 && !fareResult.isSpecialArrangement && (
-                  <p style={{ fontSize: '0.75rem', color: '#bbf7d0', marginTop: '2px', fontWeight: 600 }}>
+                  <div className="fare-banner-calc">
                     ₱{fareResult.perPassengerFare} × {passengersCount} passengers
-                  </p>
+                  </div>
                 )}
               </div>
 
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 800, color: '#fef08a' }}>
-                  ₱{fareResult.finalFare}
-                </span>
+              <div className="fare-banner-right">
+                <div className="fare-banner-amount">₱{fareResult.finalFare}</div>
                 {passengersCount > 1 && !fareResult.isSpecialArrangement && (
-                  <div style={{ fontSize: '0.7rem', color: '#fef08a', opacity: 0.9 }}>
-                    Total for {passengersCount} pax
-                  </div>
+                  <div className="fare-banner-pax-tag">Total for {passengersCount} pax</div>
                 )}
               </div>
             </div>
 
-            <button type="submit" className="btn-primary" style={{ width: '100%', padding: '16px', fontSize: '1.15rem', borderRadius: '16px' }}>
-              <Bike size={22} /> BOOK RIDE
+            <button type="submit" className="booking-submit-btn">
+              <Bike size={20} />
+              <span>BOOK RIDE</span>
             </button>
-
           </form>
         </div>
       )}

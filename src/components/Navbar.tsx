@@ -454,38 +454,107 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             aria-label="Close navigation menu"
           />
           <aside className="passenger-menu-drawer" aria-label="Passenger information menu">
-            <div className="passenger-menu-header">
-              <div>
-                <strong>TriSakay Menu</strong>
-                <span>Passenger information</span>
+            {/* Top TriSakay branding */}
+            <div className="passenger-drawer-brand">
+              <div className="drawer-brand-left">
+                <div className="drawer-logo-wrap">
+                  <img src={appLogo} alt="TriSakay logo" />
+                </div>
+                <div>
+                  <div className="drawer-title-row">
+                    <span className="drawer-title">TriSakay</span>
+                    <span className="drawer-lgu-badge">GONZAGA</span>
+                  </div>
+                  <p className="drawer-tagline">Sakay Mo, Isang Click Lang!</p>
+                </div>
               </div>
-              <button type="button" onClick={() => setPassengerMenuOpen(false)} aria-label="Close navigation menu">
-                <X size={21} />
+              <button
+                type="button"
+                className="drawer-close-btn"
+                onClick={() => setPassengerMenuOpen(false)}
+                aria-label="Close navigation menu"
+              >
+                <X size={18} />
               </button>
             </div>
 
+            {/* Profile Section */}
+            {user && (
+              <div
+                className="drawer-profile-card"
+                onClick={() => {
+                  setActiveTab('profile');
+                  setPassengerMenuOpen(false);
+                }}
+                role="button"
+                tabIndex={0}
+                title="View Profile Settings"
+              >
+                <UserAvatar
+                  src={user.profileImage}
+                  name={user.name}
+                  size={42}
+                  role={user.role}
+                  showRoleBadge={false}
+                />
+                <div className="drawer-profile-info">
+                  <div className="drawer-profile-name">{user.name}</div>
+                  <div className="drawer-profile-sub">
+                    <span>{user.barangay}</span>
+                    <span className="drawer-role-tag">PASSENGER</span>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="drawer-profile-arrow" />
+              </div>
+            )}
+
+            {/* Navigation links */}
+            <div className="drawer-section-label">MENU & SERVICES</div>
             <nav className="passenger-menu-links">
-              <button type="button" onClick={() => setActiveTab('fare-matrix')}>
-                <span className="passenger-menu-link-icon"><FileText size={20} /></span>
-                <span><strong>Fare Rate Matrix</strong><small>View official Gonzaga fare rates</small></span>
-                <ChevronRight size={18} />
+              <button type="button" onClick={() => { setActiveTab('fare-matrix'); setPassengerMenuOpen(false); }}>
+                <span className="passenger-menu-link-icon"><FileText size={18} /></span>
+                <span><strong>Fare Rate Matrix</strong><small>Official Gonzaga fare rates</small></span>
+                <ChevronRight size={16} />
               </button>
-              <button type="button" onClick={() => setActiveTab('how-it-works')}>
-                <span className="passenger-menu-link-icon"><HelpCircle size={20} /></span>
-                <span><strong>How TriSakay Works</strong><small>Follow the simple booking steps</small></span>
-                <ChevronRight size={18} />
+              <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
+                <span className="passenger-menu-link-icon"><HelpCircle size={18} /></span>
+                <span><strong>How TriSakay Works</strong><small>Step-by-step booking guide</small></span>
+                <ChevronRight size={16} />
               </button>
-              <button type="button" onClick={() => setActiveTab('about')}>
-                <span className="passenger-menu-link-icon"><Info size={20} /></span>
+              <button type="button" onClick={() => { setActiveTab('about'); setPassengerMenuOpen(false); }}>
+                <span className="passenger-menu-link-icon"><Info size={18} /></span>
                 <span><strong>About Us</strong><small>Learn about TriSakay Gonzaga</small></span>
-                <ChevronRight size={18} />
+                <ChevronRight size={16} />
               </button>
-              <button type="button" onClick={() => setActiveTab('service-benefits')}>
-                <span className="passenger-menu-link-icon"><HeartHandshake size={20} /></span>
-                <span><strong>Why Choose TriSakay</strong><small>Accessible, efficient local rides</small></span>
-                <ChevronRight size={18} />
+              <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
+                <span className="passenger-menu-link-icon"><HeartHandshake size={18} /></span>
+                <span><strong>Why Choose TriSakay</strong><small>Accessible, efficient rides</small></span>
+                <ChevronRight size={16} />
+              </button>
+              <button type="button" onClick={() => { setActiveTab('ride-history'); setPassengerMenuOpen(false); }}>
+                <span className="passenger-menu-link-icon"><History size={18} /></span>
+                <span><strong>Ride History</strong><small>View past trips & receipts</small></span>
+                <ChevronRight size={16} />
               </button>
             </nav>
+
+            {/* Logout footer */}
+            {user && (
+              <div className="drawer-footer">
+                <button
+                  type="button"
+                  className="drawer-logout-btn"
+                  onClick={() => {
+                    store.setCurrentUser(null);
+                    setPassengerMenuOpen(false);
+                    setActiveTab('home');
+                  }}
+                >
+                  <LogOut size={16} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            )}
           </aside>
         </>
       )}
