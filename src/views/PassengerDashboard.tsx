@@ -6,7 +6,7 @@ import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../serv
 import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playNotificationSound } from '../services/sound';
-import { IOSBackButton } from '../components/IOSBackButton';
+import { BackButton } from '../components/BackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 import { getBarangayCluster, REGISTRATION_BARANGAYS } from '../services/barangayClusters';
@@ -80,7 +80,8 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
     destBarangay,
     discountType,
     state.fares,
-    state.settings.fuelSurgeMultiplier
+    state.settings.fuelSurgeMultiplier,
+    passengersCount
   );
 
   const passengerBookings = state.bookings.filter(b => 
@@ -335,7 +336,10 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               <div className="passenger-fare-estimator-result">
                 <span>Estimated fare</span>
                 <strong>₱{fareResult.finalFare}</strong>
-                <small>{fareResult.routeName}</small>
+                <small>
+                  {fareResult.routeName}
+                  {passengersCount > 1 && !fareResult.isSpecialArrangement ? ` (₱${fareResult.perPassengerFare} × ${passengersCount} pax)` : ''}
+                </small>
               </div>
             </section>
           )}
@@ -383,7 +387,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* STEP 3: BOOK A RIDE FORM (Matching Wireframe Step 3) */}
       {activeTab === 'book' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '680px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={navigateHome} />
+          <BackButton onClick={navigateHome} />
 
           <div style={{ marginBottom: '20px' }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#16a34a' }}>
@@ -533,12 +537,22 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                   ESTIMATED FARE
                 </span>
                 <p style={{ fontSize: '0.85rem', opacity: 0.9 }}>{fareResult.routeName}</p>
+                {passengersCount > 1 && !fareResult.isSpecialArrangement && (
+                  <p style={{ fontSize: '0.75rem', color: '#bbf7d0', marginTop: '2px', fontWeight: 600 }}>
+                    ₱{fareResult.perPassengerFare} × {passengersCount} passengers
+                  </p>
+                )}
               </div>
 
               <div style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: '2rem', fontWeight: 800, color: '#fef08a' }}>
                   ₱{fareResult.finalFare}
                 </span>
+                {passengersCount > 1 && !fareResult.isSpecialArrangement && (
+                  <div style={{ fontSize: '0.7rem', color: '#fef08a', opacity: 0.9 }}>
+                    Total for {passengersCount} pax
+                  </div>
+                )}
               </div>
             </div>
 
@@ -553,7 +567,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* ACTIVE RIDE STATUS WORKFLOW */}
       {activeTab === 'status' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={navigateHome} />
+          <BackButton onClick={navigateHome} />
 
           {!currentActiveBooking ? (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -1011,7 +1025,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* RIDE HISTORY TAB */}
       {activeTab === 'history' && (
         <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#ffffff' }}>
-          <IOSBackButton onClick={navigateHome} />
+          <BackButton onClick={navigateHome} />
 
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#16a34a', marginBottom: '16px' }}>
             Your Ride History
@@ -1057,7 +1071,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* NOTIFICATIONS TAB */}
       {activeTab === 'notifications' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={navigateHome} />
+          <BackButton onClick={navigateHome} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#ffedd5', color: '#ea580c', padding: '10px', borderRadius: '12px' }}>
@@ -1110,7 +1124,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
       {/* PROFILE SETTINGS TAB */}
       {activeTab === 'profile' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '620px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={navigateHome} />
+          <BackButton onClick={navigateHome} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#f1f5f9', color: '#334155', padding: '10px', borderRadius: '12px' }}>

@@ -3,7 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import { FileText, Search, Info } from 'lucide-react';
 import { FareCalculatorWidget } from '../components/FareCalculatorWidget';
-import { InformationBackButton } from '../components/InformationBackButton';
+import { BackButton } from '../components/BackButton';
 
 interface FareMatrixViewProps {
   onBack: () => void;
@@ -26,7 +26,7 @@ export const FareMatrixView: React.FC<FareMatrixViewProps> = ({ onBack, backLabe
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <InformationBackButton onClick={onBack} label={backLabel} />
+      <BackButton onClick={onBack} ariaLabel={backLabel} />
 
       <FareCalculatorWidget />
       

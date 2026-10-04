@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# TriSakay
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Municipality of Gonzaga tricycle booking application built with React, TypeScript, Vite, Supabase, and Semaphore SMS.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Copy `.env.example` to `.env.local` and provide the public browser values.
+2. Install dependencies with `npm install`.
+3. Start the app with `npm run dev`.
 
-## React Compiler
+## Secure Password/PIN reset
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The reset flow uses a six-digit Semaphore OTP and stores only hashed challenges in Supabase. Codes expire after five minutes, allow five attempts, and produce a single-use reset token.
 
-## Expanding the Oxlint configuration
+Before deploying:
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+1. Run `supabase/password_reset.sql` in the Supabase SQL editor to create the server-only challenge table.
+2. Add these server-only environment variables in Vercel:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `SEMAPHORE_API_KEY`
+   - `PASSWORD_RESET_SECRET` (a long random value)
+3. Never expose server credentials through variables beginning with `VITE_`.
+4. Revoke any Semaphore key that was previously committed to source control and create a replacement.
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+The Supabase service-role key and Semaphore key are used only by Vercel serverless functions.
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Checks
+
+- `npm run build`
+- `npm run lint`

@@ -67,10 +67,27 @@ export function calculateFare(
   destBrgy: string,
   discountType: 'regular' | 'senior_student_pwd',
   fareList: GonzagaRouteFare[] = INITIAL_GONZAGA_FARES,
-  fuelSurgeMultiplier: number = 1.0
-): { baseFare: number; finalFare: number; routeName: string } {
+  fuelSurgeMultiplier: number = 1.0,
+  passengersCount: number = 1
+): {
+  baseFare: number;
+  perPassengerFare: number;
+  finalFare: number;
+  passengersCount: number;
+  routeName: string;
+  isSpecialArrangement?: boolean;
+} {
+  const count = Math.max(1, Number(passengersCount) || 1);
+
   if (!pickupBrgy || !destBrgy) {
-    return { baseFare: 20, finalFare: Math.round(20 * fuelSurgeMultiplier), routeName: 'Local Tricycle Standard Rate' };
+    const unitFare = Math.round(20 * fuelSurgeMultiplier);
+    return {
+      baseFare: 20,
+      perPassengerFare: unitFare,
+      finalFare: unitFare * count,
+      passengersCount: count,
+      routeName: 'Local Tricycle Standard Rate'
+    };
   }
 
   const matched = fareList.find(f => 
@@ -85,8 +102,16 @@ export function calculateFare(
     if (isCSUDestination && matched.csuRate) {
       rate = matched.csuRate;
     }
-    const finalFare = Math.round(rate * fuelSurgeMultiplier);
-    return { baseFare: rate, finalFare, routeName: matched.route };
+    const perPassengerFare = Math.round(rate * fuelSurgeMultiplier);
+    const finalFare = matched.isSpecialArrangement ? perPassengerFare : (perPassengerFare * count);
+    return {
+      baseFare: rate,
+      perPassengerFare,
+      finalFare,
+      passengersCount: count,
+      routeName: matched.route,
+      isSpecialArrangement: matched.isSpecialArrangement
+    };
   }
 
   const fallback = fareList.find(f => 
@@ -99,12 +124,27 @@ export function calculateFare(
     if (isCSUDestination && fallback.csuRate) {
       rate = fallback.csuRate;
     }
-    const finalFare = Math.round(rate * fuelSurgeMultiplier);
-    return { baseFare: rate, finalFare, routeName: `${fallback.route} (Standard)` };
+    const perPassengerFare = Math.round(rate * fuelSurgeMultiplier);
+    const finalFare = fallback.isSpecialArrangement ? perPassengerFare : (perPassengerFare * count);
+    return {
+      baseFare: rate,
+      perPassengerFare,
+      finalFare,
+      passengersCount: count,
+      routeName: `${fallback.route} (Standard)`,
+      isSpecialArrangement: fallback.isSpecialArrangement
+    };
   }
 
   const defaultRate = discountType === 'senior_student_pwd' ? 15 : 20;
-  return { baseFare: defaultRate, finalFare: Math.round(defaultRate * fuelSurgeMultiplier), routeName: 'Gonzaga Standard Zone Rate' };
+  const unitFare = Math.round(defaultRate * fuelSurgeMultiplier);
+  return {
+    baseFare: defaultRate,
+    perPassengerFare: unitFare,
+    finalFare: unitFare * count,
+    passengersCount: count,
+    routeName: 'Gonzaga Standard Zone Rate'
+  };
 }
 
 export function cleanBarangay(name?: string): string {

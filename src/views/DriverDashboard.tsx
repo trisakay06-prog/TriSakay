@@ -5,7 +5,7 @@ import type { Booking } from '../types';
 import { Bike, Phone, CheckCircle2, ShieldAlert, Navigation, Bell, User, Lock } from 'lucide-react';
 import { DriverNotificationModal } from '../components/DriverNotificationModal';
 import { INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { IOSBackButton } from '../components/IOSBackButton';
+import { BackButton } from '../components/BackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 import { REGISTRATION_BARANGAYS } from '../services/barangayClusters';
@@ -597,7 +597,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
       {/* DRIVER RIDE HISTORY (Matching Wireframe Step 6) */}
       {activeTab === 'history' && (
         <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#ffffff' }}>
-          <IOSBackButton onClick={() => setActiveTab('requests')} />
+          <BackButton onClick={() => setActiveTab('requests')} />
 
           <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#16a34a', marginBottom: '16px' }}>
             My Completed Ride History
@@ -637,7 +637,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
       {/* DRIVER NOTIFICATIONS TAB */}
       {activeTab === 'notifications' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('requests')} />
+          <BackButton onClick={() => setActiveTab('requests')} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#ffedd5', color: '#ea580c', padding: '10px', borderRadius: '12px' }}>
@@ -694,7 +694,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({ initialTab = '
       {/* DRIVER PROFILE SETTINGS TAB */}
       {activeTab === 'profile' && (
         <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '620px', margin: '0 auto', width: '100%' }}>
-          <IOSBackButton onClick={() => setActiveTab('requests')} />
+          <BackButton onClick={() => setActiveTab('requests')} />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: '#f1f5f9', color: '#334155', padding: '10px', borderRadius: '12px' }}>

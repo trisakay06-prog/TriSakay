@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { store } from '../services/store';
 import type { UserRole } from '../types';
-import { ArrowLeft, UserCheck, Bike, CheckCircle, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
+import { UserCheck, Bike, CheckCircle, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
 import { sendRegistrationWelcomeSMS } from '../services/smsService';
 import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
 import { getBarangayCluster, REGISTRATION_BARANGAYS } from '../services/barangayClusters';
+import { BackButton } from './BackButton';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -23,7 +24,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   const [barangay, setBarangay] = useState('');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [resetStep, setResetStep] = useState<'request' | 'verify' | 'complete'>('request');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [resetCooldown, setResetCooldown] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -33,8 +40,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
       setError('');
       setSuccessMsg('');
       setShowPassword(false);
+      setConfirmPassword('');
+      setResetStep('request');
+      setVerificationCode('');
+      setResetToken('');
+      setResetCooldown(0);
     }
   }, [initialMode, isOpen]);
+
+  useEffect(() => {
+    if (resetCooldown <= 0) return;
+    const timer = window.setInterval(() => setResetCooldown(seconds => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [resetCooldown]);
 
   const closeAuthPage = () => {
     if (successMsg && role === 'driver' && mode === 'register') {
@@ -47,6 +65,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
     }
   };
 
+  const handleAuthBack = () => {
+    if (mode === 'reset') {
+      setMode('login');
+      setResetStep('request');
+      setVerificationCode('');
+      setResetToken('');
+      setError('');
+      setSuccessMsg('');
+      return;
+    }
+    closeAuthPage();
+  };
+
   if (!isOpen) return null;
 
   const validateMobile = (num: string) => {
@@ -54,34 +85,97 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
     return /^09\d{9}$/.test(cleaned) || cleaned === 'admin';
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleResetSubmit = async (cleanedMobile: string) => {
+    if (!/^09\d{9}$/.test(cleanedMobile)) {
+      setError('Please enter a valid 11-digit Philippine mobile number.');
+      return;
+    }
+
+    if (resetStep === 'verify' && !/^\d{6}$/.test(verificationCode.trim())) {
+      setError('Enter the six-digit verification code.');
+      return;
+    }
+
+    if (resetStep === 'complete') {
+      if (password.length < 4) {
+        setError('Your new Password/PIN must have at least four characters.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('The Password/PIN entries do not match.');
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: resetStep,
+          mobile: cleanedMobile,
+          code: verificationCode.trim(),
+          resetToken
+        })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) {
+        setError(result.message || 'Password reset is temporarily unavailable.');
+        return;
+      }
+
+      if (resetStep === 'request') {
+        setSuccessMsg(result.message || 'A verification code will arrive shortly.');
+        setResetCooldown(60);
+        setResetStep('verify');
+        return;
+      }
+
+      if (resetStep === 'verify') {
+        setResetToken(result.resetToken);
+        setResetStep('complete');
+        setSuccessMsg('Mobile number verified. Create your new Password/PIN.');
+        return;
+      }
+
+      if (!store.resetPassword(cleanedMobile, password)) {
+        setError('No TriSakay account is available on this device for that mobile number.');
+        return;
+      }
+      setPassword('');
+      setConfirmPassword('');
+      setVerificationCode('');
+      setResetToken('');
+      setResetStep('request');
+      setMode('login');
+      setSuccessMsg('Password/PIN reset successfully. You may now sign in.');
+    } catch {
+      setError('Unable to contact the verification service. Check your connection and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
 
     const cleanedMobile = mobile.trim().replace(/\s+/g, '');
 
-    if (!cleanedMobile || !password) {
-      setError('Please provide your mobile number and password.');
+    if (!cleanedMobile) {
+      setError('Please provide your mobile number.');
       return;
     }
 
     if (mode === 'reset') {
-      if (!validateMobile(cleanedMobile)) {
-        setError('Please enter a valid 11-digit Philippine mobile number.');
-        return;
-      }
-      if (password.length < 4) {
-        setError('Your new password/PIN must have at least 4 characters.');
-        return;
-      }
-      if (!store.resetPassword(cleanedMobile, password)) {
-        setError('No account was found with this mobile number.');
-        return;
-      }
-      setSuccessMsg('Password/PIN reset successfully. You may now sign in.');
-      setPassword('');
-      setMode('login');
+      await handleResetSubmit(cleanedMobile);
+      return;
+    }
+
+    if (!password) {
+      setError('Please provide your mobile number and password.');
       return;
     }
 
@@ -206,9 +300,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         }}
       >
         <div className="auth-page-brand-row">
-          <button onClick={closeAuthPage} className="auth-back-button" aria-label="Back to homepage">
-            <ArrowLeft size={25} />
-          </button>
+          <BackButton
+            onClick={handleAuthBack}
+            ariaLabel={mode === 'reset' ? 'Back to Sign In' : 'Back to homepage'}
+          />
           <div className="auth-brand-lockup">
             <span className="auth-brand-icon">
               <img
@@ -226,7 +321,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         <div className="auth-form-surface">
         <div className="auth-page-heading">
           <h2>{mode === 'login' ? 'Welcome Back!' : mode === 'register' ? 'Create Your Account' : 'Reset Password / PIN'}</h2>
-          <p>{mode === 'login' ? 'Sign in to check fares and manage your rides.' : mode === 'register' ? 'Register to start booking rides in Gonzaga.' : 'Enter your registered mobile number and a new PIN.'}</p>
+          <p>{mode === 'login'
+            ? 'Sign in to check fares and manage your rides.'
+            : mode === 'register'
+              ? 'Register to start booking rides in Gonzaga.'
+              : resetStep === 'request'
+                ? 'Enter your registered mobile number to receive a verification code.'
+                : resetStep === 'verify'
+                  ? `Enter the six-digit code sent to ${mobile}.`
+                  : 'Create and confirm your new Password/PIN.'}</p>
         </div>
 
         {/* ROLE SELECTION TABS */}
@@ -380,6 +483,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               value={mobile}
               onChange={e => setMobile(e.target.value)}
               placeholder={mode === 'login' ? 'Mobile number or admin' : '09171234567'}
+              disabled={mode === 'reset' && resetStep !== 'request'}
+              inputMode={mode === 'login' ? undefined : 'tel'}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -393,6 +498,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               📲 Cellular SMS notifications will be delivered to this mobile number.
             </span>}
           </div>
+
+          {mode === 'reset' && resetStep === 'verify' && (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
+                Verification Code
+              </label>
+              <input
+                type="text"
+                value={verificationCode}
+                onChange={e => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                placeholder="6-digit code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                className="auth-otp-input"
+              />
+            </div>
+          )}
 
           {mode === 'register' && (
             <div>
@@ -461,7 +584,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             </>
           )}
 
-          <div>
+          {(mode !== 'reset' || resetStep === 'complete') && <div>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
               {mode === 'reset' ? 'New Password / PIN' : 'Password / PIN'}
             </label>
@@ -490,13 +613,45 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-          </div>
+          </div>}
 
-          <button type="submit" className="btn-primary" style={{ marginTop: '10px', width: '100%' }}>
-            {mode === 'login' ? 'Sign In' : mode === 'register' ? `Register as ${role.toUpperCase()}` : 'Reset Password / PIN'}
+          {mode === 'reset' && resetStep === 'complete' && (
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
+                Confirm Password / PIN
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter Password/PIN"
+                autoComplete="new-password"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.95rem'
+                }}
+              />
+            </div>
+          )}
+
+          <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ marginTop: '10px', width: '100%' }}>
+            {isSubmitting
+              ? 'Please wait…'
+              : mode === 'login'
+                ? 'Sign In'
+                : mode === 'register'
+                  ? `Register as ${role.toUpperCase()}`
+                  : resetStep === 'request'
+                    ? 'Send Verification Code'
+                    : resetStep === 'verify'
+                      ? 'Verify Code'
+                      : 'Save New Password / PIN'}
           </button>
           {mode === 'login' && (
-            <button type="button" onClick={() => { setMode('reset'); setError(''); setSuccessMsg(''); setPassword(''); }} style={{ border: 'none', background: 'transparent', color: '#15803d', fontWeight: 700, cursor: 'pointer' }}>
+            <button type="button" onClick={() => { setMode('reset'); setResetStep('request'); setVerificationCode(''); setResetToken(''); setError(''); setSuccessMsg(''); setPassword(''); }} style={{ border: 'none', background: 'transparent', color: '#15803d', fontWeight: 700, cursor: 'pointer' }}>
               Forgot Password / PIN?
             </button>
           )}
@@ -509,9 +664,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           </button>
         </div>}
 
-        {mode === 'reset' && <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b' }}>
-            <button onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }} style={{ color: '#16a34a', fontWeight: 700, border: 'none', background: 'transparent', cursor: 'pointer' }}>
-              Back to Sign In
+        {mode === 'reset' && resetStep === 'verify' && <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '0.85rem', color: '#64748b' }}>
+            <button type="button" disabled={resetCooldown > 0} onClick={() => { setResetStep('request'); setVerificationCode(''); setError(''); setSuccessMsg(''); }} style={{ color: resetCooldown > 0 ? '#94a3b8' : '#15803d', fontWeight: 700, border: 'none', background: 'transparent', cursor: resetCooldown > 0 ? 'not-allowed' : 'pointer' }}>
+              {resetCooldown > 0 ? `Resend in ${resetCooldown}s` : 'Request New Code'}
             </button>
         </div>}
         </div>

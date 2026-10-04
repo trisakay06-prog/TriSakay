@@ -1,6 +1,6 @@
 import React from 'react';
 import { Clock3, Fuel, HeartHandshake, Mail, MapPin, Phone, ShieldCheck } from 'lucide-react';
-import { InformationBackButton } from '../components/InformationBackButton';
+import { BackButton } from '../components/BackButton';
 
 interface AboutViewProps {
   onBack: () => void;
@@ -9,7 +9,7 @@ interface AboutViewProps {
 
 export const AboutView: React.FC<AboutViewProps> = ({ onBack, backLabel }) => (
   <div className="about-page-screen">
-    <InformationBackButton onClick={onBack} label={backLabel} />
+    <BackButton onClick={onBack} ariaLabel={backLabel} />
     <header className="about-page-header">
       <div>
         <span>ABOUT US</span>

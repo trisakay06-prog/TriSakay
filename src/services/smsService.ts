@@ -4,15 +4,11 @@
  * Sends cellular SMS text messages directly to passengers & students without requiring mobile data!
  */
 
-const SEMAPHORE_API_KEY = import.meta.env.VITE_SEMAPHORE_API_KEY || '';
-
 export interface SMSPayload {
   toMobile: string;
   message: string;
   recipientName: string;
 }
-
-export const isSMSConfigured = Boolean(SEMAPHORE_API_KEY);
 
 /**
  * Sends SMS via secure Vercel Serverless Function to Semaphore.co

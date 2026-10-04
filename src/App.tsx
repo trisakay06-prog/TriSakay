@@ -14,7 +14,7 @@ import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivit
 import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
 import { Bike, Clock3, Fuel, HeartHandshake, Map, MapPin, PhilippinePeso } from 'lucide-react';
-import { InformationBackButton } from './components/InformationBackButton';
+import { BackButton } from './components/BackButton';
 
 export const App: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
@@ -72,7 +72,7 @@ export const App: React.FC = () => {
       ];
       return (
         <div className="information-page-layout">
-          <InformationBackButton onClick={navigateBackFromInformation} label={informationBackLabel} />
+          <BackButton onClick={navigateBackFromInformation} ariaLabel={informationBackLabel} />
           <section className="glass-panel" style={{ padding: '32px', background: '#fff' }}>
             <h2 style={{ color: '#15803d', marginBottom: '8px' }}>Why use TriSakay?</h2>
             <p style={{ color: '#64748b', marginBottom: '24px' }}>Designed for passengers and local tricycle drivers across Gonzaga.</p>
@@ -99,7 +99,7 @@ export const App: React.FC = () => {
       ];
       return (
         <div className="information-page-layout">
-          <InformationBackButton onClick={navigateBackFromInformation} label={informationBackLabel} />
+          <BackButton onClick={navigateBackFromInformation} ariaLabel={informationBackLabel} />
           <section className="glass-panel" style={{ padding: '28px', background: '#fff' }}>
             <div style={{ textAlign: 'center', marginBottom: '22px' }}>
               <span style={{ color: '#15803d', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '.1em' }}>HOW TRISAKAY WORKS</span>

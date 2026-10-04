@@ -23,12 +23,11 @@ export default async function handler(req: any, res: any) {
   }
 
   const { toMobile, message } = body || {};
-  const apiKey = process.env.SEMAPHORE_API_KEY || process.env.VITE_SEMAPHORE_API_KEY || 'f6577cb68dc2a20429adb9378cdc9da7';
+  const apiKey = process.env.SEMAPHORE_API_KEY;
 
   if (!apiKey) {
-    return res.status(200).json({ 
+    return res.status(503).json({
       success: false, 
-      simulated: true, 
       info: 'Semaphore API Key not configured in environment variables.' 
     });
   }

@@ -7,6 +7,7 @@ export const FareCalculatorWidget: React.FC = () => {
   const [pickup, setPickup] = useState(INITIAL_GONZAGA_BARANGAYS[1]); // Pateng
   const [destination, setDestination] = useState(INITIAL_GONZAGA_BARANGAYS[0]); // Poblacion
   const [discountType, setDiscountType] = useState<'regular' | 'senior_student_pwd'>('regular');
+  const [passengersCount, setPassengersCount] = useState(1);
 
   const state = store.getState();
   const fareResult = calculateFare(
@@ -14,7 +15,8 @@ export const FareCalculatorWidget: React.FC = () => {
     destination,
     discountType,
     state.fares,
-    state.settings.fuelSurgeMultiplier
+    state.settings.fuelSurgeMultiplier,
+    passengersCount
   );
 
   return (
@@ -127,6 +129,39 @@ export const FareCalculatorWidget: React.FC = () => {
         </div>
       </div>
 
+      {/* Passenger Count Selector */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+          <label style={{ fontSize: '0.8rem', fontWeight: 700 }}>
+            Number of Passengers
+          </label>
+          <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 700 }}>
+            {passengersCount} {passengersCount > 1 ? 'Passengers' : 'Passenger'}
+          </span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '6px' }}>
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+            <button
+              key={num}
+              type="button"
+              onClick={() => setPassengersCount(num)}
+              style={{
+                padding: '8px 0',
+                borderRadius: '8px',
+                border: passengersCount === num ? '2px solid #16a34a' : '1px solid #cbd5e1',
+                background: passengersCount === num ? '#f0fdf4' : '#ffffff',
+                color: passengersCount === num ? '#15803d' : '#64748b',
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                cursor: 'pointer'
+              }}
+            >
+              {num}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* RESULT DISPLAY */}
       <div style={{
         background: 'linear-gradient(135deg, #052e16 0%, #15803d 100%)',
@@ -145,6 +180,11 @@ export const FareCalculatorWidget: React.FC = () => {
           <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
             Estimated Standard Fare
           </div>
+          {passengersCount > 1 && !fareResult.isSpecialArrangement && (
+            <div style={{ fontSize: '0.75rem', color: '#bbf7d0', marginTop: '2px', fontWeight: 600 }}>
+              ₱{fareResult.perPassengerFare} × {passengersCount} passengers
+            </div>
+          )}
         </div>
 
         <div style={{ textAlign: 'right' }}>
@@ -152,7 +192,7 @@ export const FareCalculatorWidget: React.FC = () => {
             ₱{fareResult.finalFare}
           </span>
           <span style={{ fontSize: '0.75rem', display: 'block', opacity: 0.8 }}>
-            / per seat passenger
+            {passengersCount > 1 && !fareResult.isSpecialArrangement ? `Total for ${passengersCount} pax` : '/ per seat passenger'}
           </span>
         </div>
       </div>
