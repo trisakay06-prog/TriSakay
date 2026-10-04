@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Accessibility, Bike, Clock3, Info, Leaf, Map, MapPin, Phone, Mail, PhilippinePeso, Shield, Sparkles, Users } from 'lucide-react';
+import { Accessibility, Bike, Clock3, Info, Leaf, Map, MapPin, Phone, Mail, PhilippinePeso, Shield, Sparkles } from 'lucide-react';
 import { store } from '../services/store';
 
 interface HomeViewProps {
@@ -230,83 +230,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
 
 
-      {/* ABOUT US — kept below the homepage hero and expanded only on click */}
-      <details className="glass-panel" style={{ padding: '24px 28px', borderRadius: '24px', background: '#ffffff' }}>
-        <summary style={{ cursor: 'pointer', color: '#16a34a', fontSize: '1.2rem', fontWeight: 800 }}>
-          About Us — click to learn more
-        </summary>
-        <div style={{ paddingTop: '22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <div style={{ background: '#dcfce7', color: '#15803d', padding: '8px', borderRadius: '12px' }}>
-              <Shield size={24} />
-            </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#16a34a' }}>About TriSakay</h2>
-          </div>
 
-          <p style={{ color: '#334155', lineHeight: 1.7, fontSize: '1rem', marginBottom: '20px' }}>
-            <strong>TriSakay</strong> is a community-based tricycle booking platform that connects passengers with registered tricycle drivers in the <strong>Municipality of Gonzaga</strong>. We provide a simple, reliable, and accessible way to make local transportation more convenient and efficient.
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', borderLeft: '4px solid #16a34a' }}>
-              <h4 style={{ color: '#15803d', fontWeight: 800, marginBottom: '4px' }}>🎯 Our Mission</h4>
-              <p style={{ fontSize: '0.9rem', color: '#475569' }}>
-                To provide safe, reliable, and accessible transportation solutions by connecting rural communities through innovative digital technology.
-              </p>
-            </div>
-
-            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '14px', borderLeft: '4px solid #eab308' }}>
-              <h4 style={{ color: '#854d0e', fontWeight: 800, marginBottom: '4px' }}>🌟 Our Vision</h4>
-              <p style={{ fontSize: '0.9rem', color: '#475569' }}>
-                To be the leading digital transportation platform that empowers rural communities with smarter, more connected, and sustainable mobility.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </details>
-
-      {/* HOW IT WORKS SECTION */}
-      <section className="glass-panel" style={{ padding: '36px', borderRadius: '24px', background: '#ffffff' }}>
-        <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 32px auto' }}>
-          <span style={{ color: '#16a34a', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
-            SIMPLE STEP-BY-STEP PROCESS
-          </span>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
-            How TriSakay Works
-          </h2>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }} className="grid-responsive">
-          <div style={{ background: '#f0fdf4', padding: '24px', borderRadius: '20px', border: '1px solid #bbf7d0' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#15803d', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Users size={22} /> For Passengers
-            </h3>
-            <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.95rem', color: '#1e293b' }}>
-              <li>Open TriSakay website (No installation required!)</li>
-              <li>Choose <strong>Book a Ride</strong></li>
-              <li>Enter pickup & destination barangays and landmarks</li>
-              <li>Select number of passengers & discount category</li>
-              <li>View auto-calculated estimated fare</li>
-              <li>Click <strong>Book Ride</strong> & wait for driver acceptance!</li>
-            </ol>
-          </div>
-
-          <div style={{ background: '#fefce8', padding: '24px', borderRadius: '20px', border: '1px solid #fef08a' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#854d0e', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Bike size={22} /> For Tricycle Drivers
-            </h3>
-            <ol style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '0.95rem', color: '#1e293b' }}>
-              <li>Log in to your TriSakay driver account</li>
-              <li>Set status to <strong>Online</strong></li>
-              <li>Receive real-time booking alert chime on your phone</li>
-              <li>View pickup location, passengers count, & notes</li>
-              <li>Click <strong>ACCEPT</strong> to unlock passenger contact number</li>
-              <li>Pick up passenger & complete ride!</li>
-            </ol>
-          </div>
-        </div>
-      </section>
 
       {/* CONTACT US FOOTER */}
       <section style={{

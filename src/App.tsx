@@ -18,7 +18,9 @@ import { BackButton } from './components/BackButton';
 
 export const App: React.FC = () => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    return store.getState().currentUser ? 'dashboard' : 'home';
+  });
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'register'>('login');
   const [dismissedHomeRequests, setDismissedHomeRequests] = useState<string[]>([]);
