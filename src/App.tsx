@@ -13,7 +13,7 @@ import { AboutView } from './views/AboutView';
 import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivity';
 import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
-import { Bike, Clock3, Fuel, HeartHandshake, Map, MapPin, PhilippinePeso } from 'lucide-react';
+import { Bike, Clock3, Fuel, HeartHandshake, Map, MapPin, PhilippinePeso, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 import { BackButton } from './components/BackButton';
 
 export const App: React.FC = () => {
@@ -94,30 +94,209 @@ export const App: React.FC = () => {
 
     if (activeTab === 'how-it-works') {
       const steps = [
-        { title: 'Set Pickup', text: 'Choose your barangay and add a clear pickup landmark.', icon: MapPin },
-        { title: 'Choose Destination', text: 'Select where you are going within the available service area.', icon: Map },
-        { title: 'Check Fare', text: 'Review the estimated fare before sending your request.', icon: PhilippinePeso },
-        { title: 'Confirm Ride', text: 'Book and wait for an available registered driver.', icon: Bike }
+        {
+          title: 'Set Pickup Location',
+          text: 'Choose your barangay in Gonzaga and specify an exact, recognizable landmark (e.g. waiting shed, store, gate).',
+          icon: MapPin
+        },
+        {
+          title: 'Choose Destination',
+          text: 'Select your target barangay or destination within the municipality coverage area.',
+          icon: Map
+        },
+        {
+          title: 'Review Official Fare',
+          text: 'Review the transparent fare computed automatically under the Gonzaga Municipal Tricycle Fare Ordinance.',
+          icon: PhilippinePeso
+        },
+        {
+          title: 'Confirm & Ride',
+          text: 'Submit your ride request. A nearby registered tricycle driver will accept, and you can track their arrival.',
+          icon: Bike
+        }
       ];
+
+      const guidelines = [
+        {
+          title: 'Senior Citizen, PWD & Student Discount',
+          desc: 'Eligible passengers receive a 20% statutory discount automatically computed when choosing the discounted fare category.'
+        },
+        {
+          title: 'Direct Driver Contact',
+          desc: 'Once your ride is accepted, the driver\'s phone number and plate details are shown for direct SMS or voice communication.'
+        },
+        {
+          title: 'Accredited Tricycle Drivers',
+          desc: 'All TriSakay drivers are registered residents and licensed operators verified by the local transport office.'
+        }
+      ];
+
       return (
-        <div className="information-page-layout">
+        <div className="information-page-layout how-it-works-layout">
           <BackButton onClick={navigateBackFromInformation} ariaLabel={informationBackLabel} />
-          <section className="glass-panel" style={{ padding: '28px', background: '#fff' }}>
-            <div style={{ textAlign: 'center', marginBottom: '22px' }}>
-              <span style={{ color: '#15803d', fontSize: '0.75rem', fontWeight: 900, letterSpacing: '.1em' }}>HOW TRISAKAY WORKS</span>
-              <h2 style={{ marginTop: '5px', color: '#0f172a' }}>Book a Ride in 4 Simple Steps</h2>
+
+          <section className="glass-panel" style={{ padding: '28px 24px', background: '#fff' }}>
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+              <span style={{
+                color: '#15803d',
+                fontSize: '0.78rem',
+                fontWeight: 900,
+                letterSpacing: '.12em',
+                textTransform: 'uppercase',
+                background: '#f0fdf4',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                border: '1px solid #dcfce7',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <Sparkles size={14} /> HOW TRISAKAY WORKS
+              </span>
+              <h2 style={{ marginTop: '10px', color: '#0f172a', fontSize: '1.6rem', fontWeight: 800 }}>
+                Book a Ride in 4 Simple Steps
+              </h2>
+              <p style={{ color: '#64748b', fontSize: '0.92rem', maxWidth: '540px', margin: '6px auto 0' }}>
+                TriSakay connects passengers directly with registered local tricycle operators across Gonzaga for reliable and fair travel.
+              </p>
             </div>
-            <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
+
+            <div className="how-it-works-steps-grid">
               {steps.map(({ title, text, icon: Icon }, index) => (
-                <article key={title} className="glass-card" style={{ padding: '20px', textAlign: 'center' }}>
-                  <div style={{ width: '48px', height: '48px', margin: '0 auto 11px', borderRadius: '50%', display: 'grid', placeItems: 'center', background: '#f0fdf4', color: '#15803d' }}>
-                    <Icon size={23} />
+                <article
+                  key={title}
+                  className="glass-card"
+                  style={{
+                    padding: '22px 18px',
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '18px',
+                    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.04)'
+                  }}
+                >
+                  <div style={{
+                    width: '52px',
+                    height: '52px',
+                    margin: '0 auto 12px',
+                    borderRadius: '50%',
+                    display: 'grid',
+                    placeItems: 'center',
+                    background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+                    color: '#15803d',
+                    border: '1px solid #bbf7d0',
+                    boxShadow: '0 4px 10px rgba(22, 163, 74, 0.12)'
+                  }}>
+                    <Icon size={24} />
                   </div>
-                  <small style={{ color: '#eab308', fontWeight: 900 }}>STEP {index + 1}</small>
-                  <h3 style={{ margin: '4px 0 6px', fontSize: '1rem' }}>{title}</h3>
-                  <p style={{ color: '#64748b', fontSize: '.8rem', lineHeight: 1.45 }}>{text}</p>
+                  <span style={{
+                    color: '#eab308',
+                    fontWeight: 900,
+                    fontSize: '0.72rem',
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    marginBottom: '4px'
+                  }}>
+                    STEP {index + 1}
+                  </span>
+                  <h3 style={{ margin: '2px 0 8px', fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
+                    {title}
+                  </h3>
+                  <p style={{ color: '#64748b', fontSize: '0.85rem', lineHeight: 1.5, margin: 0 }}>
+                    {text}
+                  </p>
                 </article>
               ))}
+            </div>
+          </section>
+
+          {/* Passenger Guidelines & Safety */}
+          <section className="glass-panel" style={{ padding: '24px', background: '#fff', marginTop: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+              <ShieldCheck size={22} color="#15803d" />
+              <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                Important Rider Guidelines
+              </h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {guidelines.map(g => (
+                <div
+                  key={g.title}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    padding: '14px 16px',
+                    borderRadius: '14px',
+                    background: '#f8fafc',
+                    border: '1px solid #f1f5f9'
+                  }}
+                >
+                  <CheckCircle2 size={18} color="#16a34a" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong style={{ display: 'block', fontSize: '0.92rem', color: '#0f172a', marginBottom: '2px' }}>
+                      {g.title}
+                    </strong>
+                    <span style={{ fontSize: '0.83rem', color: '#64748b', lineHeight: 1.45 }}>
+                      {g.desc}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Actions Footer */}
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+              marginTop: '20px',
+              paddingTop: '16px',
+              borderTop: '1px solid #f1f5f9'
+            }}>
+              <button
+                type="button"
+                onClick={() => setActiveTab('fare-matrix')}
+                className="btn-outline"
+                style={{
+                  flex: '1 1 200px',
+                  minHeight: '46px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '0.92rem'
+                }}
+              >
+                <PhilippinePeso size={17} /> View Official Fare Matrix
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (!currentUser) openAuth('login');
+                  else setActiveTab('dashboard');
+                }}
+                className="btn-primary"
+                style={{
+                  flex: '1 1 200px',
+                  minHeight: '46px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  fontSize: '0.92rem'
+                }}
+              >
+                <Bike size={17} /> {currentUser ? 'Go to Booking' : 'Sign In to Book'}
+              </button>
             </div>
           </section>
         </div>

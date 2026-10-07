@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, UserCheck, Settings, Bell, History, Menu, X, Info, HeartHandshake, ChevronRight } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Settings, Bell, History, Menu, X, Info, HeartHandshake, ChevronRight, Phone, MapPin } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
 
@@ -15,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
   const [state, setState] = useState<AppStoreData>(store.getState());
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [passengerMenuOpen, setPassengerMenuOpen] = useState(false);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return store.subscribe(() => setState(store.getState()));
@@ -27,6 +28,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
       document.body.classList.remove('senior-mode');
     }
   }, [state.seniorMode]);
+
+  // Handle outside click & Escape key to close profile dropdown
+  useEffect(() => {
+    if (!profileDropdownOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [profileDropdownOpen]);
 
   const user = state.currentUser;
   const isPassenger = user?.role === 'passenger';
@@ -72,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
       zIndex: 900,
       boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
     }}>
-      <div className={isPassenger ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'} style={{
+      <div className={(isPassenger || !user) ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'} style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '12px 20px',
@@ -82,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
       }}>
 
         <div className="navbar-left-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {isPassenger && (
+          {(isPassenger || !user) && (
             <button
               type="button"
               className="passenger-menu-trigger"
@@ -277,164 +303,113 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 )}
               </button>
 
-              {/* CIRCLE PROFILE AVATAR ONLY (NO NAME, CLICKABLE DROPDOWN) */}
-              <button
-                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                className="profile-avatar-control"
-                style={{
-                  padding: 0,
-                  width: '40px',
-                  height: '40px',
-                  border: '2px solid #ffffff',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  background: 'transparent',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: profileDropdownOpen
-                    ? '0 0 0 3px rgba(22, 163, 74, 0.35)'
-                    : '0 4px 12px rgba(22, 163, 74, 0.25)',
-                  transition: 'box-shadow 0.2s ease',
-                  flexShrink: 0
-                }}
-                aria-label="User Profile"
-                title={`${user.name} (${user.role})`}
-              >
-                <UserAvatar
-                  src={user.profileImage}
-                  name={user.name}
-                  size={36}
-                  role={user.role}
-                />
-              </button>
-
-              {/* PROFILE DROPDOWN MENU */}
-              {profileDropdownOpen && (
-                <div
-                  className="profile-dropdown-menu"
+              {/* CIRCLE PROFILE AVATAR ONLY WITH MODERN DROPDOWN */}
+              <div ref={profileDropdownRef} className="profile-dropdown-wrapper">
+                <button
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="profile-avatar-control"
                   style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 10px)',
-                    right: 0,
-                    width: '270px',
-                    background: '#ffffff',
-                    borderRadius: '20px',
-                    boxShadow: '0 16px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
-                    padding: '16px',
-                    zIndex: 10001
+                    padding: 0,
+                    width: '40px',
+                    height: '40px',
+                    border: '2px solid #ffffff',
+                    borderRadius: '50%',
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: profileDropdownOpen
+                      ? '0 0 0 3px rgba(22, 163, 74, 0.35)'
+                      : '0 4px 12px rgba(22, 163, 74, 0.25)',
+                    transition: 'all 0.2s ease',
+                    flexShrink: 0
                   }}
+                  aria-label="User Profile"
+                  aria-expanded={profileDropdownOpen}
+                  title={`${user.name} (${user.role})`}
                 >
-                  {/* Header Info */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                    <UserAvatar
-                      src={user.profileImage}
-                      name={user.name}
-                      size={44}
-                      role={user.role}
-                      showRoleBadge
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {user.name}
+                  <UserAvatar
+                    src={user.profileImage}
+                    name={user.name}
+                    size={36}
+                    role={user.role}
+                  />
+                </button>
+
+                {/* PROFILE DROPDOWN MENU */}
+                {profileDropdownOpen && (
+                  <div className="profile-dropdown-menu" role="menu">
+                    {/* Header Info */}
+                    <div className="profile-dropdown-header">
+                      <UserAvatar
+                        src={user.profileImage}
+                        name={user.name}
+                        size={46}
+                        role={user.role}
+                        showRoleBadge
+                      />
+                      <div className="profile-dropdown-user-info">
+                        <div className="profile-dropdown-user-name" title={user.name}>
+                          {user.name}
+                        </div>
+                        <span className={`profile-dropdown-role-badge role-badge-${user.role}`}>
+                          {user.role}
+                        </span>
                       </div>
-                      <span style={{
-                        background: user.role === 'admin' ? '#dbeafe' : user.role === 'driver' ? '#fef3c7' : '#dcfce7',
-                        color: user.role === 'admin' ? '#1d4ed8' : user.role === 'driver' ? '#b45309' : '#15803d',
-                        padding: '2px 8px',
-                        borderRadius: '6px',
-                        fontSize: '0.72rem',
-                        fontWeight: 800,
-                        textTransform: 'uppercase'
-                      }}>
-                        {user.role}
-                      </span>
+                    </div>
+
+                    {/* Detail items */}
+                    <div className="profile-dropdown-details">
+                      <div className="profile-detail-row">
+                        <Phone size={13} color="#16a34a" />
+                        <span>Mobile</span>
+                        <strong>{user.mobile}</strong>
+                      </div>
+                      <div className="profile-detail-row">
+                        <MapPin size={13} color="#16a34a" />
+                        <span>Barangay</span>
+                        <strong>{user.barangay}</strong>
+                      </div>
+                      {user.plateNumber && (
+                        <div className="profile-detail-row">
+                          <Bike size={13} color="#b45309" />
+                          <span>Plate No</span>
+                          <strong>{user.plateNumber}</strong>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="profile-dropdown-actions">
+                      <button
+                        onClick={() => {
+                          setActiveTab('profile');
+                          setProfileDropdownOpen(false);
+                        }}
+                        className="profile-dropdown-action"
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                          <Settings size={16} color="#16a34a" /> Account Settings
+                        </span>
+                        <ChevronRight size={15} color="#94a3b8" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          store.setCurrentUser(null);
+                          setProfileDropdownOpen(false);
+                        }}
+                        className="profile-dropdown-action profile-dropdown-logout"
+                      >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
+                          <LogOut size={16} /> Log Out
+                        </span>
+                      </button>
                     </div>
                   </div>
-
-                  {/* Detail items */}
-                  <div style={{ background: '#f8fafc', padding: '10px 12px', borderRadius: '12px', fontSize: '0.8rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '12px' }}>
-                    <div>📱 Mobile: <strong>{user.mobile}</strong></div>
-                    <div>📍 Barangay: <strong>{user.barangay}</strong></div>
-                    {user.plateNumber && <div>🛺 Plate No: <strong>{user.plateNumber}</strong></div>}
-                  </div>
-
-                  {/* Action buttons */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button
-                      onClick={() => {
-                        setActiveTab('profile');
-                        setProfileDropdownOpen(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        border: '1px solid #e2e8f0',
-                        background: '#ffffff',
-                        color: '#0f172a',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <Settings size={16} color="#16a34a" /> Account Settings
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setActiveTab('dashboard');
-                        setProfileDropdownOpen(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        border: '1px solid #f1f5f9',
-                        background: '#f8fafc',
-                        color: '#475569',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <UserCheck size={16} color="#0284c7" /> My Dashboard / Ride
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        store.setCurrentUser(null);
-                        setProfileDropdownOpen(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '10px 12px',
-                        borderRadius: '10px',
-                        border: 'none',
-                        background: '#fee2e2',
-                        color: '#dc2626',
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <LogOut size={16} /> Log Out
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ) : (
             <button
@@ -448,7 +423,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
         </div>
       </div>
 
-      {isPassenger && passengerMenuOpen && (
+      {(isPassenger || !user) && passengerMenuOpen && (
         <>
           <button
             type="button"
@@ -458,9 +433,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           />
           <aside className="passenger-menu-drawer" aria-label="Passenger information menu">
             <div className="passenger-menu-header">
-              <div>
-                <strong>TriSakay Menu</strong>
-                <span>Passenger information</span>
+              <div className="passenger-drawer-brand">
+                <div className="passenger-drawer-logo-wrap">
+                  <img src={appLogo} alt="TriSakay" className="passenger-drawer-logo" />
+                </div>
+                <div className="passenger-drawer-brand-text">
+                  <span className="passenger-drawer-tag">MUNICIPALITY OF GONZAGA</span>
+                  <span className="passenger-drawer-caption">Passenger Navigation</span>
+                </div>
               </div>
               <button
                 type="button"
@@ -468,30 +448,42 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 onClick={() => setPassengerMenuOpen(false)}
                 aria-label="Close navigation menu"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
             <nav className="passenger-menu-links">
               <button type="button" onClick={() => { setActiveTab('fare-matrix'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><FileText size={18} /></span>
-                <span><strong>Fare Rate Matrix</strong><small>View official Gonzaga fare rates</small></span>
-                <ChevronRight size={16} />
+                <span className="passenger-menu-link-icon"><FileText size={22} /></span>
+                <span className="passenger-menu-link-copy">
+                  <strong>Fare Rate Matrix</strong>
+                  <small>View official Gonzaga fare rates</small>
+                </span>
+                <ChevronRight size={18} className="passenger-menu-link-arrow" />
               </button>
               <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><HelpCircle size={18} /></span>
-                <span><strong>How TriSakay Works</strong><small>Step-by-step booking guide</small></span>
-                <ChevronRight size={16} />
+                <span className="passenger-menu-link-icon"><HelpCircle size={22} /></span>
+                <span className="passenger-menu-link-copy">
+                  <strong>How TriSakay Works</strong>
+                  <small>Step-by-step booking guide</small>
+                </span>
+                <ChevronRight size={18} className="passenger-menu-link-arrow" />
               </button>
               <button type="button" onClick={() => { setActiveTab('about'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><Info size={18} /></span>
-                <span><strong>About Us</strong><small>Learn about TriSakay Gonzaga</small></span>
-                <ChevronRight size={16} />
+                <span className="passenger-menu-link-icon"><Info size={22} /></span>
+                <span className="passenger-menu-link-copy">
+                  <strong>About Us</strong>
+                  <small>Learn about TriSakay Gonzaga</small>
+                </span>
+                <ChevronRight size={18} className="passenger-menu-link-arrow" />
               </button>
               <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><HeartHandshake size={18} /></span>
-                <span><strong>Why Choose TriSakay</strong><small>Accessible, efficient local rides</small></span>
-                <ChevronRight size={16} />
+                <span className="passenger-menu-link-icon"><HeartHandshake size={22} /></span>
+                <span className="passenger-menu-link-copy">
+                  <strong>Why Choose TriSakay</strong>
+                  <small>Accessible, efficient local rides</small>
+                </span>
+                <ChevronRight size={18} className="passenger-menu-link-arrow" />
               </button>
             </nav>
           </aside>
