@@ -357,6 +357,10 @@ export const App: React.FC = () => {
       return <PassengerDashboard initialTab="profile" onNavigateHome={() => setActiveTab('dashboard')} />;
     }
 
+    if (currentUser?.role === 'admin' && ['overview', 'drivers', 'users', 'fares', 'todas', 'reports'].includes(activeTab)) {
+      return <AdminDashboard initialTab={activeTab as any} />;
+    }
+
     if (activeTab === 'dashboard') {
       if (!currentUser) {
         return (

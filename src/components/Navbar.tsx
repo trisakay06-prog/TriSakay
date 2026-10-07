@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
-import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Settings, Bell, History, Menu, X, Info, HeartHandshake, ChevronRight, Phone, MapPin } from 'lucide-react';
+import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Settings, Bell, History, Menu, X, Info, HeartHandshake, ChevronRight, Phone, MapPin, Activity, ShieldCheck, User as UserIcon, Building, ShieldAlert } from 'lucide-react';
 import { UserAvatar } from './UserAvatar';
 import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
 
@@ -58,7 +58,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
   const user = state.currentUser;
   const isPassenger = user?.role === 'passenger';
   const isDriver = user?.role === 'driver';
-  const hasSidebarMenu = isPassenger || isDriver || !user;
+  const isAdmin = user?.role === 'admin';
+  const hasSidebarMenu = true;
 
   useEffect(() => {
     setPassengerMenuOpen(false);
@@ -424,7 +425,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             onClick={() => setPassengerMenuOpen(false)}
             aria-label="Close navigation menu"
           />
-          <aside className="passenger-menu-drawer" aria-label={isDriver ? 'Driver information menu' : 'Passenger information menu'}>
+          <aside className="passenger-menu-drawer" aria-label={isAdmin ? 'LGU Admin navigation menu' : isDriver ? 'Driver navigation menu' : 'Passenger navigation menu'}>
             <div className="passenger-menu-header">
               <div className="passenger-drawer-brand">
                 <div className="passenger-drawer-logo-wrap">
@@ -433,7 +434,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 <div className="passenger-drawer-brand-text">
                   <span className="passenger-drawer-tag">MUNICIPALITY OF GONZAGA</span>
                   <span className="passenger-drawer-caption">
-                    {isDriver ? 'Driver Navigation' : 'Passenger Navigation'}
+                    {isAdmin ? 'LGU Admin Control' : isDriver ? 'Driver Navigation' : 'Passenger Navigation'}
                   </span>
                 </div>
               </div>
@@ -448,7 +449,82 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             </div>
 
             <nav className="passenger-menu-links">
-              {isDriver ? (
+              {isAdmin ? (
+                <>
+                  <button type="button" onClick={() => { setActiveTab('overview'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Activity size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>LGU Overview</strong>
+                      <small>Live analytics & system stats</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('drivers'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><ShieldCheck size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Driver Approvals</strong>
+                      <small>Verify franchise & approve drivers</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('users'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><UserIcon size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>User Directory</strong>
+                      <small>Passengers, drivers & accounts</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('fares'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><FileText size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Fare Matrix Control</strong>
+                      <small>Official rates & route pricing</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('todas'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Building size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Cluster GONTODA List</strong>
+                      <small>Toda associations & coverage</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('reports'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><ShieldAlert size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Incident Reports</strong>
+                      <small>Passenger & driver complaints</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><HelpCircle size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>How TriSakay Works</strong>
+                      <small>System guidelines & workflow</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><HeartHandshake size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Why Choose TriSakay</strong>
+                      <small>Fuel efficiency & senior discounts</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('about'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Info size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>About TriSakay</strong>
+                      <small>Gonzaga municipal transport system</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                </>
+              ) : isDriver ? (
                 <>
                   <button type="button" onClick={() => { setActiveTab('dashboard'); setPassengerMenuOpen(false); }}>
                     <span className="passenger-menu-link-icon"><Home size={22} /></span>
