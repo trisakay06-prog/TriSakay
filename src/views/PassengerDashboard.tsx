@@ -3,7 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight, ShieldCheck, Check, LogOut } from 'lucide-react';
+import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight, ShieldCheck, Check } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playNotificationSound } from '../services/sound';
 import { BackButton } from '../components/BackButton';
@@ -1219,42 +1219,20 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '12px',
+            gap: '10px',
             marginBottom: '16px',
             paddingBottom: '14px',
             borderBottom: '1px solid #f1f5f9'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <BackButton onClick={navigateHome} />
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0, lineHeight: 1.2 }}>
-                  Profile Settings
-                </h3>
-                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                  Manage your personal details & security
-                </span>
-              </div>
+            <BackButton onClick={navigateHome} />
+            <div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0, lineHeight: 1.2 }}>
+                Profile Settings
+              </h3>
+              <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                Manage your personal details & security
+              </span>
             </div>
-
-            <button
-              type="button"
-              onClick={() => store.setCurrentUser(null)}
-              className="btn-danger"
-              style={{
-                padding: '7px 14px',
-                fontSize: '0.8rem',
-                minHeight: '36px',
-                borderRadius: '10px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontWeight: 700
-              }}
-              title="Sign Out of Account"
-            >
-              <LogOut size={14} /> Sign Out
-            </button>
           </div>
 
           {profileSavedMsg && (
