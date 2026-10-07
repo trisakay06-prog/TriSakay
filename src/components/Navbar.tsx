@@ -57,6 +57,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
 
   const user = state.currentUser;
   const isPassenger = user?.role === 'passenger';
+  const isDriver = user?.role === 'driver';
+  const hasSidebarMenu = isPassenger || isDriver || !user;
 
   useEffect(() => {
     setPassengerMenuOpen(false);
@@ -91,10 +93,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
   return (
     <>
       <nav className="app-navbar">
-        <div className={(isPassenger || !user) ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'}>
+        <div className={hasSidebarMenu ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'}>
 
         <div className="navbar-left-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {(isPassenger || !user) && (
+          {hasSidebarMenu && (
             <button
               type="button"
               className="passenger-menu-trigger"
@@ -109,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           {/* LOGO & BRANDING */}
           <div
             className="navbar-brand"
-            onClick={() => setActiveTab(isPassenger ? 'dashboard' : 'home')}
+            onClick={() => setActiveTab(user ? 'dashboard' : 'home')}
             style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
           >
             <div className="navbar-brand-logo" style={{
@@ -414,7 +416,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
       <div className="navbar-fixed-spacer" aria-hidden="true" />
 
       {/* PORTAL DRAWER: isolated from navbar DOM so header never resizes or shifts */}
-      {typeof document !== 'undefined' && (isPassenger || !user) && passengerMenuOpen && createPortal(
+      {typeof document !== 'undefined' && hasSidebarMenu && passengerMenuOpen && createPortal(
         <>
           <button
             type="button"
@@ -422,7 +424,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             onClick={() => setPassengerMenuOpen(false)}
             aria-label="Close navigation menu"
           />
-          <aside className="passenger-menu-drawer" aria-label="Passenger information menu">
+          <aside className="passenger-menu-drawer" aria-label={isDriver ? 'Driver information menu' : 'Passenger information menu'}>
             <div className="passenger-menu-header">
               <div className="passenger-drawer-brand">
                 <div className="passenger-drawer-logo-wrap">
@@ -430,7 +432,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                 </div>
                 <div className="passenger-drawer-brand-text">
                   <span className="passenger-drawer-tag">MUNICIPALITY OF GONZAGA</span>
-                  <span className="passenger-drawer-caption">Passenger Navigation</span>
+                  <span className="passenger-drawer-caption">
+                    {isDriver ? 'Driver Navigation' : 'Passenger Navigation'}
+                  </span>
                 </div>
               </div>
               <button
@@ -444,38 +448,101 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
             </div>
 
             <nav className="passenger-menu-links">
-              <button type="button" onClick={() => { setActiveTab('fare-matrix'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><FileText size={22} /></span>
-                <span className="passenger-menu-link-copy">
-                  <strong>Fare Rate Matrix</strong>
-                  <small>View official Gonzaga fare rates</small>
-                </span>
-                <ChevronRight size={18} className="passenger-menu-link-arrow" />
-              </button>
-              <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><HelpCircle size={22} /></span>
-                <span className="passenger-menu-link-copy">
-                  <strong>How TriSakay Works</strong>
-                  <small>Step-by-step booking guide</small>
-                </span>
-                <ChevronRight size={18} className="passenger-menu-link-arrow" />
-              </button>
-              <button type="button" onClick={() => { setActiveTab('about'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><Info size={22} /></span>
-                <span className="passenger-menu-link-copy">
-                  <strong>About Us</strong>
-                  <small>Learn about TriSakay Gonzaga</small>
-                </span>
-                <ChevronRight size={18} className="passenger-menu-link-arrow" />
-              </button>
-              <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
-                <span className="passenger-menu-link-icon"><HeartHandshake size={22} /></span>
-                <span className="passenger-menu-link-copy">
-                  <strong>Why Choose TriSakay</strong>
-                  <small>Accessible, efficient local rides</small>
-                </span>
-                <ChevronRight size={18} className="passenger-menu-link-arrow" />
-              </button>
+              {isDriver ? (
+                <>
+                  <button type="button" onClick={() => { setActiveTab('dashboard'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Home size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Driver Dashboard</strong>
+                      <small>Live ride status & today's earnings</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('ride-history'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><History size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Trip History</strong>
+                      <small>Completed rides & earnings records</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('fare-matrix'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><FileText size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Fare Rate Matrix</strong>
+                      <small>Official Gonzaga fare rates</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><HelpCircle size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>How TriSakay Works</strong>
+                      <small>Driver guidelines & pickup steps</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><HeartHandshake size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Why Choose TriSakay</strong>
+                      <small>Fuel efficiency & senior discounts</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('about'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Info size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>About Us</strong>
+                      <small>Learn about TriSakay Gonzaga</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('profile'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Settings size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Driver Settings</strong>
+                      <small>Tricycle plate & TODA details</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => { setActiveTab('fare-matrix'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><FileText size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Fare Rate Matrix</strong>
+                      <small>View official Gonzaga fare rates</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('how-it-works'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><HelpCircle size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>How TriSakay Works</strong>
+                      <small>Step-by-step booking guide</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('about'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><Info size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>About Us</strong>
+                      <small>Learn about TriSakay Gonzaga</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                  <button type="button" onClick={() => { setActiveTab('service-benefits'); setPassengerMenuOpen(false); }}>
+                    <span className="passenger-menu-link-icon"><HeartHandshake size={22} /></span>
+                    <span className="passenger-menu-link-copy">
+                      <strong>Why Choose TriSakay</strong>
+                      <small>Accessible, efficient local rides</small>
+                    </span>
+                    <ChevronRight size={18} className="passenger-menu-link-arrow" />
+                  </button>
+                </>
+              )}
             </nav>
           </aside>
         </>,

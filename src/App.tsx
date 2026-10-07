@@ -11,7 +11,6 @@ import { AdminDashboard } from './views/AdminDashboard';
 import { FareMatrixView } from './views/FareMatrixView';
 import { AboutView } from './views/AboutView';
 import { DynamicIslandLiveActivity } from './components/DynamicIslandLiveActivity';
-import { UserSideNavigation } from './components/UserSideNavigation';
 import { DriverNotificationModal } from './components/DriverNotificationModal';
 import { Bike, Clock3, Fuel, HeartHandshake, Map, MapPin, PhilippinePeso, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 import { BackButton } from './components/BackButton';
@@ -30,10 +29,10 @@ export const App: React.FC = () => {
   }, []);
 
   const currentUser = state.currentUser;
-  const informationBackLabel = currentUser?.role === 'passenger' ? 'Back to Dashboard' : 'Back to Home';
+  const informationBackLabel = currentUser ? 'Back to Dashboard' : 'Back to Home';
 
   const navigateBackFromInformation = () => {
-    setActiveTab(currentUser?.role === 'passenger' ? 'dashboard' : 'home');
+    setActiveTab(currentUser ? 'dashboard' : 'home');
   };
 
   const openAuth = (mode: 'login' | 'register' = 'login') => {
@@ -307,7 +306,7 @@ export const App: React.FC = () => {
       if (currentUser?.role === 'passenger') {
         return <PassengerDashboard initialTab="history" onNavigateHome={() => setActiveTab('dashboard')} />;
       }
-      if (currentUser?.role === 'driver') return <DriverDashboard />;
+      if (currentUser?.role === 'driver') return <DriverDashboard initialTab="history" onNavigateHome={() => setActiveTab('dashboard')} />;
       if (currentUser?.role === 'admin') return <AdminDashboard />;
       return <HomeView onStartBooking={() => openAuth('login')} onOpenFareMatrix={() => setActiveTab('fare-matrix')} onOpenAbout={() => setActiveTab('about')} />;
     }
@@ -327,7 +326,7 @@ export const App: React.FC = () => {
       }
 
       if (currentUser.role === 'driver') {
-        return <DriverDashboard initialTab="notifications" />;
+        return <DriverDashboard initialTab="notifications" onNavigateHome={() => setActiveTab('dashboard')} />;
       }
       if (currentUser.role === 'admin') {
         return <AdminDashboard initialTab="overview" />;
@@ -350,7 +349,7 @@ export const App: React.FC = () => {
       }
 
       if (currentUser.role === 'driver') {
-        return <DriverDashboard initialTab="profile" />;
+        return <DriverDashboard initialTab="profile" onNavigateHome={() => setActiveTab('dashboard')} />;
       }
       if (currentUser.role === 'admin') {
         return <AdminDashboard initialTab="overview" />;
@@ -380,7 +379,7 @@ export const App: React.FC = () => {
 
       // Strictly render dashboard based on logged-in role
       if (currentUser.role === 'driver') {
-        return <DriverDashboard />;
+        return <DriverDashboard onNavigateHome={() => setActiveTab('dashboard')} />;
       }
 
       if (currentUser.role === 'admin') {
@@ -430,9 +429,6 @@ export const App: React.FC = () => {
       })()}
 
       <div className="app-content-shell">
-      {currentUser?.role === 'driver' && (
-        <UserSideNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
-      )}
       <main className={`main-content-area ${!currentUser ? 'guest-main-content' : ''}`} style={{
         flex: 1,
         maxWidth: currentUser && currentUser.role !== 'admin' ? '980px' : '1200px',
