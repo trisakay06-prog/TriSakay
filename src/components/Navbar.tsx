@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import { Bike, LogIn, LogOut, HelpCircle, FileText, Home, Settings, Bell, History, Menu, X, Info, HeartHandshake, ChevronRight, Phone, MapPin } from 'lucide-react';
@@ -88,24 +89,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
   };
 
   return (
-    <nav style={{
-      background: 'rgba(255, 255, 255, 0.88)',
-      backdropFilter: 'blur(25px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(25px) saturate(180%)',
-      borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-      position: 'sticky',
-      top: '0',
-      zIndex: 900,
-      boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
-    }}>
-      <div className={(isPassenger || !user) ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'} style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '12px 20px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between'
-      }}>
+    <>
+      <nav className="app-navbar">
+        <div className={(isPassenger || !user) ? 'navbar-inner passenger-navbar-inner' : 'navbar-inner'}>
 
         <div className="navbar-left-group" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {(isPassenger || !user) && (
@@ -422,8 +408,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           )}
         </div>
       </div>
+    </nav>
 
-      {(isPassenger || !user) && passengerMenuOpen && (
+      {/* FIXED HEADER SPACER: prevents page content from jumping or being covered */}
+      <div className="navbar-fixed-spacer" aria-hidden="true" />
+
+      {/* PORTAL DRAWER: isolated from navbar DOM so header never resizes or shifts */}
+      {typeof document !== 'undefined' && (isPassenger || !user) && passengerMenuOpen && createPortal(
         <>
           <button
             type="button"
@@ -487,7 +478,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
               </button>
             </nav>
           </aside>
-        </>
+        </>,
+        document.body
       )}
 
       <style>{`
@@ -505,6 +497,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
           .desktop-links { display: flex !important; }
         }
       `}</style>
-    </nav>
+    </>
   );
 };

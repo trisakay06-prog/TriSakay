@@ -3,7 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight } from 'lucide-react';
+import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight, ShieldCheck, Check, LogOut } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playNotificationSound } from '../services/sound';
 import { BackButton } from '../components/BackButton';
@@ -1205,29 +1205,77 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
       {/* PROFILE SETTINGS TAB */}
       {activeTab === 'profile' && (
-        <div className="glass-panel" style={{ padding: '28px', borderRadius: '24px', background: '#ffffff', maxWidth: '620px', margin: '0 auto', width: '100%' }}>
-          <BackButton onClick={navigateHome} />
+        <div className="glass-panel profile-settings-panel" style={{
+          padding: '24px 22px',
+          borderRadius: '24px',
+          background: '#ffffff',
+          maxWidth: '680px',
+          margin: '0 auto',
+          width: '100%',
+          boxShadow: '0 10px 30px rgba(15, 23, 42, 0.05)',
+          border: '1px solid #e2e8f0'
+        }}>
+          {/* Header Bar */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '12px',
+            marginBottom: '16px',
+            paddingBottom: '14px',
+            borderBottom: '1px solid #f1f5f9'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <BackButton onClick={navigateHome} />
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a', margin: 0, lineHeight: 1.2 }}>
+                  Profile Settings
+                </h3>
+                <span style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                  Manage your personal details & security
+                </span>
+              </div>
+            </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <div style={{ background: '#f1f5f9', color: '#334155', padding: '10px', borderRadius: '12px' }}>
-              <User size={24} />
-            </div>
-            <div>
-              <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>
-                Passenger Profile & Settings
-              </h3>
-              <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                Manage account information, security, and privacy preferences
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={() => store.setCurrentUser(null)}
+              className="btn-danger"
+              style={{
+                padding: '7px 14px',
+                fontSize: '0.8rem',
+                minHeight: '36px',
+                borderRadius: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontWeight: 700
+              }}
+              title="Sign Out of Account"
+            >
+              <LogOut size={14} /> Sign Out
+            </button>
           </div>
 
           {profileSavedMsg && (
-            <div style={{ background: '#dcfce7', color: '#15803d', padding: '12px', borderRadius: '12px', fontSize: '0.9rem', fontWeight: 700, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CheckCircle2 size={18} /> {profileSavedMsg}
+            <div style={{
+              background: '#dcfce7',
+              color: '#15803d',
+              padding: '10px 14px',
+              borderRadius: '12px',
+              fontSize: '0.88rem',
+              fontWeight: 700,
+              marginBottom: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              border: '1px solid #bbf7d0'
+            }}>
+              <CheckCircle2 size={17} /> {profileSavedMsg}
             </div>
           )}
 
+          {/* SECTION 1: PERSONAL DETAILS (COMPACT SIDE-BY-SIDE / 2-COL) */}
           <form onSubmit={(e) => {
             e.preventDefault();
             store.updateUser(currentUser.id, {
@@ -1237,88 +1285,183 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
             });
             setProfileSavedMsg('Profile details updated successfully!');
             setTimeout(() => setProfileSavedMsg(''), 4000);
-          }} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-            
-            {/* AVATAR UPLOAD */}
-            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-              <ProfileAvatarUpload
-                currentImageUrl={profileImage}
-                name={profileName}
-                role="passenger"
-                onImageUploaded={(url) => {
-                  setProfileImage(url);
-                  store.updateUser(currentUser.id, { profileImage: url });
-                  setProfileSavedMsg('Profile photo updated and saved!');
-                  setTimeout(() => setProfileSavedMsg(''), 3000);
-                }}
-                onImageRemoved={() => {
-                  setProfileImage('');
-                  store.updateUser(currentUser.id, { profileImage: '' });
-                  setProfileSavedMsg('Profile photo removed.');
-                  setTimeout(() => setProfileSavedMsg(''), 3000);
-                }}
-                size={100}
-                label="Passenger Profile Picture"
-              />
-            </div>
+          }} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={profileName}
-                onChange={e => setProfileName(e.target.value)}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                required
-              />
-            </div>
+            <div style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '18px',
+              padding: '16px'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#15803d',
+                fontSize: '0.82rem',
+                fontWeight: 800,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                marginBottom: '12px'
+              }}>
+                <User size={15} /> Personal Information
+              </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                Registered Mobile Number (Read-only)
-              </label>
-              <input
-                type="text"
-                value={currentUser.mobile}
-                disabled
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.95rem', color: '#64748b' }}
-              />
-            </div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'auto 1fr',
+                gap: '16px',
+                alignItems: 'center'
+              }} className="profile-details-grid">
 
-            <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px' }}>
-                Home Barangay
-              </label>
-              <select
-                value={profileBarangay}
-                onChange={e => setProfileBarangay(e.target.value)}
-                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.95rem', fontWeight: 700 }}
-              >
-                {REGISTRATION_BARANGAYS.map(b => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
-            </div>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                  <ProfileAvatarUpload
+                    currentImageUrl={profileImage}
+                    name={profileName}
+                    role="passenger"
+                    onImageUploaded={(url) => {
+                      setProfileImage(url);
+                      store.updateUser(currentUser.id, { profileImage: url });
+                      setProfileSavedMsg('Profile photo updated!');
+                      setTimeout(() => setProfileSavedMsg(''), 3000);
+                    }}
+                    onImageRemoved={() => {
+                      setProfileImage('');
+                      store.updateUser(currentUser.id, { profileImage: '' });
+                      setProfileSavedMsg('Profile photo removed.');
+                      setTimeout(() => setProfileSavedMsg(''), 3000);
+                    }}
+                    size={80}
+                    label="Avatar"
+                  />
+                </div>
 
-            <button type="submit" className="btn-primary" style={{ padding: '12px', fontSize: '0.95rem' }}>
-              Save Profile Changes
-            </button>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '10px'
+                }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '3px' }}>
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      value={profileName}
+                      onChange={e => setProfileName(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.9rem',
+                        background: '#ffffff'
+                      }}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '3px' }}>
+                      Mobile Number (Verified)
+                    </label>
+                    <input
+                      type="text"
+                      value={currentUser.mobile}
+                      disabled
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #e2e8f0',
+                        background: '#f1f5f9',
+                        fontSize: '0.9rem',
+                        color: '#64748b',
+                        fontWeight: 600
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '3px' }}>
+                      Home Barangay
+                    </label>
+                    <select
+                      value={profileBarangay}
+                      onChange={e => setProfileBarangay(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        borderRadius: '10px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                        background: '#ffffff'
+                      }}
+                    >
+                      {REGISTRATION_BARANGAYS.map(b => (
+                        <option key={b} value={b}>{b}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  style={{
+                    padding: '9px 18px',
+                    minHeight: '38px',
+                    fontSize: '0.88rem',
+                    borderRadius: '10px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <Check size={16} /> Save Changes
+                </button>
+              </div>
+            </div>
           </form>
 
-          {/* CHANGE PASSWORD */}
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Lock size={18} /> Change Password
-            </h4>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          {/* SECTION 2: PASSWORD & SECURITY (COMPACT INLINE) */}
+          <div style={{
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            borderRadius: '16px',
+            padding: '14px 16px',
+            marginTop: '12px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#0f172a',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              marginBottom: '8px'
+            }}>
+              <Lock size={15} color="#16a34a" /> Security & Password
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
               <input
                 type="password"
-                placeholder="Enter new password"
+                placeholder="Enter new account password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                style={{ flex: 1, padding: '10px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                style={{
+                  flex: '1 1 200px',
+                  padding: '9px 12px',
+                  borderRadius: '10px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.88rem'
+                }}
               />
               <button
                 type="button"
@@ -1332,34 +1475,60 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                   setTimeout(() => setProfileSavedMsg(''), 4000);
                 }}
                 className="btn-outline"
-                style={{ padding: '10px 16px', fontSize: '0.85rem' }}
+                style={{
+                  padding: '9px 16px',
+                  minHeight: '38px',
+                  fontSize: '0.85rem',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  flexShrink: 0
+                }}
               >
                 Update Password
               </button>
             </div>
           </div>
 
-          {/* PRIVACY SETTINGS */}
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0' }}>
-            <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginBottom: '8px' }}>
-              🔒 Privacy Settings & System Rules
-            </h4>
-            <div style={{ background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0', fontSize: '0.85rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <div>✓ <strong>Mobile Privacy:</strong> Your phone number is strictly hidden from drivers until they accept your ride request.</div>
-              <div>✓ <strong>Location Privacy:</strong> No continuous GPS tracking is required or stored. Trips use Gonzaga landmarks.</div>
-              <div>✓ <strong>Data Protection:</strong> Information is kept securely within the Municipality of Gonzaga database.</div>
+          {/* SECTION 3: PRIVACY & SYSTEM POLICIES (COMPACT HORIZONTAL CHIPS) */}
+          <div style={{
+            background: '#f8fafc',
+            border: '1px solid #f1f5f9',
+            borderRadius: '16px',
+            padding: '12px 14px',
+            marginTop: '12px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#475569',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+              marginBottom: '8px'
+            }}>
+              <ShieldCheck size={14} color="#16a34a" /> Privacy Guarantees
             </div>
-          </div>
 
-          {/* LOGOUT */}
-          <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
-            <button
-              onClick={() => store.setCurrentUser(null)}
-              className="btn-danger"
-              style={{ padding: '10px 20px', fontSize: '0.9rem' }}
-            >
-              Sign Out / Logout
-            </button>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+              gap: '8px'
+            }}>
+              <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.78rem', color: '#334155' }}>
+                <strong style={{ color: '#0f172a', display: 'block' }}>📱 Mobile Privacy</strong>
+                Hidden until ride is accepted.
+              </div>
+              <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.78rem', color: '#334155' }}>
+                <strong style={{ color: '#0f172a', display: 'block' }}>📍 Landmark Routing</strong>
+                No constant GPS tracking needed.
+              </div>
+              <div style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.78rem', color: '#334155' }}>
+                <strong style={{ color: '#0f172a', display: 'block' }}>🏛️ Gonzaga LGU</strong>
+                Stored in municipal database.
+              </div>
+            </div>
           </div>
         </div>
       )}
