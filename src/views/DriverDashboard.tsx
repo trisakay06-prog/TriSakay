@@ -22,7 +22,7 @@ import { cleanBarangay } from '../services/fareCalculator';
 import { BackButton } from '../components/BackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
-import { REGISTRATION_BARANGAYS } from '../services/barangayClusters';
+import { REGISTRATION_BARANGAYS, getDriverBookingPriority } from '../services/barangayClusters';
 
 interface DriverDashboardProps {
   initialTab?: 'requests' | 'active' | 'history' | 'notifications' | 'profile';
@@ -38,6 +38,10 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
     initialTab === 'active' ? 'requests' : initialTab
   );
   const [dismissedBookingIds, setDismissedBookingIds] = useState<string[]>([]);
+  const [earningsResetTime, setEarningsResetTime] = useState<number>(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem(`driver_earnings_reset_${state.currentUser?.id || 'driver'}`) : null;
+    return saved ? Number(saved) : 0;
+  });
   const [todayDateKey, setTodayDateKey] = useState(() => new Date().toDateString());
 
   useEffect(() => {
@@ -88,9 +92,11 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
 
   const isOnline = !!state.activeDriverOnline[currentDriver.id];
 
-  const pendingRequests = state.bookings.filter(b => 
-    b.status === 'WAITING_FOR_DRIVER' && !dismissedBookingIds.includes(b.id)
-  );
+  const pendingRequests = state.bookings.filter(b => {
+    if (b.status !== 'WAITING_FOR_DRIVER' || dismissedBookingIds.includes(b.id)) return false;
+    const priority = getDriverBookingPriority(b.createdAt, b.pickupBarangay, currentDriver.todaName, currentDriver.cluster);
+    return priority.isEligible;
+  });
 
   const isDriverMatch = (b: Booking) => {
     return (
@@ -125,12 +131,17 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
     );
   };
 
-  // Today's completed bookings: only rides completed on the current day
-  const todayCompletedBookings = completedDriverBookings.filter(b => 
-    isDateToday(b.completedAt || b.createdAt)
-  );
+  // Today's completed bookings: only rides completed on the current day since last reset
+  const todayCompletedBookings = completedDriverBookings.filter(b => {
+    if (!isDateToday(b.completedAt || b.createdAt)) return false;
+    if (earningsResetTime) {
+      const bTime = new Date(b.completedAt || b.createdAt).getTime();
+      if (bTime <= earningsResetTime) return false;
+    }
+    return true;
+  });
 
-  // Today's Earnings: updates automatically on completed trip, auto-resets to ₱0 at next day!
+  // Today's Earnings: updates automatically on completed trip, auto-resets to ₱0 at next day or on manual reset
   const todayEarnings = todayCompletedBookings.reduce((sum, b) => sum + (b.estimatedFare || 0), 0);
 
   const firstNotificationCandidate = isOnline && pendingRequests.length > 0 ? pendingRequests[0] : null;
@@ -355,23 +366,53 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setActiveTab('history')}
-              className="btn-outline"
-              style={{
-                padding: '9px 16px',
-                fontSize: '0.85rem',
-                minHeight: '38px',
-                borderRadius: '12px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontWeight: 700
-              }}
-            >
-              <History size={15} /> View Trip History
-            </button>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm("Reset Today's Earnings to ₱0 for the new day? (Your ride log and lifetime records will be preserved)")) {
+                    const now = Date.now();
+                    localStorage.setItem(`driver_earnings_reset_${currentDriver.id}`, String(now));
+                    setEarningsResetTime(now);
+                  }
+                }}
+                className="btn-outline"
+                style={{
+                  padding: '9px 14px',
+                  fontSize: '0.82rem',
+                  minHeight: '38px',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: 700,
+                  color: '#b45309',
+                  borderColor: '#fde68a',
+                  background: '#fefce8'
+                }}
+                title="Reset today's earnings counter to zero"
+              >
+                🔄 Reset to ₱0
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('history')}
+                className="btn-outline"
+                style={{
+                  padding: '9px 16px',
+                  fontSize: '0.85rem',
+                  minHeight: '38px',
+                  borderRadius: '12px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontWeight: 700
+                }}
+              >
+                <History size={15} /> View Trip History
+              </button>
+            </div>
           </div>
 
           {/* ============================================================ */}
@@ -498,6 +539,27 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
                   <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 700 }}>Fare Amount</span>
                 </div>
               </div>
+
+              {activeBooking.isWaitingAlert && (
+                <div style={{
+                  padding: '12px 16px',
+                  borderRadius: '16px',
+                  background: '#fef3c7',
+                  border: '2px solid #eab308',
+                  color: '#854d0e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px',
+                  boxShadow: '0 4px 14px rgba(234, 179, 8, 0.25)'
+                }}>
+                  <span style={{ fontSize: '1.4rem' }}>🖐️</span>
+                  <div>
+                    <div style={{ fontSize: '0.92rem', fontWeight: 800 }}>PASSENGER IS WAITING AT PICKUP POINT</div>
+                    <div style={{ fontSize: '0.78rem', opacity: 0.9 }}>Passenger notified that they are ready and standing by at the pickup spot!</div>
+                  </div>
+                </div>
+              )}
 
               {/* Navigation Bar */}
               <div style={{
@@ -725,29 +787,61 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-                  {pendingRequests.map(req => (
+                  {pendingRequests.map(req => {
+                    const reqPriority = getDriverBookingPriority(req.createdAt, req.pickupBarangay, currentDriver.todaName, currentDriver.cluster);
+                    return (
                     <div key={req.id} className="glass-card" style={{
                       padding: '16px',
                       borderRadius: '16px',
                       border: '2px solid #eab308',
                       background: '#fffdf5'
                     }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <UserAvatar
-                            src={req.passengerProfileImage}
-                            name={req.passengerName}
-                            size={38}
-                            role="passenger"
-                          />
-                          <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>
-                            {req.passengerName}
-                          </span>
-                        </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{
+                          fontSize: '0.72rem',
+                          fontWeight: 800,
+                          padding: '3px 8px',
+                          borderRadius: '999px',
+                          background: reqPriority.tier === 1 ? '#dcfce7' : reqPriority.tier === 2 ? '#e0f2fe' : '#fef3c7',
+                          color: reqPriority.tier === 1 ? '#15803d' : reqPriority.tier === 2 ? '#0369a1' : '#b45309',
+                          border: `1px solid ${reqPriority.tier === 1 ? '#86efac' : reqPriority.tier === 2 ? '#7dd3fc' : '#fde68a'}`
+                        }}>
+                          {reqPriority.tierName}
+                        </span>
                         <span style={{ fontSize: '1.3rem', fontWeight: 800, color: '#16a34a' }}>
                           ₱{req.estimatedFare}
                         </span>
                       </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <UserAvatar
+                          src={req.passengerProfileImage}
+                          name={req.passengerName}
+                          size={38}
+                          role="passenger"
+                        />
+                        <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a' }}>
+                          {req.passengerName}
+                        </span>
+                      </div>
+
+                      {req.isWaitingAlert && (
+                        <div style={{
+                          background: '#fef3c7',
+                          color: '#854d0e',
+                          border: '1.5px solid #eab308',
+                          padding: '5px 10px',
+                          borderRadius: '8px',
+                          fontSize: '0.74rem',
+                          fontWeight: 800,
+                          marginBottom: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          <span>🖐️</span> PASSENGER WAITING AT PICKUP POINT
+                        </div>
+                      )}
 
                       <div style={{ fontSize: '0.82rem', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
                         <div><strong>Pickup:</strong> {cleanBarangay(req.pickupBarangay)} ({req.pickupLandmark || 'Waiting area'})</div>
@@ -763,7 +857,8 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
                         <CheckCircle2 size={16} /> ACCEPT BOOKING
                       </button>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

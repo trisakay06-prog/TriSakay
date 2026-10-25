@@ -243,7 +243,33 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
         </div>
 
         {/* RIGHT CONTROLS */}
-        <div className="navbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="navbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* INCREASE TEXT SIZE (A+) BUTTON */}
+          <button
+            type="button"
+            onClick={() => store.toggleSeniorMode()}
+            className="navbar-action-icon desktop-senior-btn text-size-btn"
+            style={{
+              background: state.seniorMode ? '#16a34a' : '#ffffff',
+              color: state.seniorMode ? '#ffffff' : '#334155',
+              border: state.seniorMode ? '1.5px solid #15803d' : '1.5px solid #cbd5e1',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+              letterSpacing: '-0.3px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: state.seniorMode ? '0 2px 8px rgba(22, 163, 74, 0.3)' : undefined,
+              transition: 'all 0.2s ease'
+            }}
+            title={state.seniorMode ? 'Default text size (Current: A+ Large)' : 'Increase text size (A+)'}
+            aria-label="Increase text size"
+            aria-pressed={state.seniorMode}
+          >
+            A+
+          </button>
+
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
 
@@ -357,8 +383,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                       </div>
                       <div className="profile-detail-row">
                         <MapPin size={13} color="#16a34a" />
-                        <span>Barangay</span>
-                        <strong>{user.barangay}</strong>
+                        <span>{user.role === 'admin' ? 'Location' : 'Barangay'}</span>
+                        <strong>{user.role === 'admin' ? 'Gonzaga Municipal Hall, Poblacion' : user.barangay}</strong>
                       </div>
                       {user.plateNumber && (
                         <div className="profile-detail-row">
@@ -387,6 +413,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                       <button
                         onClick={() => {
                           store.setCurrentUser(null);
+                          setActiveTab('home');
                           setProfileDropdownOpen(false);
                         }}
                         className="profile-dropdown-action profile-dropdown-logout"
@@ -619,6 +646,43 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
                   </button>
                 </>
               )}
+
+              <div style={{ padding: '8px 12px 4px' }}>
+                <button
+                  type="button"
+                  onClick={() => store.toggleSeniorMode()}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 14px',
+                    borderRadius: '12px',
+                    border: state.seniorMode ? '1.5px solid #16a34a' : '1px solid #e2e8f0',
+                    background: state.seniorMode ? '#f0fdf4' : '#f8fafc',
+                    cursor: 'pointer',
+                    color: state.seniorMode ? '#15803d' : '#334155'
+                  }}
+                  title="Toggle Text Size"
+                  aria-label="Toggle Text Size"
+                  aria-pressed={state.seniorMode}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontWeight: 900, fontSize: '1rem', color: '#16a34a' }}>A+</span>
+                    <strong style={{ fontSize: '0.9rem' }}>Text Size (A+)</strong>
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 800,
+                    padding: '3px 8px',
+                    borderRadius: '6px',
+                    background: state.seniorMode ? '#16a34a' : '#e2e8f0',
+                    color: state.seniorMode ? '#ffffff' : '#64748b'
+                  }}>
+                    {state.seniorMode ? 'LARGE ON' : 'NORMAL'}
+                  </span>
+                </button>
+              </div>
             </nav>
           </aside>
         </>,
@@ -627,13 +691,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth, activeTab, setActive
 
       <style>{`
         .desktop-senior-btn {
-          display: flex;
-        }
-
-        @media (max-width: 768px) {
-          .desktop-senior-btn {
-            display: none !important;
-          }
+          display: inline-flex;
         }
 
         @media (min-width: 768px) {

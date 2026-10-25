@@ -139,12 +139,12 @@ export const FareCalculatorWidget: React.FC = () => {
             {passengersCount} {passengersCount > 1 ? 'Passengers' : 'Passenger'}
           </span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '6px' }}>
-          {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '6px' }}>
+          {[1, 2, 3, 4, 5, 6].map(num => (
             <button
               key={num}
               type="button"
-              onClick={() => setPassengersCount(num)}
+              onClick={() => setPassengersCount(Math.max(1, Math.min(6, num)))}
               style={{
                 padding: '8px 0',
                 borderRadius: '8px',

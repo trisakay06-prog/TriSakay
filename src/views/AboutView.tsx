@@ -31,7 +31,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBack, backLabel }) => (
     </section>
 
     <section className="about-details-card">
-      <h2>Why TriSakay?</h2>
+      <h2>Why Choose TriSakay</h2>
       <div className="about-benefit-grid">
         <div><Clock3 size={23} /><strong>Reduced Waiting</strong><p>Reach nearby registered drivers faster.</p></div>
         <div><HeartHandshake size={23} /><strong>Inclusive Travel</strong><p>Senior- and PWD-friendly booking support.</p></div>

@@ -3,7 +3,7 @@ import { store } from '../services/store';
 import type { AppStoreData } from '../services/store';
 import type { Booking } from '../types';
 import { calculateFare, INITIAL_GONZAGA_BARANGAYS, cleanBarangay } from '../services/fareCalculator';
-import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Home, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight, ShieldCheck, Check } from 'lucide-react';
+import { Bike, MapPin, Navigation, Phone, ShieldAlert, CheckCircle2, XCircle, Bell, User, Lock, Radio, Smartphone, Sparkles, PhilippinePeso, ChevronRight, ShieldCheck, Check, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playNotificationSound } from '../services/sound';
 import { BackButton } from '../components/BackButton';
@@ -53,6 +53,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const [destBarangay, setDestBarangay] = useState(INITIAL_GONZAGA_BARANGAYS.find(b => b === 'Smart') || INITIAL_GONZAGA_BARANGAYS[1]);
   const [destLandmark, setDestLandmark] = useState('');
   const [passengersCount, setPassengersCount] = useState(1);
+  const [passengerValidationError, setPassengerValidationError] = useState('');
   const [discountType, setDiscountType] = useState<'regular' | 'senior_student_pwd'>('regular');
   const [specialNotes, setSpecialNotes] = useState('');
   const [fareEstimatorOpen, setFareEstimatorOpen] = useState(false);
@@ -69,6 +70,9 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   // Rating Modal & Report Modal State
   const [ratingTargetBooking, setRatingTargetBooking] = useState<Booking | null>(null);
   const [starCount, setStarCount] = useState(5);
+  const [completionReportIssue, setCompletionReportIssue] = useState(false);
+  const [completionIssueReason, setCompletionIssueReason] = useState('Overcharging / Fare Dispute');
+  const [completionIssueDetails, setCompletionIssueDetails] = useState('');
   const [reportDriverModal, setReportDriverModal] = useState<Booking | null>(null);
   const [reportReason, setReportReason] = useState('Overcharging');
   const [reportDetails, setReportDetails] = useState('');
@@ -203,22 +207,50 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
   const handleDismissRating = (bookingId: string) => {
     markRatingDismissed(bookingId);
     setRatingTargetBooking(null);
+    setCompletionReportIssue(false);
+    setCompletionIssueDetails('');
   };
 
   const handleSubmitRating = (bookingId: string) => {
-    store.rateBooking(bookingId, starCount, 'Great ride!');
+    store.rateBooking(bookingId, starCount, 'Ride completed');
+    if (completionReportIssue && ratingTargetBooking) {
+      store.submitReport({
+        reporterId: currentUser.id,
+        reporterName: currentUser.name,
+        reporterRole: 'passenger',
+        targetId: ratingTargetBooking.driverId || 'driver',
+        targetName: ratingTargetBooking.driverName || 'Driver',
+        targetRole: 'driver',
+        reason: completionIssueReason,
+        details: completionIssueDetails || 'Incident reported upon ride completion.',
+        bookingId: ratingTargetBooking.id
+      });
+      alert('Your rating and report have been submitted to Gonzaga LGU Admin.');
+    }
+
+    setCompletionReportIssue(false);
+    setCompletionIssueDetails('');
     markRatingDismissed(bookingId);
     setRatingTargetBooking(null);
   };
 
   const handleBookRide = (e: React.FormEvent) => {
     e.preventDefault();
+    if (passengersCount > 6) {
+      setPassengerValidationError('Maximum allowed capacity is 6 passengers per trip under municipal safety guidelines.');
+      return;
+    }
+    if (passengersCount < 1) {
+      setPassengerValidationError('Please select at least 1 passenger.');
+      return;
+    }
+    setPassengerValidationError('');
     const booking = store.createBooking({
       pickupBarangay,
       pickupLandmark: pickupLandmark || 'Main Road',
       destinationBarangay: destBarangay,
       destinationLandmark: destLandmark || 'Standard Dropoff',
-      passengersCount,
+      passengersCount: Math.min(6, Math.max(1, passengersCount)),
       discountType,
       specialNotes,
       estimatedFare: fareResult.finalFare
@@ -390,7 +422,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
 
           {fareEstimatorOpen && (
             <section id="passenger-fare-estimator" className="passenger-fare-estimator">
-              <div className="passenger-fare-estimator-fields">
+              <div className="passenger-fare-estimator-fields" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                 <label>
                   <span>Pickup Barangay</span>
                   <select value={pickupBarangay} onChange={event => setPickupBarangay(event.target.value)}>
@@ -407,9 +439,30 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                     ))}
                   </select>
                 </label>
+                <label>
+                  <span>Rate Category</span>
+                  <select
+                    value={discountType}
+                    onChange={event => setDiscountType(event.target.value as 'regular' | 'senior_student_pwd')}
+                  >
+                    <option value="regular">Regular Fare Rate</option>
+                    <option value="senior_student_pwd">Senior / Student / PWD Rate (20% Off)</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Passengers</span>
+                  <select
+                    value={passengersCount}
+                    onChange={event => setPassengersCount(Math.min(6, Math.max(1, Number(event.target.value))))}
+                  >
+                    {[1, 2, 3, 4, 5, 6].map(num => (
+                      <option key={num} value={num}>{num} Person{num > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </label>
               </div>
               <div className="passenger-fare-estimator-result">
-                <span>Estimated fare</span>
+                <span>Estimated fare ({discountType === 'senior_student_pwd' ? 'Discounted Rate' : 'Regular Rate'})</span>
                 <strong>₱{fareResult.finalFare}</strong>
                 <small>
                   {fareResult.routeName}
@@ -558,14 +611,26 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
             {/* PASSENGERS & DISCOUNT */}
             <div className="booking-two-col">
               <div className="booking-field-box">
-                <label className="booking-micro-label">Passengers Count (1 - 8)</label>
+                <label className="booking-micro-label">Passengers Count (1 - 6)</label>
                 <select
                   value={passengersCount}
-                  onChange={e => setPassengersCount(Number(e.target.value))}
+                  onChange={e => {
+                    const val = Number(e.target.value);
+                    if (val > 6) {
+                      setPassengerValidationError('Maximum allowed capacity is 6 passengers per trip.');
+                      setPassengersCount(6);
+                    } else if (val < 1) {
+                      setPassengerValidationError('Passenger count must be at least 1.');
+                      setPassengersCount(1);
+                    } else {
+                      setPassengerValidationError('');
+                      setPassengersCount(val);
+                    }
+                  }}
                   className="booking-select"
                   aria-label="Passengers Count"
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                  {[1, 2, 3, 4, 5, 6].map(num => (
                     <option key={num} value={num}>{num} Passenger{num > 1 ? 's' : ''}</option>
                   ))}
                 </select>
@@ -584,6 +649,25 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                 </select>
               </div>
             </div>
+
+            {passengerValidationError && (
+              <div style={{
+                background: '#fee2e2',
+                border: '1px solid #fca5a5',
+                color: '#b91c1c',
+                padding: '10px 14px',
+                borderRadius: '10px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                marginBottom: '10px'
+              }}>
+                <AlertCircle size={16} />
+                <span>{passengerValidationError}</span>
+              </div>
+            )}
 
             {/* SPECIAL NOTES */}
             <div className="booking-field-box">
@@ -689,12 +773,88 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                       <span>SEARCHING DRIVERS • {Math.floor(searchTimer / 60)}:{(searchTimer % 60) < 10 ? '0' : ''}{searchTimer % 60}</span>
                     </div>
 
-                    <h3 style={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a', marginBottom: '4px' }}>
-                      Broadcasting to Nearby Cluster Gontodas
-                    </h3>
-                    <p style={{ fontSize: '0.88rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
-                      Paging drivers in the registered <strong>Cluster Gontoda associations</strong>.
-                    </p>
+                    {/* PRIORITY DISPATCH PHASES */}
+                    {(() => {
+                      const elapsed = Math.max(searchTimer, Math.floor((Date.now() - new Date(currentActiveBooking.createdAt).getTime()) / 1000));
+                      if (elapsed < 45) {
+                        return (
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ display: 'inline-block', background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', padding: '4px 12px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 800 }}>
+                              🎯 STEP 1: LOCAL TODA PRIORITY (0–45s)
+                            </span>
+                            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '8px 0 4px 0' }}>
+                              Paging Brgy. {cleanBarangay(currentActiveBooking.pickupBarangay)} Drivers
+                            </h3>
+                            <p style={{ fontSize: '0.85rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
+                              Direct priority alert sent to online drivers in your pickup barangay's TODA.
+                            </p>
+                          </div>
+                        );
+                      }
+                      if (elapsed >= 45 && elapsed < 90) {
+                        return (
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ display: 'inline-block', background: '#e0f2fe', color: '#0369a1', border: '1px solid #7dd3fc', padding: '4px 12px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 800 }}>
+                              ⚡ STEP 2: CLUSTER BACKUP EXPANSION (45–90s)
+                            </span>
+                            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '8px 0 4px 0' }}>
+                              Broadcasting to Cluster Zone Drivers
+                            </h3>
+                            <p style={{ fontSize: '0.85rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
+                              Expanding ride request to all online drivers in neighboring barangays within your cluster.
+                            </p>
+                          </div>
+                        );
+                      }
+                      if (elapsed >= 90 && elapsed <= 135) {
+                        return (
+                          <div style={{ marginBottom: '8px' }}>
+                            <span style={{ display: 'inline-block', background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', padding: '4px 12px', borderRadius: '999px', fontSize: '0.78rem', fontWeight: 800 }}>
+                              🌐 STEP 3: MUNICIPAL-WIDE EXPANSION (90–135s)
+                            </span>
+                            <h3 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0f172a', margin: '8px 0 4px 0' }}>
+                              Paging All Available Gonzaga Drivers
+                            </h3>
+                            <p style={{ fontSize: '0.85rem', color: '#64748b', maxWidth: '420px', margin: '0 auto' }}>
+                              Broadcasted to all registered drivers across all 5 clusters in Gonzaga.
+                            </p>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div style={{ background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '16px', padding: '16px', margin: '10px 0' }}>
+                          <span style={{ display: 'inline-block', background: '#fee2e2', color: '#b91c1c', padding: '3px 10px', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 800 }}>
+                            ⚠️ STEP 5: NO DRIVER FOUND (&gt;135s)
+                          </span>
+                          <h4 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#991b1b', margin: '8px 0 4px 0' }}>
+                            No Drivers Available Right Now
+                          </h4>
+                          <p style={{ fontSize: '0.82rem', color: '#7f1d1d', margin: '0 0 12px 0' }}>
+                            All drivers in your area may be currently serving other passengers. You can retry the search or cancel.
+                          </p>
+                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                store.retryBookingSearch(currentActiveBooking.id);
+                                setSearchTimer(0);
+                              }}
+                              className="btn-primary"
+                              style={{ padding: '8px 16px', fontSize: '0.84rem', borderRadius: '10px' }}
+                            >
+                              🔄 Retry Search
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleCancelBooking(currentActiveBooking.id)}
+                              style={{ padding: '8px 14px', borderRadius: '10px', border: '1px solid #f87171', background: '#ffffff', color: '#dc2626', fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer' }}
+                            >
+                              Cancel Booking
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* CELLULAR SMS GUARANTEE BANNER */}
                     <div style={{
@@ -962,14 +1122,52 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <button
-                        onClick={() => setReportDriverModal(currentActiveBooking)}
-                        style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '8px', borderRadius: '10px', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                      >
-                        <ShieldAlert size={15} /> Report Driver
-                      </button>
-                    </div>
+                    {(currentActiveBooking.status === 'DRIVER_ACCEPTED' || currentActiveBooking.status === 'DRIVER_ARRIVING') && (
+                      <div style={{ marginTop: '8px' }}>
+                        {currentActiveBooking.isWaitingAlert ? (
+                          <div style={{
+                            padding: '10px 14px',
+                            borderRadius: '12px',
+                            background: '#fef3c7',
+                            border: '1.5px solid #f59e0b',
+                            color: '#92400e',
+                            fontSize: '0.84rem',
+                            fontWeight: 800,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <span>🖐️</span>
+                            <span><strong>Waiting Alert Sent:</strong> Driver has been notified you are waiting at the pickup point!</span>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              store.markBookingWaiting(currentActiveBooking.id);
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '11px',
+                              borderRadius: '12px',
+                              background: '#fef9c3',
+                              border: '2px solid #eab308',
+                              color: '#854d0e',
+                              fontSize: '0.88rem',
+                              fontWeight: 800,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              boxShadow: '0 2px 8px rgba(234, 179, 8, 0.2)'
+                            }}
+                          >
+                            <span>🖐️</span> I'm Waiting at Pickup Point (Notify Driver)
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                 </div>
@@ -1053,13 +1251,66 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
               ))}
             </div>
 
+            {/* Report Issue Option (Post-Ride Completion) */}
+            <div style={{ marginTop: '4px', marginBottom: '18px', textAlign: 'left' }}>
+              <button
+                type="button"
+                onClick={() => setCompletionReportIssue(prev => !prev)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: completionReportIssue ? '#dc2626' : '#64748b',
+                  fontSize: '0.84rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 0'
+                }}
+              >
+                <ShieldAlert size={15} color={completionReportIssue ? '#dc2626' : '#64748b'} />
+                <span>{completionReportIssue ? 'Hide Issue Report' : 'Report an issue with this trip?'}</span>
+              </button>
+
+              {completionReportIssue && (
+                <div style={{ marginTop: '8px', padding: '12px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '12px', textAlign: 'left' }}>
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#991b1b', marginBottom: '4px' }}>
+                    Reason for Incident Report
+                  </label>
+                  <select
+                    value={completionIssueReason}
+                    onChange={e => setCompletionIssueReason(e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #fca5a5', fontSize: '0.82rem', marginBottom: '8px', background: '#ffffff' }}
+                  >
+                    <option value="Overcharging / Fare Dispute">Overcharging / Fare Dispute</option>
+                    <option value="Reckless Driving">Reckless Driving</option>
+                    <option value="Discourteous / Unprofessional Behavior">Discourteous / Unprofessional Behavior</option>
+                    <option value="Vehicle Condition / Safety Hazard">Vehicle Condition / Safety Hazard</option>
+                    <option value="Other Incident">Other Incident</option>
+                  </select>
+
+                  <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#991b1b', marginBottom: '4px' }}>
+                    Details (optional)
+                  </label>
+                  <textarea
+                    value={completionIssueDetails}
+                    onChange={e => setCompletionIssueDetails(e.target.value)}
+                    placeholder="Provide details to assist Gonzaga LGU..."
+                    rows={2}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid #fca5a5', fontSize: '0.82rem', background: '#ffffff' }}
+                  />
+                </div>
+              )}
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 onClick={() => handleSubmitRating(ratingTargetBooking.id)}
                 className="btn-primary"
                 style={{ width: '100%', padding: '14px', borderRadius: '14px', fontSize: '0.98rem', fontWeight: 800 }}
               >
-                <Home size={18} /> SUBMIT RATING & CONTINUE
+                <CheckCircle2 size={18} /> {completionReportIssue ? 'SUBMIT RATING & REPORT' : 'SUBMIT RATING & CONTINUE'}
               </button>
               <button
                 onClick={() => handleDismissRating(ratingTargetBooking.id)}

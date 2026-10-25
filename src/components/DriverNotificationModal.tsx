@@ -3,6 +3,7 @@ import type { Booking, User } from '../types';
 import { store } from '../services/store';
 import { Bell, MapPin, Navigation, UserCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { playNotificationSound } from '../services/sound';
+import { getDriverBookingPriority } from '../services/barangayClusters';
 
 interface DriverNotificationModalProps {
   activeBooking: Booking;
@@ -15,7 +16,7 @@ export const DriverNotificationModal: React.FC<DriverNotificationModalProps> = (
   currentDriver,
   onDismiss
 }) => {
-  const [timeLeft, setTimeLeft] = useState(15);
+  const [timeLeft, setTimeLeft] = useState(45);
 
   useEffect(() => {
     playNotificationSound();
@@ -33,6 +34,13 @@ export const DriverNotificationModal: React.FC<DriverNotificationModalProps> = (
 
     return () => clearInterval(timer);
   }, [activeBooking.id]);
+
+  const priority = getDriverBookingPriority(
+    activeBooking.createdAt,
+    activeBooking.pickupBarangay,
+    currentDriver.todaName,
+    currentDriver.cluster
+  );
 
   const handleAccept = () => {
     store.updateBookingStatus(activeBooking.id, 'DRIVER_ACCEPTED', currentDriver);
@@ -71,12 +79,39 @@ export const DriverNotificationModal: React.FC<DriverNotificationModalProps> = (
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a' }}>
             New Booking Request!
           </h3>
+
+          {/* Priority Tier Indicator */}
+          <div style={{ marginTop: '6px', marginBottom: '4px' }}>
+            <span style={{
+              display: 'inline-block',
+              padding: '4px 10px',
+              borderRadius: '999px',
+              fontSize: '0.74rem',
+              fontWeight: 800,
+              background: priority.tier === 1 ? '#dcfce7' : priority.tier === 2 ? '#e0f2fe' : '#fef3c7',
+              color: priority.tier === 1 ? '#15803d' : priority.tier === 2 ? '#0369a1' : '#b45309',
+              border: `1px solid ${priority.tier === 1 ? '#86efac' : priority.tier === 2 ? '#7dd3fc' : '#fde68a'}`
+            }}>
+              {priority.tierName.toUpperCase()}
+            </span>
+          </div>
+
           {activeBooking.isWaitingAlert && (
-            <div style={{ display: 'inline-block', marginTop: '8px', padding: '5px 10px', borderRadius: '999px', background: '#fef08a', color: '#854d0e', fontSize: '.78rem', fontWeight: 800 }}>
-              🖐️ Passenger is waiting at the pickup point
+            <div style={{
+              display: 'block',
+              marginTop: '8px',
+              padding: '8px 12px',
+              borderRadius: '12px',
+              background: '#fef08a',
+              color: '#854d0e',
+              fontSize: '.82rem',
+              fontWeight: 800,
+              border: '1.5px solid #eab308'
+            }}>
+              🖐️ PASSENGER IS WAITING AT PICKUP POINT
             </div>
           )}
-          <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '6px' }}>
             Municipality of Gonzaga Tricycle Network
           </p>
         </div>
@@ -135,7 +170,7 @@ export const DriverNotificationModal: React.FC<DriverNotificationModalProps> = (
           </div>
         </div>
 
-        {/* 15 SECOND COUNTDOWN TIMER */}
+        {/* 45 SECOND COUNTDOWN TIMER */}
         <div style={{ textAlign: 'center', marginBottom: '16px', fontSize: '0.85rem', fontWeight: 800, color: '#dc2626' }}>
           ⏳ You have <strong>{timeLeft} seconds</strong> to respond.
         </div>

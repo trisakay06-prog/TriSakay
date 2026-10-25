@@ -3,7 +3,7 @@ import { INITIAL_GONZAGA_FARES, INITIAL_GONZAGA_BARANGAYS } from './fareCalculat
 import { playNotificationSound } from './sound';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { sendBookingAcceptedSMS, sendDriverArrivingSMS } from './smsService';
-import { getBarangayCluster } from './barangayClusters';
+import { getBarangayCluster, type BarangayClusterNumber } from './barangayClusters';
 
 const STORAGE_KEY = 'trisakay_app_state_v1';
 const SESSION_USER_KEY = 'trisakay_session_user_v1';
@@ -68,7 +68,7 @@ export const INITIAL_USERS: User[] = [
     name: 'Gonzaga LGU Admin',
     mobile: '09628039440',
     role: 'admin',
-    barangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)',
+    barangay: 'Gonzaga Municipal Hall, Poblacion',
     createdAt: '2026-08-01T08:00:00Z',
   }
 ];
@@ -314,24 +314,65 @@ class StoreService {
       });
   }
 
-  private loadCurrentUser(): User | null {
+  private clearUserSession() {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(SESSION_USER_KEY);
+      sessionStorage.removeItem(SESSION_USER_KEY);
+    } catch (e) {
+      console.error('Error clearing session', e);
+    }
+  }
+
+  private loadCurrentUser(availableUsers: User[] = INITIAL_USERS): User | null {
     if (typeof window === 'undefined') return null;
     try {
-      const session = sessionStorage.getItem(SESSION_USER_KEY);
-      if (session) return JSON.parse(session);
-      const local = localStorage.getItem(SESSION_USER_KEY);
-      if (local) return JSON.parse(local);
+      // Restore persistent user session from localStorage or sessionStorage
+      let rawUser = localStorage.getItem(SESSION_USER_KEY);
+      if (!rawUser) {
+        rawUser = sessionStorage.getItem(SESSION_USER_KEY);
+      }
+
+      if (rawUser) {
+        const parsedUser: User = JSON.parse(rawUser);
+        const matched = availableUsers.find(
+          u => u.id === parsedUser.id || (parsedUser.mobile && u.mobile === parsedUser.mobile)
+        );
+
+        if (matched) {
+          // Check if session has been invalidated (e.g. account blocked or driver unapproved)
+          if (matched.isBlocked) {
+            this.clearUserSession();
+            return null;
+          }
+          if (matched.role === 'driver' && !matched.isApproved) {
+            this.clearUserSession();
+            return null;
+          }
+          const syncedUser = { ...parsedUser, ...matched };
+          sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(syncedUser));
+          localStorage.setItem(SESSION_USER_KEY, JSON.stringify(syncedUser));
+          return syncedUser;
+        }
+
+        // Admin login fallback
+        if (parsedUser.role === 'admin' && !parsedUser.isBlocked) {
+          return parsedUser;
+        }
+      }
     } catch (e) {
-      console.error('Failed to parse current user', e);
+      console.error('Failed to parse current user session', e);
     }
     return null;
   }
 
   private loadState(): AppStoreData {
-    const currentUser = this.data?.currentUser || this.loadCurrentUser();
-    if (typeof window === 'undefined') return { ...this.getInitialData(), currentUser };
+    if (typeof window === 'undefined') {
+      return { ...this.getInitialData(), currentUser: null };
+    }
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
+      const initial = this.getInitialData();
       if (stored) {
         const parsed = JSON.parse(stored);
         const clusterByBarangay = new Map(INITIAL_TODAS.map(t => [t.zoneBarangay.toLowerCase(), t.name]));
@@ -343,6 +384,34 @@ class StoreService {
           if (migratedUser.role !== 'driver' || migratedUser.todaName?.toLowerCase().includes('cluster gontoda')) return migratedUser;
           return { ...migratedUser, todaName: clusterByBarangay.get(migratedUser.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' };
         });
+
+        // Ensure Flourishing (CSU) is in barangays list
+        let barangays: string[] = parsed.barangays || INITIAL_GONZAGA_BARANGAYS;
+        if (!barangays.includes('Flourishing (CSU)')) {
+          barangays = Array.from(new Set([...barangays, 'Flourishing (CSU)'])).sort((a, b) => a.localeCompare(b));
+        }
+
+        // Ensure fares have csuRate
+        const fares: GonzagaRouteFare[] = INITIAL_GONZAGA_FARES.map(initialFare => {
+          const existing = (parsed.fares || []).find((f: GonzagaRouteFare) => f.id === initialFare.id);
+          if (existing) {
+            return {
+              ...initialFare,
+              ...existing,
+              csuRate: existing.csuRate || initialFare.csuRate
+            };
+          }
+          return initialFare;
+        });
+
+        // Enforce max 6 passengers capacity limit
+        const settings: SystemSettings = {
+          ...initial.settings,
+          ...(parsed.settings || {}),
+          maxPassengersCapacity: 6
+        };
+
+        const currentUser = this.loadCurrentUser(users);
         const currentUserCluster = currentUser ? getBarangayCluster(currentUser.barangay)?.number : undefined;
         const currentUserWithCluster = currentUser && currentUserCluster && currentUser.cluster !== currentUserCluster
           ? { ...currentUser, cluster: currentUserCluster }
@@ -350,14 +419,27 @@ class StoreService {
         const migratedCurrentUser = currentUserWithCluster?.role === 'driver' && !currentUserWithCluster.todaName?.toLowerCase().includes('cluster gontoda')
           ? { ...currentUserWithCluster, todaName: clusterByBarangay.get(currentUserWithCluster.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' }
           : currentUserWithCluster;
-        return { ...parsed, users, todas: INITIAL_TODAS, currentUser: migratedCurrentUser };
+
+        return {
+          ...parsed,
+          users,
+          todas: INITIAL_TODAS,
+          barangays,
+          fares,
+          settings,
+          currentUser: migratedCurrentUser,
+          seniorMode: Boolean(parsed.seniorMode)
+        };
       }
     } catch (e) {
       console.error('Failed to parse state from localStorage', e);
     }
+
     const initial = this.getInitialData();
-    this.saveStateToStorage(initial);
-    return { ...initial, currentUser };
+    const currentUser = this.loadCurrentUser(initial.users);
+    const initialWithSession = { ...initial, currentUser };
+    this.saveStateToStorage(initialWithSession);
+    return initialWithSession;
   }
 
   private getInitialData(): AppStoreData {
@@ -371,7 +453,7 @@ class StoreService {
       feedback: INITIAL_FEEDBACK,
       settings: {
         fuelSurgeMultiplier: 1.0,
-        maxPassengersCapacity: 8,
+        maxPassengersCapacity: 6,
         allowWaitingFeature: true,
         contactEmail: 'trisakay@gmail.com',
         contactNumber: '09628039440',
@@ -382,7 +464,7 @@ class StoreService {
         user_driver_1: true,
         user_driver_2: true
       },
-      currentUser: INITIAL_USERS[0],
+      currentUser: null,
       seniorMode: false
     };
   }
@@ -419,14 +501,18 @@ class StoreService {
   public setCurrentUser(user: User | null) {
     if (typeof window !== 'undefined') {
       if (user) {
-        sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
-        localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+        try {
+          sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+          localStorage.setItem(SESSION_USER_KEY, JSON.stringify(user));
+        } catch (e) {
+          console.error('Error saving session to storage', e);
+        }
       } else {
-        sessionStorage.removeItem(SESSION_USER_KEY);
-        localStorage.removeItem(SESSION_USER_KEY);
+        this.clearUserSession();
       }
     }
     this.data = { ...this.data, currentUser: user };
+    this.saveStateToStorage(this.data);
     this.notifyListeners();
   }
 
@@ -453,6 +539,7 @@ class StoreService {
     isWaitingAlert?: boolean;
   }): Booking {
     const user = this.data.currentUser || INITIAL_USERS[0];
+    const validatedPassengersCount = Math.max(1, Math.min(6, Number(payload.passengersCount) || 1));
     const newBooking: Booking = {
       id: `book_${Date.now()}`,
       passengerId: user.id,
@@ -462,7 +549,7 @@ class StoreService {
       pickupLandmark: payload.pickupLandmark,
       destinationBarangay: payload.destinationBarangay || 'On-The-Way Dropoff',
       destinationLandmark: payload.destinationLandmark || 'Route Dropoff',
-      passengersCount: payload.passengersCount,
+      passengersCount: validatedPassengersCount,
       discountType: payload.discountType,
       specialNotes: payload.specialNotes,
       estimatedFare: payload.estimatedFare,
@@ -607,8 +694,19 @@ class StoreService {
     playNotificationSound();
   }
 
-  public registerUser(user: Omit<User, 'id' | 'createdAt' | 'cluster'>): User {
-    const cluster = getBarangayCluster(user.barangay)?.number;
+  public retryBookingSearch(bookingId: string) {
+    const now = new Date().toISOString();
+    const updatedBookings = this.data.bookings.map(b =>
+      b.id === bookingId ? { ...b, createdAt: now } : b
+    );
+    this.saveStateToStorage({ ...this.data, bookings: updatedBookings }, true);
+    if (supabase) {
+      supabase.from('bookings').update({ created_at: now }).eq('id', bookingId).then();
+    }
+  }
+
+  public registerUser(user: Omit<User, 'id' | 'createdAt' | 'cluster'> & { cluster?: BarangayClusterNumber }): User {
+    const cluster = user.cluster || getBarangayCluster(user.barangay)?.number;
     if (!cluster) {
       throw new Error(`No official cluster is assigned to barangay: ${user.barangay}`);
     }
@@ -622,7 +720,10 @@ class StoreService {
     };
 
     const updatedUsers = [...this.data.users, newUser];
-    this.saveStateToStorage({ ...this.data, users: updatedUsers, currentUser: newUser });
+    this.saveStateToStorage({ ...this.data, users: updatedUsers });
+    if (newUser.role === 'passenger') {
+      this.setCurrentUser(newUser);
+    }
 
     if (supabase) {
       supabase.from('users').insert({
@@ -667,7 +768,15 @@ class StoreService {
       }
       return u;
     });
-    this.saveStateToStorage({ ...this.data, users: updatedUsers });
+    let nextCurrentUser = this.data.currentUser;
+    if (this.data.currentUser?.id === userId) {
+      const isBlockedNow = updatedUsers.find(u => u.id === userId)?.isBlocked;
+      if (isBlockedNow) {
+        this.clearUserSession();
+        nextCurrentUser = null;
+      }
+    }
+    this.saveStateToStorage({ ...this.data, users: updatedUsers, currentUser: nextCurrentUser });
   }
 
   public updateFareRate(fareId: string, regularRate: number, discountRate: number, csuRate?: number) {
@@ -737,6 +846,14 @@ class StoreService {
     const updatedCurrentUser = this.data.currentUser?.id === userId 
       ? { ...this.data.currentUser, ...normalizedUpdates }
       : this.data.currentUser;
+    if (updatedCurrentUser && this.data.currentUser?.id === userId && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(SESSION_USER_KEY, JSON.stringify(updatedCurrentUser));
+        sessionStorage.setItem(SESSION_USER_KEY, JSON.stringify(updatedCurrentUser));
+      } catch (e) {
+        console.error('Error updating session user', e);
+      }
+    }
     this.saveStateToStorage({ ...this.data, users: updatedUsers, currentUser: updatedCurrentUser });
   }
 

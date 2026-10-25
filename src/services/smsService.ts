@@ -65,3 +65,12 @@ export function sendDriverArrivingSMS(passengerName: string, passengerMobile: st
   const message = `[TriSakay Gonzaga] Hello ${passengerName}! Nakarating na si Driver ${driverName} (${plateNumber}) sa pickup location niyo. Please proceed to tricycle!`;
   return sendSMS({ toMobile: passengerMobile, message, recipientName: passengerName });
 }
+
+/**
+ * SMS Notification when User Requests a Password Reset Code
+ */
+export function sendPasswordResetCodeSMS(userName: string, mobileNumber: string, resetCode: string) {
+  const message = `[TriSakay Gonzaga] Your password reset verification code is: ${resetCode}. Valid for 10 minutes. Do not share this code with anyone.`;
+  return sendSMS({ toMobile: mobileNumber, message, recipientName: userName || 'TriSakay User' });
+}
+

@@ -14,7 +14,7 @@ const items = [
 
 export const UserSideNavigation: React.FC<UserSideNavigationProps> = ({ activeTab, setActiveTab }) => (
   <aside className="user-side-navigation" aria-label="TriSakay services">
-    <p className="side-navigation-title">Why TriSakay</p>
+    <p className="side-navigation-title">Why Choose TriSakay</p>
     {items.map(({ label, icon: Icon }) => (
       <button key={label} type="button" onClick={() => setActiveTab('service-benefits')} className={activeTab === 'service-benefits' ? 'active' : ''}>
         <Icon size={18} /> <span>{label}</span>

@@ -13,6 +13,7 @@ export const INITIAL_GONZAGA_BARANGAYS = [
   'Caroan',
   'Casitan',
   'Flourishing',
+  'Flourishing (CSU)',
   'Ipil',
   'Ipil (Burattok)',
   'Ipil (San Francisco)',
@@ -53,8 +54,8 @@ export const INITIAL_GONZAGA_FARES: GonzagaRouteFare[] = [
   { id: '16', route: 'Ipil to Poblacion', fromBarangay: 'Ipil', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 30, csuRate: 40 },
   { id: '17', route: 'Ipil (Burattok)', fromBarangay: 'Ipil', toBarangay: 'Burattok', regularRate: 45, discountRate: 45 },
   { id: '18', route: 'Ipil - Amunitan', fromBarangay: 'Ipil', toBarangay: 'Amunitan', regularRate: 20, discountRate: 15 },
-  { id: '19', route: 'Amunitan - Poblacion', fromBarangay: 'Amunitan', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 30 },
-  { id: '20', route: 'Cabiraoan (Mid)', fromBarangay: 'Cabiraoan', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 30, discountRate: 20 },
+  { id: '19', route: 'Amunitan - Poblacion', fromBarangay: 'Amunitan', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 30, csuRate: 35 },
+  { id: '20', route: 'Cabiraoan (Mid)', fromBarangay: 'Cabiraoan', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 30, discountRate: 20, csuRate: 30 },
   { id: '21', route: 'Baua - Amunitan', fromBarangay: 'Baua', toBarangay: 'Amunitan', regularRate: 20, discountRate: 15 },
   { id: '22', route: 'Baua - Cabiraoan', fromBarangay: 'Baua', toBarangay: 'Cabiraoan', regularRate: 35, discountRate: 25 },
   { id: '23', route: 'Baua - Sta. Cruz', fromBarangay: 'Baua', toBarangay: 'Sta. Cruz', regularRate: 20, discountRate: 15 },
@@ -62,9 +63,9 @@ export const INITIAL_GONZAGA_FARES: GonzagaRouteFare[] = [
   { id: '25', route: 'Within Baua Barangay', fromBarangay: 'Baua', toBarangay: 'Baua', regularRate: 20, discountRate: 15 },
   { id: '26', route: 'Baua - Abbut (Special Arrangement)', fromBarangay: 'Baua', toBarangay: 'Abbut', regularRate: 170, discountRate: 170, isSpecialArrangement: true },
   { id: '27', route: 'Laoc (Special Arrangement)', fromBarangay: 'Laoc', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 170, discountRate: 170, isSpecialArrangement: true },
-  { id: '28', route: 'Poblacion Within (Smart, Progressive, Paradise, Flourishing)', fromBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 20, discountRate: 15 },
-  { id: '29', route: 'Sta. Clara (Purok 1 & 2) to Poblacion', fromBarangay: 'Sta. Clara (Purok 1 & 2)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 30 },
-  { id: '30', route: 'Sta. Clara (Purok 3, 4, 5, 6) to Poblacion', fromBarangay: 'Sta. Clara (Purok 3, 4, 5, 6)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 35 },
+  { id: '28', route: 'Poblacion Within (Smart, Progressive, Paradise, Flourishing)', fromBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 20, discountRate: 15, csuRate: 25 },
+  { id: '29', route: 'Sta. Clara (Purok 1 & 2) to Poblacion', fromBarangay: 'Sta. Clara (Purok 1 & 2)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 30, csuRate: 35 },
+  { id: '30', route: 'Sta. Clara (Purok 3, 4, 5, 6) to Poblacion', fromBarangay: 'Sta. Clara (Purok 3, 4, 5, 6)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 35, csuRate: 40 },
 ];
 
 const POBLACION_ENTITIES = ['smart', 'progressive', 'paradise', 'flourishing', 'poblacion'];
@@ -141,7 +142,7 @@ export function calculateFare(
   routeName: string;
   isSpecialArrangement?: boolean;
 } {
-  const count = Math.max(1, Number(passengersCount) || 1);
+  const count = Math.max(1, Math.min(6, Number(passengersCount) || 1));
 
   if (!pickupBrgy || !destBrgy) {
     const unitFare = Math.round(20 * fuelSurgeMultiplier);
@@ -168,12 +169,20 @@ export function calculateFare(
     }
     const perPassengerFare = Math.round(rate * fuelSurgeMultiplier);
     const finalFare = matched.isSpecialArrangement ? perPassengerFare : (perPassengerFare * count);
+    const routeDisplay = isCSUDestination && matched.csuRate
+      ? (matched.route.includes('to Poblacion')
+          ? matched.route.replace('to Poblacion', 'to Flourishing (CSU)')
+          : matched.route.includes('- Poblacion')
+          ? matched.route.replace('- Poblacion', '- Flourishing (CSU)')
+          : `${matched.route} (Flourishing (CSU))`)
+      : matched.route;
+
     return {
       baseFare: rate,
       perPassengerFare,
       finalFare,
       passengersCount: count,
-      routeName: matched.route,
+      routeName: routeDisplay,
       isSpecialArrangement: matched.isSpecialArrangement
     };
   }
@@ -192,12 +201,16 @@ export function calculateFare(
     }
     const perPassengerFare = Math.round(rate * fuelSurgeMultiplier);
     const finalFare = fallback.isSpecialArrangement ? perPassengerFare : (perPassengerFare * count);
+    const fallbackRouteDisplay = isCSUDestination && fallback.csuRate
+      ? `${fallback.route} (Flourishing (CSU))`
+      : `${fallback.route} (Standard)`;
+
     return {
       baseFare: rate,
       perPassengerFare,
       finalFare,
       passengersCount: count,
-      routeName: `${fallback.route} (Standard)`,
+      routeName: fallbackRouteDisplay,
       isSpecialArrangement: fallback.isSpecialArrangement
     };
   }

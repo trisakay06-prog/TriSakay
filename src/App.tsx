@@ -75,7 +75,7 @@ export const App: React.FC = () => {
         <div className="information-page-layout">
           <BackButton onClick={navigateBackFromInformation} ariaLabel={informationBackLabel} />
           <section className="glass-panel" style={{ padding: '32px', background: '#fff' }}>
-            <h2 style={{ color: '#15803d', marginBottom: '8px' }}>Why use TriSakay?</h2>
+            <h2 style={{ color: '#15803d', marginBottom: '8px' }}>Why Choose TriSakay</h2>
             <p style={{ color: '#64748b', marginBottom: '24px' }}>Designed for passengers and local tricycle drivers across Gonzaga.</p>
             <div className="grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               {benefits.map(({ title, text, icon: Icon }) => (
@@ -352,12 +352,12 @@ export const App: React.FC = () => {
         return <DriverDashboard initialTab="profile" onNavigateHome={() => setActiveTab('dashboard')} />;
       }
       if (currentUser.role === 'admin') {
-        return <AdminDashboard initialTab="overview" />;
+        return <AdminDashboard initialTab="profile" />;
       }
       return <PassengerDashboard initialTab="profile" onNavigateHome={() => setActiveTab('dashboard')} />;
     }
 
-    if (currentUser?.role === 'admin' && ['overview', 'drivers', 'users', 'fares', 'todas', 'reports'].includes(activeTab)) {
+    if (currentUser?.role === 'admin' && ['overview', 'drivers', 'users', 'fares', 'todas', 'reports', 'profile'].includes(activeTab)) {
       return <AdminDashboard initialTab={activeTab as any} />;
     }
 

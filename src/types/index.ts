@@ -85,9 +85,11 @@ export interface UserReport {
   targetRole: UserRole;
   reason: string;
   details: string;
+  bookingId?: string;
   status: 'pending' | 'resolved' | 'dismissed';
   createdAt: string;
 }
+
 
 export interface Feedback {
   id: string;

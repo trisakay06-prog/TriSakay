@@ -21,16 +21,21 @@ import {
   Search
 } from 'lucide-react';
 import { UserAvatar } from '../components/UserAvatar';
+import { BARANGAY_CLUSTERS, BARANGAY_TODAS, getClusterInfo, findTodaForBarangay, findTodaByName } from '../services/barangayClusters';
+import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 
 interface AdminDashboardProps {
-  initialTab?: 'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports';
+  initialTab?: 'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports' | 'profile';
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'overview' }) => {
   const [state, setState] = useState<AppStoreData>(store.getState());
-  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'drivers' | 'users' | 'fares' | 'todas' | 'reports' | 'profile'>(initialTab);
   const [userFilter, setUserFilter] = useState<'all' | 'passengers' | 'drivers' | 'blocked'>('all');
   const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [adminNewPassword, setAdminNewPassword] = useState('');
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+  const [adminPasswordMsg, setAdminPasswordMsg] = useState('');
 
   useEffect(() => {
     if (initialTab) setActiveTab(initialTab);
@@ -51,8 +56,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
   const [newDiscRate, setNewDiscRate] = useState(25);
   const [showAddRouteModal, setShowAddRouteModal] = useState(false);
 
-  // Barangay & Toda Management State
-  const [newBarangayName, setNewBarangayName] = useState('');
+  // Toda Management State
   const [newTodaName, setNewTodaName] = useState('');
   const [newTodaZone, setNewTodaZone] = useState('');
   const [newTodaPres, setNewTodaPres] = useState('');
@@ -390,6 +394,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               {pendingReports.length}
             </span>
           )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          style={{
+            padding: '9px 16px',
+            borderRadius: '14px',
+            border: 'none',
+            fontWeight: 800,
+            fontSize: '0.86rem',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+            transition: 'all 0.2s ease',
+            background: activeTab === 'profile' ? '#16a34a' : 'transparent',
+            color: activeTab === 'profile' ? '#ffffff' : '#475569',
+            boxShadow: activeTab === 'profile' ? '0 4px 12px rgba(22, 163, 74, 0.25)' : 'none'
+          }}
+        >
+          <Settings size={16} /> Account Settings
         </button>
       </div>
 
@@ -944,12 +971,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
       )}
 
       {/* ============================================================ */}
-      {/* TAB 5: TODA ASSOCIATIONS & BARANGAY COVERAGE                 */}
+      {/* TAB 5: GONTODA CLUSTERS & BARANGAY TODAS                     */}
       {/* ============================================================ */}
       {activeTab === 'todas' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
-          {/* CLUSTER GONTODA ASSOCIATIONS */}
+          {/* GONTODA CLUSTERS (5) */}
           <div className="glass-panel" style={{
             padding: '24px',
             borderRadius: '24px',
@@ -957,109 +984,129 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
             boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
             border: '1px solid #e2e8f0'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                  <Building size={20} color="#16a34a" /> Cluster Gontoda Associations ({state.todas.length})
-                </h3>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  Barangay-based tricycle operator and driver associations in Gonzaga
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowAddTodaModal(true)}
-                className="btn-primary"
-                style={{ padding: '8px 16px', fontSize: '0.86rem', borderRadius: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-              >
-                <Plus size={16} /> Add Cluster Association
-              </button>
+            <div style={{ marginBottom: '18px' }}>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <Building size={20} color="#16a34a" /> GONTODA Clusters (5)
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                Barangays grouped under each of the five color-coded clusters.
+              </p>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
-              {state.todas.map(toda => (
-                <div key={toda.id} className="glass-card" style={{ padding: '18px', borderRadius: '18px', borderLeft: '4px solid #16a34a', background: '#f8fafc' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                    <div>
-                      <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a' }}>{toda.name}</h4>
-                      <span style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 800 }}>Zone: {toda.zoneBarangay}</span>
-                    </div>
-                    <span style={{ background: '#dcfce7', color: '#15803d', padding: '3px 8px', borderRadius: '8px', fontSize: '0.74rem', fontWeight: 800 }}>
-                      {toda.activeCount} Units
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '16px' }}>
+              {BARANGAY_CLUSTERS.map(cluster => (
+                <div
+                  key={cluster.number}
+                  className="glass-card"
+                  style={{
+                    padding: '20px',
+                    borderRadius: '18px',
+                    border: `1.5px solid ${cluster.borderColor}`,
+                    background: cluster.backgroundColor
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, color: cluster.textColor, margin: 0 }}>
+                      {cluster.name}
+                    </h4>
+                    <span style={{
+                      background: cluster.textColor,
+                      color: '#ffffff',
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      fontSize: '0.75rem',
+                      fontWeight: 800
+                    }}>
+                      {cluster.colorName}
                     </span>
                   </div>
 
-                  <p style={{ fontSize: '0.82rem', color: '#475569', marginBottom: '12px' }}>
-                    President: <strong>{toda.presidentName}</strong> • Tel: <strong>{toda.contactNumber}</strong>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.04em' }}>
+                    Covered Barangays ({cluster.barangays.length}):
                   </p>
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (confirm(`Are you sure you want to remove ${toda.name}?`)) {
-                          store.removeToda(toda.id);
-                        }
-                      }}
-                      style={{ background: 'transparent', border: '1px solid #fee2e2', color: '#dc2626', padding: '4px 10px', borderRadius: '8px', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                    >
-                      <Trash2 size={12} /> Remove
-                    </button>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {cluster.barangays.map(b => (
+                      <span
+                        key={b}
+                        style={{
+                          background: '#ffffff',
+                          border: `1px solid ${cluster.borderColor}`,
+                          color: '#1e293b',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
+                          fontWeight: 700
+                        }}
+                      >
+                        📍 {b}
+                      </span>
+                    ))}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* GONZAGA BARANGAYS COVERAGE */}
-          <div className="glass-panel" style={{ padding: '24px', borderRadius: '24px', background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                  <MapPin size={20} color="#16a34a" /> Gonzaga Barangays Coverage ({state.barangays.length})
-                </h3>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  Official municipal territory included in TriSakay landmark routing
-                </span>
-              </div>
-
-              {/* ADD BARANGAY INPUT */}
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                if (!newBarangayName) return;
-                store.addBarangay(newBarangayName);
-                setNewBarangayName('');
-              }} style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="text"
-                  placeholder="New Barangay name..."
-                  value={newBarangayName}
-                  onChange={e => setNewBarangayName(e.target.value)}
-                  style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
-                />
-                <button type="submit" className="btn-primary" style={{ padding: '8px 14px', fontSize: '0.85rem', borderRadius: '10px' }}>
-                  Add
-                </button>
-              </form>
+          {/* BARANGAY TODAS (25) */}
+          <div className="glass-panel" style={{
+            padding: '24px',
+            borderRadius: '24px',
+            background: '#ffffff',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)'
+          }}>
+            <div style={{ marginBottom: '18px' }}>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <MapPin size={20} color="#16a34a" /> Barangay TODAs (25)
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: '4px 0 0 0' }}>
+                List of individual barangay-level tricycle operators' associations.
+              </p>
             </div>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {state.barangays.map(b => (
-                <div key={b} style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '10px', fontSize: '0.82rem', fontWeight: 700, color: '#334155', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  <span>📍 {b}</span>
-                  {state.barangays.length > 5 && (
-                    <button
-                      type="button"
-                      onClick={() => store.removeBarangay(b)}
-                      title="Remove barangay"
-                      style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '0.85rem', padding: '0 2px' }}
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px' }}>
+              {BARANGAY_TODAS.map((toda, index) => {
+                const cluster = getClusterInfo(toda.cluster);
+                return (
+                  <div
+                    key={toda.name}
+                    style={{
+                      background: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '14px',
+                      padding: '14px 16px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 800 }}>#{index + 1}</span>
+                      {cluster && (
+                        <span style={{
+                          background: cluster.backgroundColor,
+                          color: cluster.textColor,
+                          border: `1px solid ${cluster.borderColor}`,
+                          padding: '2px 8px',
+                          borderRadius: '999px',
+                          fontSize: '0.72rem',
+                          fontWeight: 800
+                        }}>
+                          {cluster.name}
+                        </span>
+                      )}
+                    </div>
+                    <strong style={{ fontSize: '0.96rem', color: '#0f172a', fontWeight: 800 }}>
+                      {toda.name}
+                    </strong>
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <MapPin size={13} color="#16a34a" />
+                      <span>Brgy. {toda.barangay}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -1183,6 +1230,150 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
       )}
 
       {/* ============================================================ */}
+      {/* TAB 7: ADMIN ACCOUNT SETTINGS & PROFILE                      */}
+      {/* ============================================================ */}
+      {activeTab === 'profile' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className="glass-panel" style={{
+            padding: '28px',
+            borderRadius: '24px',
+            background: '#ffffff',
+            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.04)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+              <ProfileAvatarUpload
+                currentImageUrl={state.currentUser?.profileImage}
+                name={state.currentUser?.name || 'Gonzaga LGU Admin'}
+                role="admin"
+                onImageUploaded={(url) => {
+                  if (state.currentUser) {
+                    store.updateUser(state.currentUser.id, { profileImage: url });
+                  }
+                }}
+                onImageRemoved={() => {
+                  if (state.currentUser) {
+                    store.updateUser(state.currentUser.id, { profileImage: undefined });
+                  }
+                }}
+              />
+              <div>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0' }}>
+                  {state.currentUser?.name || 'Gonzaga LGU Admin'}
+                </h3>
+                <span style={{
+                  background: '#dcfce7',
+                  color: '#15803d',
+                  padding: '3px 10px',
+                  borderRadius: '999px',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  display: 'inline-block'
+                }}>
+                  🛡️ System Administrator
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Designation</span>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a', marginTop: '4px' }}>
+                  Municipal Transport Administrator
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Admin Mobile</span>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#16a34a', marginTop: '4px' }}>
+                  {state.currentUser?.mobile || '09628039440'}
+                </div>
+              </div>
+
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Official Location</span>
+                <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <MapPin size={16} color="#16a34a" /> Gonzaga Municipal Hall, Poblacion
+                </div>
+              </div>
+            </div>
+
+            {/* Change Password Form */}
+            <div style={{ background: '#f8fafc', borderRadius: '18px', padding: '20px', border: '1px solid #e2e8f0' }}>
+              <h4 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Settings size={18} color="#16a34a" /> Security & Password Settings
+              </h4>
+
+              {adminPasswordMsg && (
+                <div style={{
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                  marginBottom: '14px',
+                  background: adminPasswordMsg.includes('success') ? '#f0fdf4' : '#fef2f2',
+                  color: adminPasswordMsg.includes('success') ? '#15803d' : '#dc2626',
+                  border: adminPasswordMsg.includes('success') ? '1px solid #bbf7d0' : '1px solid #fecaca'
+                }}>
+                  {adminPasswordMsg}
+                </div>
+              )}
+
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                setAdminPasswordMsg('');
+                if (adminNewPassword.length < 4) {
+                  setAdminPasswordMsg('Password must be at least 4 characters long.');
+                  return;
+                }
+                if (adminNewPassword !== adminConfirmPassword) {
+                  setAdminPasswordMsg('Passwords do not match.');
+                  return;
+                }
+                const adminId = state.currentUser?.id || 'user_admin_1';
+                store.updateUser(adminId, { password: adminNewPassword });
+                setAdminNewPassword('');
+                setAdminConfirmPassword('');
+                setAdminPasswordMsg('Admin password updated successfully.');
+              }} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px', alignItems: 'flex-end' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px', color: '#475569' }}>
+                    New Admin Password / PIN
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Enter new password"
+                    value={adminNewPassword}
+                    onChange={e => setAdminNewPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '6px', color: '#475569' }}>
+                    Confirm Password / PIN
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Re-type new password"
+                    value={adminConfirmPassword}
+                    onChange={e => setAdminConfirmPassword(e.target.value)}
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.9rem' }}
+                  />
+                </div>
+
+                <div>
+                  <button type="submit" className="btn-primary" style={{ padding: '11px 20px', borderRadius: '10px', fontSize: '0.9rem', width: '100%' }}>
+                    Update Admin Password
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
       {/* MODAL 1: VERIFY TRICYCLE DETAILS MODAL                       */}
       {/* ============================================================ */}
       {verifyingDriver && (
@@ -1220,17 +1411,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                 <strong style={{ fontSize: '0.9rem', color: '#16a34a' }}>{verifyingDriver.mobile}</strong>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Home Barangay</span>
                 <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>{verifyingDriver.barangay}</strong>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Cluster Gontoda Association</span>
-                <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 800 }}>
-                  {verifyingDriver.todaName || 'Not specified'}
-                </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Barangay TODA</span>
+                <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>
+                  {verifyingDriver.todaName || findTodaForBarangay(verifyingDriver.barangay)?.name || 'Gonzaga TODA'}
+                </strong>
               </div>
+
+              {(() => {
+                const todaObj = verifyingDriver.todaName ? findTodaByName(verifyingDriver.todaName) : undefined;
+                const cNum = verifyingDriver.cluster || todaObj?.cluster || findTodaForBarangay(verifyingDriver.barangay)?.cluster || 1;
+                const cInfo = getClusterInfo(cNum);
+                return (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Assigned Cluster</span>
+                    <span style={{
+                      background: cInfo ? cInfo.backgroundColor : '#fef08a',
+                      color: cInfo ? cInfo.textColor : '#854d0e',
+                      border: cInfo ? `1px solid ${cInfo.borderColor}` : 'none',
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      fontSize: '0.8rem',
+                      fontWeight: 800
+                    }}>
+                      {cInfo ? `${cInfo.name} (${cInfo.colorName})` : `Cluster ${cNum}`}
+                    </span>
+                  </div>
+                );
+              })()}
 
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Tricycle Plate / Unit No.</span>
