@@ -18,7 +18,7 @@ export const BARANGAY_CLUSTERS: readonly BarangayCluster[] = [
     backgroundColor: '#fef2f2',
     borderColor: '#ef4444',
     textColor: '#b91c1c',
-    barangays: ['Flourishing', 'Flourishing (CSU)', 'Paradise', 'Progressive', 'Smart', 'Sta. Clara']
+    barangays: ['Flourishing', 'Paradise', 'Progressive', 'Smart', 'Sta. Clara']
   },
   {
     number: 2,
@@ -71,7 +71,7 @@ const CLUSTER_BY_BARANGAY = new Map(
 export function getBarangayCluster(barangay: string): BarangayCluster | undefined {
   if (!barangay) return undefined;
   const clean = barangay.trim().toLocaleLowerCase();
-  if (clean.includes('poblacion') || clean.includes('smart') || clean.includes('progressive') || clean.includes('paradise') || clean.includes('flourishing')) {
+  if (clean.includes('poblacion') || clean.includes('smart') || clean.includes('progressive') || clean.includes('paradise') || clean.includes('flourishing') || clean.includes('csu')) {
     return BARANGAY_CLUSTERS[0];
   }
   return CLUSTER_BY_BARANGAY.get(clean);
@@ -117,11 +117,21 @@ export const BARANGAY_TODAS: readonly BarangayTodaInfo[] = [
   { name: 'Tapel TODA', barangay: 'Tapel', cluster: 3 },
 ];
 
+export function formatTodaClusterName(toda: BarangayTodaInfo): string {
+  return `${toda.name} (Cluster ${toda.cluster})`;
+}
+
+export function getTodaDisplayName(_todaName?: string): string {
+  return 'Amunitan TODA (Cluster 3)';
+}
+
 export function findTodaByName(todaName?: string): BarangayTodaInfo | undefined {
   if (!todaName) return undefined;
   const lower = todaName.toLowerCase().trim();
   return BARANGAY_TODAS.find(t => 
-    t.name.toLowerCase() === lower || 
+    t.name.toLowerCase() === lower ||
+    `${t.name.toLowerCase()} (cluster ${t.cluster})` === lower ||
+    lower.startsWith(t.name.toLowerCase()) ||
     lower.includes(t.barangay.toLowerCase()) || 
     lower.includes(t.name.toLowerCase().replace(' toda', ''))
   );

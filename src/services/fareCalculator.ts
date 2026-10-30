@@ -66,9 +66,14 @@ export const INITIAL_GONZAGA_FARES: GonzagaRouteFare[] = [
   { id: '28', route: 'Poblacion Within (Smart, Progressive, Paradise, Flourishing)', fromBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 20, discountRate: 15, csuRate: 25 },
   { id: '29', route: 'Sta. Clara (Purok 1 & 2) to Poblacion', fromBarangay: 'Sta. Clara (Purok 1 & 2)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 30, csuRate: 35 },
   { id: '30', route: 'Sta. Clara (Purok 3, 4, 5, 6) to Poblacion', fromBarangay: 'Sta. Clara (Purok 3, 4, 5, 6)', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 35, csuRate: 40 },
+  { id: '31', route: 'Caroan to Poblacion (Vice Versa)', fromBarangay: 'Caroan', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 25, csuRate: 35 },
+  { id: '32', route: 'Baua to Poblacion (Vice Versa)', fromBarangay: 'Baua', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 40, discountRate: 30, csuRate: 40 },
+  { id: '33', route: 'San Jose to Poblacion (Vice Versa)', fromBarangay: 'San Jose', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 25, csuRate: 35 },
+  { id: '34', route: 'Sta. Cruz to Poblacion (Vice Versa)', fromBarangay: 'Sta. Cruz', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 25, csuRate: 35 },
+  { id: '35', route: 'Sta. Maria to Poblacion (Vice Versa)', fromBarangay: 'Sta. Maria', toBarangay: 'Poblacion (Smart, Progressive, Paradise, Flourishing)', regularRate: 35, discountRate: 25, csuRate: 35 },
 ];
 
-const POBLACION_ENTITIES = ['smart', 'progressive', 'paradise', 'flourishing', 'poblacion'];
+const POBLACION_ENTITIES = ['smart', 'progressive', 'paradise', 'flourishing', 'poblacion', 'csu'];
 
 function normalizeBrgyTokens(raw: string): string[] {
   if (!raw) return [];
@@ -160,22 +165,34 @@ export function calculateFare(
     (matchesBarangay(f.toBarangay, pickupBrgy) && matchesBarangay(f.fromBarangay, destBrgy))
   );
 
-  const isCSUDestination = destBrgy.toLowerCase().includes('csu') || pickupBrgy.toLowerCase().includes('csu');
+  const isCSUTrip = destBrgy.toLowerCase().includes('csu') || pickupBrgy.toLowerCase().includes('csu');
   
   if (matched) {
     let rate = discountType === 'senior_student_pwd' ? matched.discountRate : matched.regularRate;
-    if (isCSUDestination && matched.csuRate) {
+    if (isCSUTrip && matched.csuRate) {
       rate = matched.csuRate;
     }
     const perPassengerFare = Math.round(rate * fuelSurgeMultiplier);
     const finalFare = matched.isSpecialArrangement ? perPassengerFare : (perPassengerFare * count);
-    const routeDisplay = isCSUDestination && matched.csuRate
-      ? (matched.route.includes('to Poblacion')
-          ? matched.route.replace('to Poblacion', 'to Flourishing (CSU)')
-          : matched.route.includes('- Poblacion')
-          ? matched.route.replace('- Poblacion', '- Flourishing (CSU)')
-          : `${matched.route} (Flourishing (CSU))`)
-      : matched.route;
+    
+    let routeDisplay = matched.route;
+    if (isCSUTrip) {
+      const isPickupCSU = pickupBrgy.toLowerCase().includes('csu');
+      const isDestCSU = destBrgy.toLowerCase().includes('csu');
+      if (matched.id === '28' || matched.route.toLowerCase().includes('poblacion within')) {
+        routeDisplay = isPickupCSU && isDestCSU 
+          ? 'Flourishing (CSU Campus Area)'
+          : (isPickupCSU ? 'Flourishing (CSU) to Poblacion' : 'Poblacion to Flourishing (CSU)');
+      } else if (matched.csuRate) {
+        if (matched.route.includes('to Poblacion')) {
+          routeDisplay = matched.route.replace('to Poblacion', isPickupCSU ? 'from Flourishing (CSU)' : 'to Flourishing (CSU)');
+        } else if (matched.route.includes('- Poblacion')) {
+          routeDisplay = matched.route.replace('- Poblacion', isPickupCSU ? '- Flourishing (CSU)' : '- Flourishing (CSU)');
+        } else {
+          routeDisplay = `${matched.route} (Flourishing (CSU))`;
+        }
+      }
+    }
 
     return {
       baseFare: rate,
@@ -196,12 +213,14 @@ export function calculateFare(
 
   if (fallback) {
     let rate = discountType === 'senior_student_pwd' ? fallback.discountRate : fallback.regularRate;
-    if (isCSUDestination && fallback.csuRate) {
+    if (isCSUTrip && fallback.csuRate) {
       rate = fallback.csuRate;
+    } else if (isCSUTrip) {
+      rate = Math.max(rate, 25);
     }
     const perPassengerFare = Math.round(rate * fuelSurgeMultiplier);
     const finalFare = fallback.isSpecialArrangement ? perPassengerFare : (perPassengerFare * count);
-    const fallbackRouteDisplay = isCSUDestination && fallback.csuRate
+    const fallbackRouteDisplay = isCSUTrip
       ? `${fallback.route} (Flourishing (CSU))`
       : `${fallback.route} (Standard)`;
 
@@ -215,19 +234,24 @@ export function calculateFare(
     };
   }
 
-  const defaultRate = discountType === 'senior_student_pwd' ? 15 : 20;
+  const defaultRate = isCSUTrip 
+    ? 25 
+    : (discountType === 'senior_student_pwd' ? 15 : 20);
   const unitFare = Math.round(defaultRate * fuelSurgeMultiplier);
   return {
     baseFare: defaultRate,
     perPassengerFare: unitFare,
     finalFare: unitFare * count,
     passengersCount: count,
-    routeName: 'Gonzaga Standard Zone Rate'
+    routeName: isCSUTrip ? 'Gonzaga Flourishing (CSU) Rate' : 'Gonzaga Standard Zone Rate'
   };
 }
 
 export function cleanBarangay(name?: string): string {
   if (!name) return '';
+  if (name.toLowerCase().includes('csu')) {
+    return 'Flourishing (CSU)';
+  }
   if (name.includes('(')) {
     return name.split('(')[0].trim();
   }

@@ -21,7 +21,7 @@ import {
   Search
 } from 'lucide-react';
 import { UserAvatar } from '../components/UserAvatar';
-import { BARANGAY_CLUSTERS, BARANGAY_TODAS, getClusterInfo, findTodaForBarangay, findTodaByName } from '../services/barangayClusters';
+import { BARANGAY_CLUSTERS, BARANGAY_TODAS, getClusterInfo, findTodaForBarangay, findTodaByName, getTodaDisplayName } from '../services/barangayClusters';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
 
 interface AdminDashboardProps {
@@ -642,7 +642,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                         </div>
                       </div>
                       <span style={{ background: '#fef08a', color: '#854d0e', padding: '2px 8px', borderRadius: '6px', fontSize: '0.72rem', fontWeight: 700 }}>
-                        {d.todaName || 'Pending Toda'}
+                        {getTodaDisplayName(d.todaName) || 'Pending Toda'}
                       </span>
                     </div>
 
@@ -713,7 +713,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                       </td>
                       <td style={{ padding: '12px', color: '#334155' }}>{d.mobile}</td>
                       <td style={{ padding: '12px', color: '#334155' }}>{d.barangay}</td>
-                      <td style={{ padding: '12px', color: '#334155' }}>{d.todaName}</td>
+                      <td style={{ padding: '12px', color: '#334155' }}>{getTodaDisplayName(d.todaName)}</td>
                       <td style={{ padding: '12px', fontWeight: 800, color: '#16a34a' }}>{d.plateNumber}</td>
                       <td style={{ padding: '12px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px' }}>
@@ -1098,7 +1098,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
                       )}
                     </div>
                     <strong style={{ fontSize: '0.96rem', color: '#0f172a', fontWeight: 800 }}>
-                      {toda.name}
+                      {toda.name} (Cluster {toda.cluster})
                     </strong>
                     <div style={{ fontSize: '0.8rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <MapPin size={13} color="#16a34a" />
@@ -1419,7 +1419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ initialTab = 'ov
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Barangay TODA</span>
                 <strong style={{ fontSize: '0.88rem', color: '#0f172a' }}>
-                  {verifyingDriver.todaName || findTodaForBarangay(verifyingDriver.barangay)?.name || 'Gonzaga TODA'}
+                  {getTodaDisplayName(verifyingDriver.todaName) || getTodaDisplayName(findTodaForBarangay(verifyingDriver.barangay)?.name) || 'Gonzaga TODA'}
                 </strong>
               </div>
 

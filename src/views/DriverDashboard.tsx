@@ -22,7 +22,7 @@ import { cleanBarangay } from '../services/fareCalculator';
 import { BackButton } from '../components/BackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
-import { REGISTRATION_BARANGAYS, getDriverBookingPriority } from '../services/barangayClusters';
+import { REGISTRATION_BARANGAYS, getTodaDisplayName, getDriverBookingPriority } from '../services/barangayClusters';
 
 interface DriverDashboardProps {
   initialTab?: 'requests' | 'active' | 'history' | 'notifications' | 'profile';
@@ -250,7 +250,7 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
                 <MapPin size={15} color="#16a34a" />
                 <strong>{currentDriver.barangay}</strong>
                 <span>•</span>
-                <span>{currentDriver.todaName || 'Cluster Gontoda Association'}</span>
+                <span>{getTodaDisplayName(currentDriver.todaName) || 'Amunitan TODA (Cluster 3)'}</span>
               </p>
             </div>
 
@@ -1064,11 +1064,11 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
 
             <div className="glass-card" style={{ padding: '14px', borderRadius: '14px', borderLeft: '4px solid #0284c7' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>ℹ️ Cluster Gontoda Association Online</strong>
+                <strong style={{ fontSize: '0.9rem', color: '#0f172a' }}>ℹ️ Barangay TODA Association Online</strong>
                 <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>System</span>
               </div>
               <p style={{ fontSize: '0.82rem', color: '#475569' }}>
-                You are registered with {currentDriver.todaName || 'Gonzaga Cluster Gontoda'}. Remember to stay Online to receive incoming ride requests!
+                You are registered with {getTodaDisplayName(currentDriver.todaName) || 'Amunitan TODA (Cluster 3)'}. Remember to stay Online to receive incoming ride requests!
               </p>
             </div>
           </div>
@@ -1282,11 +1282,11 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
 
                   <div style={{ gridColumn: '1 / -1' }}>
                     <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 700, color: '#334155', marginBottom: '3px' }}>
-                      Cluster Gontoda Association
+                      Barangay TODA
                     </label>
                     <select
-                      value={driverToda}
-                      onChange={e => setDriverToda(e.target.value)}
+                      value="Amunitan TODA (Cluster 3)"
+                      onChange={() => setDriverToda('Amunitan TODA (Cluster 3)')}
                       style={{
                         width: '100%',
                         padding: '9px 12px',
@@ -1294,12 +1294,11 @@ export const DriverDashboard: React.FC<DriverDashboardProps> = ({
                         border: '1px solid #cbd5e1',
                         fontSize: '0.9rem',
                         fontWeight: 700,
-                        background: '#ffffff'
+                        background: '#f8fafc',
+                        color: '#0f172a'
                       }}
                     >
-                      {state.todas.map(cluster => (
-                        <option key={cluster.id} value={cluster.name}>{cluster.name}</option>
-                      ))}
+                      <option value="Amunitan TODA (Cluster 3)">Amunitan TODA (Cluster 3)</option>
                     </select>
                   </div>
                 </div>

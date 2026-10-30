@@ -3,7 +3,7 @@ import { INITIAL_GONZAGA_FARES, INITIAL_GONZAGA_BARANGAYS } from './fareCalculat
 import { playNotificationSound } from './sound';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { sendBookingAcceptedSMS, sendDriverArrivingSMS } from './smsService';
-import { getBarangayCluster, type BarangayClusterNumber } from './barangayClusters';
+import { getBarangayCluster, getTodaDisplayName, findTodaForBarangay, type BarangayClusterNumber } from './barangayClusters';
 
 const STORAGE_KEY = 'trisakay_app_state_v1';
 const SESSION_USER_KEY = 'trisakay_session_user_v1';
@@ -34,7 +34,7 @@ export const INITIAL_USERS: User[] = [
     role: 'driver',
     barangay: 'Calayan',
     cluster: 3,
-    todaName: 'Calayan Cluster Gontoda Association',
+    todaName: 'Calayan TODA (Cluster 3)',
     plateNumber: 'TZ-9842',
     isApproved: true,
     createdAt: '2026-08-01T10:00:00Z',
@@ -46,7 +46,7 @@ export const INITIAL_USERS: User[] = [
     role: 'driver',
     barangay: 'Baua',
     cluster: 5,
-    todaName: 'BAUATODA',
+    todaName: 'Baua TODA (Cluster 5)',
     plateNumber: 'TZ-1123',
     isApproved: true,
     createdAt: '2026-08-02T11:00:00Z',
@@ -58,7 +58,7 @@ export const INITIAL_USERS: User[] = [
     role: 'driver',
     barangay: 'Pateng',
     cluster: 4,
-    todaName: 'PATENGTODA',
+    todaName: 'Pateng TODA (Cluster 4)',
     plateNumber: 'TZ-5544',
     isApproved: false,
     createdAt: '2026-08-13T10:00:00Z',
@@ -74,10 +74,10 @@ export const INITIAL_USERS: User[] = [
 ];
 
 export const INITIAL_TODAS: TodaGroup[] = [
-  { id: 't1', name: 'Poblacion Cluster Gontoda Association', zoneBarangay: 'Poblacion', presidentName: 'Manuel Valenzuela', contactNumber: '09173338899', activeCount: 45 },
-  { id: 't2', name: 'Baua Cluster Gontoda Association', zoneBarangay: 'Baua', presidentName: 'Arnel Castillo', contactNumber: '09204445566', activeCount: 22 },
-  { id: 't3', name: 'Calayan Cluster Gontoda Association', zoneBarangay: 'Calayan', presidentName: 'Roberto Aguinaldo', contactNumber: '09187771122', activeCount: 18 },
-  { id: 't4', name: 'Pateng Cluster Gontoda Association', zoneBarangay: 'Pateng', presidentName: 'Danilo Pascual', contactNumber: '09278889900', activeCount: 15 },
+  { id: 't1', name: 'Flourishing TODA (Cluster 1)', zoneBarangay: 'Flourishing', presidentName: 'Manuel Valenzuela', contactNumber: '09173338899', activeCount: 45 },
+  { id: 't2', name: 'Baua TODA (Cluster 5)', zoneBarangay: 'Baua', presidentName: 'Arnel Castillo', contactNumber: '09204445566', activeCount: 22 },
+  { id: 't3', name: 'Calayan TODA (Cluster 3)', zoneBarangay: 'Calayan', presidentName: 'Roberto Aguinaldo', contactNumber: '09187771122', activeCount: 18 },
+  { id: 't4', name: 'Pateng TODA (Cluster 4)', zoneBarangay: 'Pateng', presidentName: 'Danilo Pascual', contactNumber: '09278889900', activeCount: 15 },
 ];
 
 export const INITIAL_BOOKINGS: Booking[] = [
@@ -98,7 +98,7 @@ export const INITIAL_BOOKINGS: Booking[] = [
     driverId: 'user_driver_1',
     driverName: 'Juan Dela Cruz',
     driverMobile: '09185551234',
-      todaName: 'Calayan Cluster Gontoda Association',
+    todaName: 'Calayan TODA (Cluster 3)',
     plateNumber: 'TZ-9842',
     rating: 5,
     ratingComment: 'Very polite driver! Quick pickup.',
@@ -375,14 +375,18 @@ class StoreService {
       const initial = this.getInitialData();
       if (stored) {
         const parsed = JSON.parse(stored);
-        const clusterByBarangay = new Map(INITIAL_TODAS.map(t => [t.zoneBarangay.toLowerCase(), t.name]));
         const users = (parsed.users || INITIAL_USERS).map((user: User) => {
-          const assignedCluster = getBarangayCluster(user.barangay)?.number;
-          const migratedUser = assignedCluster && user.cluster !== assignedCluster
-            ? { ...user, cluster: assignedCluster }
-            : user;
-          if (migratedUser.role !== 'driver' || migratedUser.todaName?.toLowerCase().includes('cluster gontoda')) return migratedUser;
-          return { ...migratedUser, todaName: clusterByBarangay.get(migratedUser.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' };
+          const cleanBrgy = user.barangay === 'Flourishing (CSU)' ? 'Flourishing' : user.barangay;
+          const assignedCluster = getBarangayCluster(cleanBrgy)?.number;
+          const todaDisplay = user.role === 'driver'
+            ? (getTodaDisplayName(user.todaName) || (cleanBrgy ? getTodaDisplayName(findTodaForBarangay(cleanBrgy)?.name) : undefined))
+            : user.todaName;
+          return {
+            ...user,
+            barangay: cleanBrgy,
+            cluster: (assignedCluster && user.cluster !== assignedCluster) ? assignedCluster : (user.cluster || assignedCluster),
+            todaName: todaDisplay || user.todaName
+          };
         });
 
         // Ensure Flourishing (CSU) is in barangays list
@@ -411,13 +415,14 @@ class StoreService {
           maxPassengersCapacity: 6
         };
 
-        const currentUser = this.loadCurrentUser(users);
-        const currentUserCluster = currentUser ? getBarangayCluster(currentUser.barangay)?.number : undefined;
-        const currentUserWithCluster = currentUser && currentUserCluster && currentUser.cluster !== currentUserCluster
-          ? { ...currentUser, cluster: currentUserCluster }
-          : currentUser;
-        const migratedCurrentUser = currentUserWithCluster?.role === 'driver' && !currentUserWithCluster.todaName?.toLowerCase().includes('cluster gontoda')
-          ? { ...currentUserWithCluster, todaName: clusterByBarangay.get(currentUserWithCluster.barangay.toLowerCase()) || 'Poblacion Cluster Gontoda Association' }
+        const rawCurrentUser = this.loadCurrentUser(users);
+        const currentUserCleanBrgy = rawCurrentUser?.barangay === 'Flourishing (CSU)' ? 'Flourishing' : rawCurrentUser?.barangay;
+        const currentUserCluster = currentUserCleanBrgy ? getBarangayCluster(currentUserCleanBrgy)?.number : undefined;
+        const currentUserWithCluster = rawCurrentUser && currentUserCluster && rawCurrentUser.cluster !== currentUserCluster
+          ? { ...rawCurrentUser, barangay: currentUserCleanBrgy || rawCurrentUser.barangay, cluster: currentUserCluster }
+          : (rawCurrentUser ? { ...rawCurrentUser, barangay: currentUserCleanBrgy || rawCurrentUser.barangay } : null);
+        const migratedCurrentUser = currentUserWithCluster?.role === 'driver'
+          ? { ...currentUserWithCluster, todaName: getTodaDisplayName(currentUserWithCluster.todaName) || currentUserWithCluster.todaName }
           : currentUserWithCluster;
 
         return {
@@ -607,14 +612,14 @@ class StoreService {
           next.driverName = driver.name;
           next.driverMobile = driver.mobile;
           next.driverProfileImage = driver.profileImage;
-          next.todaName = driver.todaName || 'Cluster Gontoda Association';
+          next.todaName = getTodaDisplayName(driver.todaName) || 'Amunitan TODA (Cluster 3)';
           next.plateNumber = driver.plateNumber || 'TZ-9842';
         }
         if (status === 'DRIVER_ACCEPTED') {
           next.acceptedAt = new Date().toISOString();
           const dName = driver?.name || next.driverName || 'Driver';
           const dMobile = driver?.mobile || next.driverMobile || '09185551234';
-          const toda = driver?.todaName || next.todaName || 'Cluster Gontoda Association';
+          const toda = getTodaDisplayName(driver?.todaName || next.todaName) || 'Amunitan TODA (Cluster 3)';
           const plate = driver?.plateNumber || next.plateNumber || 'TZ-9842';
           sendBookingAcceptedSMS(
             b.passengerName,

@@ -4,7 +4,7 @@ import type { UserRole } from '../types';
 import { UserCheck, Bike, CheckCircle, AlertCircle, Phone, Eye, EyeOff } from 'lucide-react';
 import { sendRegistrationWelcomeSMS, sendPasswordResetCodeSMS } from '../services/smsService';
 import appLogo from '../assets/Logo Glossy Green Scooter Emblem.png';
-import { getBarangayCluster, getClusterInfo, REGISTRATION_BARANGAYS, BARANGAY_TODAS, findTodaByName } from '../services/barangayClusters';
+import { getBarangayCluster, getClusterInfo, REGISTRATION_BARANGAYS, findTodaByName, getTodaDisplayName } from '../services/barangayClusters';
 import { BackButton } from './BackButton';
 
 interface AuthModalProps {
@@ -22,7 +22,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
   const [name, setName] = useState('');
   const [mobile, setMobile] = useState('');
   const [barangay, setBarangay] = useState('');
-  const [todaName, setTodaName] = useState('');
+  const [todaName, setTodaName] = useState('Amunitan TODA (Cluster 3)');
   const [plateNumber, setPlateNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -47,7 +47,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
       setVerificationCode('');
       setResetToken('');
       setClientResetCode('');
-      setTodaName('');
+      setTodaName('Amunitan TODA (Cluster 3)');
       setResetCooldown(0);
     }
   }, [initialMode, isOpen]);
@@ -346,7 +346,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         password,
         role,
         barangay,
-        todaName: role === 'driver' ? todaName : undefined,
+        todaName: role === 'driver' ? (getTodaDisplayName(todaName) || todaName) : undefined,
         cluster: assignedClusterInfo.number,
         plateNumber: role === 'driver' ? plateNumber : undefined
       });
@@ -651,30 +651,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                   Barangay TODA
                 </label>
                 <select
-                  value={todaName}
-                  onChange={e => {
-                    const selected = e.target.value;
-                    setTodaName(selected);
-                    const toda = findTodaByName(selected);
-                    if (toda && !barangay) {
-                      setBarangay(toda.barangay);
-                    }
-                  }}
+                  value="Amunitan TODA (Cluster 3)"
+                  onChange={() => setTodaName('Amunitan TODA (Cluster 3)')}
                   required
                   style={{
                     width: '100%',
                     padding: '12px',
                     borderRadius: '10px',
                     border: '1px solid #cbd5e1',
-                    fontSize: '0.95rem'
+                    fontSize: '0.95rem',
+                    fontWeight: 700,
+                    background: '#f8fafc',
+                    color: '#0f172a'
                   }}
                 >
-                  <option value="" disabled>Select Barangay TODA (Alphabetical)</option>
-                  {BARANGAY_TODAS.map(t => (
-                    <option key={t.name} value={t.name}>
-                      {t.name} (Brgy. {t.barangay} - Cluster {t.cluster})
-                    </option>
-                  ))}
+                  <option value="Amunitan TODA (Cluster 3)">Amunitan TODA (Cluster 3)</option>
                 </select>
                 {assignedCluster && (
                   <div style={{ marginTop: '7px' }}>

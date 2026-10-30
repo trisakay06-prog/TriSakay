@@ -9,7 +9,7 @@ import { playNotificationSound } from '../services/sound';
 import { BackButton } from '../components/BackButton';
 import { UserAvatar } from '../components/UserAvatar';
 import { ProfileAvatarUpload } from '../components/ProfileAvatarUpload';
-import { getBarangayCluster, REGISTRATION_BARANGAYS } from '../services/barangayClusters';
+import { getBarangayCluster, getTodaDisplayName, REGISTRATION_BARANGAYS } from '../services/barangayClusters';
 
 interface PassengerDashboardProps {
   initialTab?: 'home' | 'book' | 'status' | 'history' | 'notifications' | 'profile';
@@ -149,7 +149,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
         confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
         setAcceptedDriverToast({
           driverName: currentActiveBooking.driverName || 'Gonzaga Driver',
-          todaName: currentActiveBooking.todaName || 'Cluster Gontoda Association',
+          todaName: getTodaDisplayName(currentActiveBooking.todaName) || 'Amunitan TODA (Cluster 3)',
           plateNumber: currentActiveBooking.plateNumber || 'TZ-9842',
           mobile: currentActiveBooking.driverMobile || '09185551234'
         });
@@ -344,7 +344,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '1.05rem', fontWeight: 800 }}>Ride Accepted!</div>
             <div style={{ fontSize: '0.82rem', opacity: 0.95, marginTop: '2px', lineHeight: 1.3 }}>
-              Driver <strong>{acceptedDriverToast.driverName}</strong> ({acceptedDriverToast.todaName}) with Plate <strong style={{ color: '#fef08a' }}>{acceptedDriverToast.plateNumber}</strong> is on the way!
+              Driver <strong>{acceptedDriverToast.driverName}</strong> ({getTodaDisplayName(acceptedDriverToast.todaName)}) with Plate <strong style={{ color: '#fef08a' }}>{acceptedDriverToast.plateNumber}</strong> is on the way!
             </div>
           </div>
           <button
@@ -1093,7 +1093,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                               🛺 {currentActiveBooking.plateNumber || 'TZ-9842'}
                             </span>
                             <span style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>
-                              {currentActiveBooking.todaName || 'Cluster Gontoda Association'}
+                              {getTodaDisplayName(currentActiveBooking.todaName) || 'Amunitan TODA (Cluster 3)'}
                             </span>
                           </div>
                         </div>
@@ -1432,7 +1432,7 @@ export const PassengerDashboard: React.FC<PassengerDashboardProps> = ({ initialT
                   </span>
                 </div>
                 <p style={{ fontSize: '0.85rem', color: '#475569', lineHeight: 1.5 }}>
-                  {b.status === 'DRIVER_ACCEPTED' && `Driver ${b.driverName} (${b.todaName || 'Cluster Gontoda Association'} ${b.plateNumber || 'TZ-9842'}) accepted your ride to ${b.destinationBarangay}.`}
+                  {b.status === 'DRIVER_ACCEPTED' && `Driver ${b.driverName} (${getTodaDisplayName(b.todaName) || 'Amunitan TODA (Cluster 3)'} ${b.plateNumber || 'TZ-9842'}) accepted your ride to ${b.destinationBarangay}.`}
                   {b.status === 'DRIVER_ARRIVING' && `Driver ${b.driverName} has arrived at ${b.pickupLandmark || b.pickupBarangay}. Please proceed to the tricycle.`}
                   {b.status === 'COMPLETED' && `Your ride from ${b.pickupBarangay} to ${b.destinationBarangay} was completed. Fare paid: ₱${b.estimatedFare}.`}
                   {b.status === 'WAITING_FOR_DRIVER' && `Booking placed for ${b.pickupBarangay} to ${b.destinationBarangay}. Searching for nearby drivers...`}
